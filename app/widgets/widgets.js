@@ -106,7 +106,7 @@
       '<div class="wh-top"><div class="wh-date"><span class="wh-small" id="whDay"></span><span class="wh-big" id="whDate"></span></div>' +
       '<div class="wh-greet"><span class="wh-small" id="whHello"></span><span class="wh-big" id="whTime"></span></div><div class="wh-avatar" id="whAvatar"></div></div>' +
       '<div class="wh-strip" id="whStrip"></div><div class="wh-dock" id="whDock"><div class="wh-dock-bg" id="whDockBg"></div><div class="wh-dock-label" id="whDockLabel"></div></div>' +
-      '<div class="wh-toast" id="whToast"><span></span></div><div class="wh-sheet" id="whSheet" role="dialog" aria-label="Personalizar"></div>';
+      '<div class="wh-hint" id="whHint"></div><div class="wh-toast" id="whToast"><span></span></div><div class="wh-sheet" id="whSheet" role="dialog" aria-label="Personalizar"></div>';
     root.innerHTML = html;
     strip = byId('whStrip'); dockEl = byId('whDock'); dockBg = byId('whDockBg'); dockLabel = byId('whDockLabel'); toastEl = byId('whToast'); sheetEl = byId('whSheet');
     CARDS.forEach(function (c) {
@@ -301,7 +301,19 @@
       t.el.className = cls + (on ? ' is-focus' : '') + (on && st.adjust ? ' is-adjust' : '');
     });
     strip.style.transform = 'translate3d(' + (-st.off) + 'px,0,0)';
+    renderHint();
     renderDock();
+  }
+  var HINTS = { volume: 'Volume', bright: 'Brilho', light: 'Luz da sala', 'tv-art': 'Modo Arte', 'tv-audio': 'Saída de áudio', 'tv-picture': 'Modo de imagem', 'tv-timer': 'Timer para desligar' };
+  function renderHint() {
+    var el = byId('whHint'), t = target(st.focus), text = st.focus === 'theme' ? (prefs.dark ? 'Cartões claros' : 'Cartões escuros') : HINTS[st.focus];
+    if (!el) return;
+    if (st.zone !== 'strip' || st.sheet || !text) { el.className = 'wh-hint'; return; }
+    if (st.adjust) text = 'Volume · ▲ ▼ · OK para sair';
+    el.textContent = text;
+    el.style.left = (129 + t.x - st.off + t.w / 2) + 'px';
+    el.style.top = (t.y < C ? 290 + t.y - 58 : 290 + t.y + t.h + 18) + 'px';
+    el.className = 'wh-hint is-on';
   }
   function ensureVisible(t) {
     if (t.x + t.w > st.off + VIS) st.off = Math.min(MAXOFF, t.x + t.w - VIS + PEEK);
@@ -393,7 +405,7 @@
       case 'weather': toast('Atualizando a previsão…'); refresh('weather', true); return;
       case 'volume':
         if (!onTV()) { deviceOnly('O volume funciona quando o app estiver na TV.'); return; }
-        st.adjust = !st.adjust; toast(st.adjust ? 'Use ▲ ▼ para o volume · OK para sair' : 'Volume ajustado'); return;
+        st.adjust = !st.adjust; return;
       case 'bright': toast('Abrindo os ajustes de imagem da TV'); deps.tvSettings(); return;
       case 'wifi': toast('Abrindo os ajustes de rede da TV'); deps.tvSettings(); return;
       case 'theme': prefs.dark = !prefs.dark; savePrefs(); renderAll(); return;

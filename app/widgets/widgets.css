@@ -169,6 +169,10 @@
 .b-alexa{background:#0B1A2A}
 .b-browser{background:linear-gradient(150deg,#7A5CFA,#3E7BFA)}
 
+/* Focus hint for icon-only controls */
+.wh-hint{position:absolute;z-index:4;height:40px;padding:0 18px;border-radius:20px;background:rgba(20,20,24,.82);font-size:20px;font-weight:600;line-height:40px;white-space:nowrap;opacity:0;transform:translate(-50%,6px);transition:opacity .2s ease,transform .3s var(--spring);pointer-events:none}
+.wh-hint.is-on{opacity:1;transform:translate(-50%,0)}
+
 /* Toast */
 .wh-toast{position:absolute;left:0;right:0;bottom:200px;text-align:center;opacity:0;transform:translateY(10px);transition:opacity .25s ease,transform .3s var(--spring);pointer-events:none}
 .wh-toast span{display:inline-block;padding:16px 28px;border-radius:28px;background:rgba(20,20,24,.86);font-size:22px;font-weight:500}

@@ -50,6 +50,11 @@
       'background-color:' + (color || 'currentColor') + '" aria-hidden="true"></i>';
   }
   function appleIcon(key) { return A && A.icons && A.icons[key] || ''; }
+  /* Small white service logo for the big cards (personal builds); public builds show the name in text. */
+  function brandLogo(key, text, cls) {
+    var src = A && A.brand && A.brand[key];
+    return src ? '<img class="wc-logo ' + (cls || '') + '" src="' + esc(src) + '" alt="' + esc(text) + '">' : '<span class="wc-logo-text">' + esc(text) + '</span>';
+  }
   function ico(name, size, color, width) {
     if (sym(name)) return sf(name, Math.round(size * 0.92), color);
     return '<svg class="wc-ico" width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" stroke="' + (color || 'currentColor') +
@@ -232,16 +237,17 @@
   }
   function renderSpotify() {
     var s = data.spotify, art;
-    if (s && s.setup && !demo()) { setBody('spotify', '<div class="ws-art"></div><div class="ws-note">' + ico('note', 30, '#1DB954', 2) + '</div><div class="ws-text"><div class="wc-label">Spotify</div><div class="wc-title">Conecte sua conta</div><div class="wc-sub">OK abre o Spotify</div></div>'); return; }
+    if (s && s.setup && !demo()) { setBody('spotify', '<div class="ws-art"></div><div class="ws-note">' + spotifyMark() + '</div><div class="ws-text"><div class="wc-label">Spotify</div><div class="wc-title">Conecte sua conta</div><div class="wc-sub">OK abre o Spotify</div></div>'); return; }
     if (!s || s.setup || s.error) s = s && !s.setup && !s.error ? s : { label: 'Tocado recentemente', title: 'Nome da faixa', artist: 'Artista', playing: false, art: '' };
     art = s.art ? '<img class="wc-img" src="' + esc(s.art) + '" alt="">' : '';
-    setBody('spotify', '<div class="ws-art">' + art + '</div><div class="ws-note">' + ico('note', 30, '#1DB954', 2) + '</div>' +
+    setBody('spotify', '<div class="ws-art">' + art + '</div><div class="ws-note">' + spotifyMark() + '</div>' +
       '<div class="ws-text"><div class="wc-label">' + esc(s.label) + '</div><div class="wc-title">' + esc(s.title) + '</div><div class="ws-artist">' + esc(s.artist) + '</div>' +
       '<div class="ws-controls">' + solid('prev', 26, prefs.dark ? '#fff' : '#1D1D1F') + solid(s.playing ? 'pause' : 'play', 30, prefs.dark ? '#fff' : '#1D1D1F') + solid('next', 26, prefs.dark ? '#fff' : '#1D1D1F') + '</div></div>');
   }
+  function spotifyMark() { return A && A.brand && A.brand.spotify ? '<img class="ws-logo" src="' + esc(A.brand.spotify) + '" alt="Spotify">' : ico('note', 30, '#1DB954', 2); }
   function heroCard(id, brand, label, title, sub, image, progress, extra) {
     return (image ? '<img class="wc-img" src="' + esc(image) + '" alt="">' : '<div class="wc-shade-b" style="background:radial-gradient(70% 80% at 70% 30%,#1F4A55 0%,rgba(31,74,85,0) 70%),linear-gradient(160deg,#121A20,#07090C)"></div>') +
-      '<div class="wc-shade-b"></div><div class="wc-brand">' + brand + '</div>' +
+      '<div class="wc-shade-b"></div><div class="wc-brand">' + brandLogo(id, brand, id === 'stremio' ? 'is-mark' : '') + (id === 'stremio' && A && A.brand && A.brand.stremio ? '<span class="wc-logo-word">Stremio</span>' : '') + '</div>' +
       '<div style="position:absolute;left:30px;right:30px;bottom:30px"><div class="wc-dark-label">' + esc(label) + '</div>' +
       '<div style="font-size:44px;font-weight:800;line-height:1.04;letter-spacing:-1px;margin-top:8px">' + esc(title) + '</div>' +
       '<div style="font-size:18px;font-weight:500;color:rgba(255,255,255,.8);margin-top:8px">' + esc(sub) + '</div>' +
@@ -259,7 +265,7 @@
     else if (!list || !list.length) item = { title: 'Nome do título', kind: 'Série', year: '2026' };
     else item = list[st.heroIndex % list.length];
     setBody('hbo', (item.image ? '<img class="wc-img" src="' + esc(item.image) + '" alt="">' : '<div class="wc-shade-l" style="background:radial-gradient(70% 90% at 75% 30%,#2C3A66 0%,rgba(44,58,102,0) 70%),linear-gradient(160deg,#161A2A,#08090F)"></div>') +
-      '<div class="wc-shade-l"></div><div style="position:absolute;left:26px;top:22px;font-size:18px;font-weight:800">HBO Max</div>' +
+      '<div class="wc-shade-l"></div><div class="wc-brand" style="left:26px;top:22px">' + brandLogo('hbomax', 'HBO Max', 'is-hbo') + '</div>' +
       '<div style="position:absolute;left:26px;right:26px;bottom:22px"><div class="wc-dark-label" style="font-size:13px">Em alta</div>' +
       '<div style="font-size:28px;font-weight:800;letter-spacing:-.5px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:330px">' + esc(item.title) + '</div>' +
       '<div style="font-size:16px;font-weight:500;color:rgba(255,255,255,.78);margin-top:4px">' + esc(item.kind + (item.year ? ' · ' + item.year : '')) + '</div></div>');
@@ -268,7 +274,7 @@
     var p = val('pluto') || (demo() || !data.plutoTried ? { channel: 'Nome do canal', title: 'Nome do programa', until: '00:30', start: 0, stop: 0, logo: '' } : null), pct = 0.42;
     if (!p) { setBody('pluto', '<div class="wc-pad" style="background:none"><div class="wc-dark-label" style="font-size:14px;color:rgba(255,255,255,.72)">Pluto TV</div><div class="wc-title" style="margin-top:40px">TV ao vivo e grátis</div><div class="wc-sub" style="color:rgba(255,255,255,.7)">OK abre o Pluto TV</div></div>'); return; }
     if (p.stop > p.start) pct = Math.max(0, Math.min(1, (Date.now() - p.start) / (p.stop - p.start)));
-    setBody('pluto', '<div class="wc-pad"><div style="font-size:14px;font-weight:600;letter-spacing:.7px;color:rgba(255,255,255,.72)">AGORA NA PLUTO TV' +
+    setBody('pluto', '<div class="wc-pad"><div style="font-size:14px;font-weight:600;letter-spacing:.7px;color:rgba(255,255,255,.72);height:24px">' + brandLogo('pluto', 'PLUTO TV', 'is-pluto') +
       '<span style="float:right;color:#FFD60A;font-size:13px;font-weight:700"><span style="display:inline-block;width:8px;height:8px;border-radius:4px;background:#FF453A;margin-right:7px"></span>AO VIVO</span></div>' +
       '<div style="position:absolute;left:0;right:0;top:56px;height:72px"><div style="position:absolute;left:0;top:0;width:72px;height:72px;border-radius:16px;background:#3A3A42;overflow:hidden">' +
       (p.logo ? '<img class="wc-img" src="' + esc(p.logo) + '" alt="" style="object-fit:contain">' : '') + '</div>' +

@@ -105,6 +105,12 @@
 .wc-bar i{display:block;height:6px;border-radius:3px;background:#fff;transition:width .6s var(--ease)}
 .wc-brand{position:absolute;left:30px;top:26px;font-size:20px;font-weight:800;letter-spacing:-.3px}
 .wc-ico{display:block}
+.wc-logo{display:inline-block;vertical-align:middle;height:30px;width:auto}
+.wc-logo.is-mark{height:30px;margin-right:10px}
+.wc-logo.is-hbo{height:34px}
+.wc-logo.is-pluto{height:18px;opacity:.9}
+.wc-logo-word{display:inline-block;vertical-align:middle;font-size:22px;font-weight:700;letter-spacing:-.3px}
+.ws-logo{display:block;width:34px;height:34px}
 .wc-ico.sf{-webkit-mask-size:contain;-webkit-mask-repeat:no-repeat;-webkit-mask-position:center}
 
 /* App tiles */

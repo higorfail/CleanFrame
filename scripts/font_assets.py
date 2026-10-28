@@ -78,7 +78,7 @@ APPLE_WEIGHTS = {'Light': 300, 'Regular': 400, 'Medium': 500, 'Semibold': 600, '
 
 
 def apple_overlay(root=ROOT, include_private=True):
-    """Personal Apple look (SF Pro, SF Symbols, app icons) from ignored .local/apple.
+    """Personal Apple look (SF Pro, SF Symbols, app icons, small brand logos) from ignored .local/apple.
 
     The owner's licensed copies stay out of Git and out of public exports; the public
     app ships placeholder apple/apple.css and apple/manifest.js and falls back to Inter
@@ -112,7 +112,11 @@ def apple_overlay(root=ROOT, include_private=True):
     for jpg in files('build/icons', '.jpg'):
         out['apple/icons/' + jpg.name] = jpg
         icons[jpg.stem] = 'apple/icons/' + jpg.name
-    manifest = {'fonts': len(css) > 1, 'symbols': symbols, 'icons': icons}
+    brand = {}
+    for svg in files('brand', '.svg'):
+        out['apple/brand/' + svg.name] = svg
+        brand[svg.stem] = 'apple/brand/' + svg.name
+    manifest = {'fonts': len(css) > 1, 'symbols': symbols, 'icons': icons, 'brand': brand}
     out['apple/apple.css'] = ('\n'.join(css) + '\n').encode()
     out['apple/manifest.js'] = ('/* Personal overlay. Never published. */\nwindow.FrameApple = ' + json.dumps(manifest) + ';\n').encode()
     return out

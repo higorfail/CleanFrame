@@ -9,7 +9,7 @@
   var CFG = window.FrameWidgetsConfig || {}, D = window.FrameWidgetsData;
   var PREFS = 'cleanframe.widgets.v1';
   var C = 232, G = 36, S = C + G, PILL = 98, VIS = 1662, PEEK = 183, MAXOFF = 7 * S;
-  var DOCK_W = 88, DOCK_GAP = 26, DOCK_PAD = 18, DOCK_FS = 1.224, STRIP_X = 129, STRIP_Y = 290;
+  var DOCK_W = 88, DOCK_GAP = 26, DOCK_PAD = 18, DOCK_FS = 1.12, STRIP_X = 129, STRIP_Y = 290;
   var A = window.FrameApple || null;
   var GRADIENTS = [
     ['rubi', 'Rubi'], ['oceano', 'Oceano'], ['aurora', 'Aurora'], ['entardecer', 'Entardecer'],
@@ -108,28 +108,28 @@
   /* ---------- Layout ---------- */
   function cell(col, row, cols, rows) { cols = cols || 1; rows = rows || 1; return { x: col * S, y: row * S, w: cols * C + (cols - 1) * G, h: rows * C + (rows - 1) * G }; }
   var CARDS = [
-    { id: 'youtube', at: cell(0, 0), cls: 'wc-app', app: 'youtube', ring: 60, fs: 1.18 },
+    { id: 'youtube', at: cell(0, 0), cls: 'wc-app', app: 'youtube', ring: 60, fs: 1.08 },
     { id: 'weather', at: cell(1, 0), cls: 'ww', ring: 44 },
     { id: 'spotify', at: cell(0, 1, 2, 1), cls: 'wc-light ws', ring: 44 },
     { id: 'stremio', at: cell(2, 0, 2, 2), cls: 'wst', ring: 44 },
-    { id: 'volume', at: { x: 4 * S, y: 0, w: PILL, h: C }, cls: 'wc-dim wp', ring: 59, fs: 1.12 },
-    { id: 'bright', at: { x: 4 * S + PILL + G, y: 0, w: PILL, h: C }, cls: 'wc-dim wp wp-bright', ring: 59, fs: 1.12 },
-    { id: 'globoplay', at: cell(5, 0), cls: 'wc-app', app: 'globoplay', ring: 60, fs: 1.18 },
+    { id: 'volume', at: { x: 4 * S, y: 0, w: PILL, h: C }, cls: 'wc-dim wp', ring: 59, fs: 1.06 },
+    { id: 'bright', at: { x: 4 * S + PILL + G, y: 0, w: PILL, h: C }, cls: 'wc-dim wp wp-bright', ring: 59, fs: 1.06 },
+    { id: 'globoplay', at: cell(5, 0), cls: 'wc-app', app: 'globoplay', ring: 60, fs: 1.08 },
     { id: 'hbo', at: cell(4, 1, 2, 1), cls: 'whb', ring: 44 },
-    { id: 'netflix', at: cell(6, 0), cls: 'wc-app', app: 'netflix', ring: 60, fs: 1.18 },
+    { id: 'netflix', at: cell(6, 0), cls: 'wc-app', app: 'netflix', ring: 60, fs: 1.08 },
     { id: 'pluto', at: cell(6, 1, 2, 1), cls: 'wpl', ring: 44 },
-    { id: 'wifi', at: { x: 7 * S, y: 0, w: C, h: PILL }, cls: 'wc-glass wn', ring: 59, fs: 1.1 },
-    { id: 'theme', at: { x: 7 * S, y: PILL + G, w: PILL, h: PILL }, cls: 'wc-glass wr', ring: 59, fs: 1.16 },
-    { id: 'light', at: { x: 7 * S + PILL + G, y: PILL + G, w: PILL, h: PILL }, cls: 'wc-glass wr', ring: 59, fs: 1.16 },
-    { id: 'mercadoplay', at: cell(8, 0), cls: 'wc-app', app: 'mercadoplay', ring: 60, fs: 1.18 },
+    { id: 'wifi', at: { x: 7 * S, y: 0, w: C, h: PILL }, cls: 'wc-glass wn', ring: 59, fs: 1.05 },
+    { id: 'theme', at: { x: 7 * S, y: PILL + G, w: PILL, h: PILL }, cls: 'wc-glass wr', ring: 59, fs: 1.08 },
+    { id: 'light', at: { x: 7 * S + PILL + G, y: PILL + G, w: PILL, h: PILL }, cls: 'wc-glass wr', ring: 59, fs: 1.08 },
+    { id: 'mercadoplay', at: cell(8, 0), cls: 'wc-app', app: 'mercadoplay', ring: 60, fs: 1.08 },
     { id: 'tv', at: cell(8, 1), cls: 'wc-dim wt', ring: 60, group: true },
     { id: 'news', at: cell(9, 0, 2, 2), cls: 'wc-light wnw', ring: 44 },
-    { fs: 1.18, id: 'alexa', at: cell(11, 0), cls: 'wc-glass wk', ring: 60 },
-    { fs: 1.18, id: 'settings', at: cell(12, 0), cls: 'wc-glass wk', ring: 60 },
-    { fs: 1.18, id: 'browser', at: cell(11, 1), cls: 'wc-glass wk', ring: 60 },
-    { fs: 1.18, id: 'allapps', at: cell(12, 1), cls: 'wc-glass wk', ring: 60 }
+    { fs: 1.08, id: 'alexa', at: cell(11, 0), cls: 'wc-glass wk', ring: 60 },
+    { fs: 1.08, id: 'settings', at: cell(12, 0), cls: 'wc-glass wk', ring: 60 },
+    { fs: 1.08, id: 'browser', at: cell(11, 1), cls: 'wc-glass wk', ring: 60 },
+    { fs: 1.08, id: 'allapps', at: cell(12, 1), cls: 'wc-glass wk', ring: 60 }
   ];
-  function focusScale(c) { return c.fs || Math.max(1.06, Math.min(1.2, (c.at.w + 50) / c.at.w)); }
+  function focusScale(c) { return c.fs || Math.max(1.03, Math.min(1.08, (c.at.w + 24) / c.at.w)); }
   var TV_DOTS = [['tv-art', 'art', 24, 24, 'is-art', 'Modo Arte'], ['tv-audio', 'audio', 124, 24, 'is-on', 'Saída de áudio'],
     ['tv-picture', 'picture', 24, 124, '', 'Modo de imagem'], ['tv-timer', 'timer', 124, 124, '', 'Timer']];
 
@@ -402,13 +402,13 @@
   function captionFor(id) {
     if (id === 'theme') return isDark() ? 'Modo claro' : 'Modo escuro';
     if (id === 'bright') { var pm = data.picture; return pm && pm.mode ? 'Imagem: ' + pm.mode : 'Modo de imagem'; }
-    if (id === 'volume') { var v = data.volume; return st.adjust ? 'Volume ' + (v && v.level !== undefined ? v.level : '') + '  ▲ ▼' : 'Volume · OK para ajustar'; }
+    if (id === 'volume') { var v = data.volume, n = v && typeof v.level === 'number' ? (v.muted ? ' · mudo' : ' ' + v.level) : ''; return 'Volume' + n + '   ▲ ▼'; }
     if (CAPTIONS[id] !== undefined) return CAPTIONS[id];
     var c = cards[id];
     return c && c.def.app ? appInfo(c.def.app).name : '';
   }
   function renderCaption() {
-    var t = target(st.focus), text = captionFor(st.focus), c = cards[st.focus], fs = c ? focusScale(c.def) : 1.18, grow = t.h * (fs - 1) / 2;
+    var t = target(st.focus), text = captionFor(st.focus), c = cards[st.focus], fs = c ? focusScale(c.def) : 1.1, grow = t.h * (fs - 1) / 2;
     if (!capEl) return;
     if (st.zone !== 'strip' || st.sheet || !text) { capEl.className = 'wh-cap'; return; }
     capEl.textContent = text;
@@ -552,7 +552,8 @@
       case 'weather': toast('Atualizando a previsão…'); refresh('weather', true); return;
       case 'volume':
         if (!onTV()) { deviceOnly('O volume funciona quando o app estiver na TV.'); return; }
-        st.adjust = !st.adjust; if (st.adjust) refresh('volume', true); return;
+        D.changeVolume('mute', function (err, v) { if (err) { toast('A TV não respondeu.'); return; } if (v) { data.volume = v; renderPills(); renderCaption(); } });
+        return;
       case 'bright':
         if (!D.tvConfigured || !D.tvConfigured()) { toast('A Samsung não libera o brilho para apps. Abrindo os ajustes de imagem.'); deps.tvSettings(); return; }
         D.nextPictureMode(function (err, pm) { if (err) { toast('A TV não respondeu. Tente de novo.'); return; } data.picture = pm; renderPills(); renderCaption(); toast('Modo de imagem: ' + pm.mode); });
@@ -575,19 +576,19 @@
       case 'allapps': deps.openApps(); return;
     }
   }
-  function adjustKey(k) {
-    if (k === 'up' || k === 'down') {
-      D.changeVolume(k === 'up' ? 1 : -1, function (err, v) {
-        if (err) { toast('O volume não respondeu' + (err.message || err.name ? ': ' + (err.message || err.name) : '.')); return; }
-        if (v) { data.volume = v; renderPills(); renderCaption(); }
-      });
-      return true;
-    }
-    if (k === 'ok' || k === 'back') { st.adjust = false; return true; }
-    st.adjust = false;
-    return false;
+  /* Volume pill: ▲ ▼ change it straight away (no OK first). The bar moves at once; the TV gets the
+     final value a moment after the last press, so holding the key doesn't queue dozens of calls. */
+  function nudgeVolume(step) {
+    var v = data.volume && typeof data.volume.level === 'number' ? data.volume : { level: 10, muted: false };
+    var level = Math.max(0, Math.min(100, v.level + step));
+    data.volume = { level: level, muted: false };
+    st.adjust = true; renderPills(); renderFocus();
+    clearTimeout(timers.volSend); clearTimeout(timers.volIdle);
+    timers.volSend = setTimeout(function () {
+      D.setVolume(level, function (err) { if (err) { toast('O volume não respondeu.'); refresh('volume', true); } });
+    }, 220);
+    timers.volIdle = setTimeout(function () { st.adjust = false; renderFocus(); }, 1400);
   }
-
   /* ---------- Personalise sheet ----------
      Rows: gradients and photos (one row each, scrolling sideways), appearance, sounds, links.
      Focusing a background previews it live; OK keeps it; Back closes without changing. */
@@ -684,6 +685,7 @@
     clearTimeout(timers[name]);
     if (!st.active || document.hidden) return;
     timers[name] = setTimeout(function () {
+      if (name === 'volume' && st.adjust) { refresh(name); return; }
       FETCH[name](function (err, value) {
         if (err && (err.setup || err.device)) data[name] = err;
         else if (value !== undefined) data[name] = value;
@@ -727,7 +729,7 @@
   function intro() {
     var all = strip.querySelectorAll('.wc'), i;
     root.className += ' is-intro';
-    for (i = 0; i < all.length; i++) all[i].style.transitionDelay = (Math.min(i, 10) * 35) + 'ms';
+    for (i = 0; i < all.length; i++) all[i].style.transitionDelay = (Math.min(i, 8) * 15) + 'ms';
     setTimeout(function () {
       root.className = root.className.replace(' is-intro', '');
       setTimeout(function () { for (i = 0; i < all.length; i++) all[i].style.transitionDelay = ''; }, 1000);
@@ -753,7 +755,6 @@
       if (!root) return false;
       var dirKey = k === 'left' || k === 'right' || k === 'up' || k === 'down';
       if (st.sheet) { sound(k === 'ok' ? 'select' : 'tick'); sheetKey(k); renderAll(); return true; }
-      if (st.adjust && st.zone === 'strip' && adjustKey(k)) { sound('tick'); renderFocus(); return true; }
       if (k === 'back') {
         if (st.zone === 'dock') { sound('tick'); fromDock(); st.lean = 'up'; renderFocus(); return true; }
         if (st.focus !== 'youtube' || st.off) { sound('tick'); st.focus = 'youtube'; st.off = 0; renderFocus(); return true; }
@@ -768,6 +769,7 @@
         renderFocus(); return true;
       }
       if (k === 'ok') { press(); ok(st.focus); renderAll(); return true; }
+      if (st.focus === 'volume' && (k === 'up' || k === 'down') && onTV()) { sound('tick'); nudgeVolume(k === 'up' ? 1 : -1); return true; }
       var next = move(k);
       if (next) { st.focus = next.id; ensureVisible(next); st.lean = k; sound('tick'); }
       else if (k === 'down') { toDock(); st.dockLean = 'down'; sound('tick'); }

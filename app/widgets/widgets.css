@@ -12,7 +12,7 @@
 
 .wh{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:hidden;display:none;color:#fff;font-family:'Frame SF Text','Frame Inter',Manrope,Arial,sans-serif;font-size:20px;line-height:1.2;letter-spacing:-.01em;-webkit-font-smoothing:antialiased;
   --display:'Frame SF Display','Frame Inter',Manrope,Arial,sans-serif;--ease:cubic-bezier(.2,.9,.3,1);--spring:cubic-bezier(.2,.9,.3,1.2);
-  --focus:cubic-bezier(.2,.9,.3,1.2);--scroll:cubic-bezier(.2,.9,.3,1)}
+  --focus:cubic-bezier(.2,.8,.2,1);--scroll:cubic-bezier(.2,.9,.3,1)}
 .wh[data-sf] .ww-temp,.wh[data-sf] .wh-big,.wh[data-sf] .wc-title,.wh[data-sf] .wh-sheet h2{font-family:var(--display)}
 .stage.l-widgets .wh{display:block}
 .stage.l-widgets .home{visibility:hidden}
@@ -21,14 +21,14 @@
 /* Background gradients: two layers cross-fade; only opacity animates. */
 .wh-bg{position:absolute;left:0;top:0;width:1920px;height:1080px;transition:opacity .9s ease}
 .wh-bg.is-off{opacity:0}
-.g-rubi{background:radial-gradient(55% 65% at 88% 8%,#0F4C75 0%,rgba(15,76,117,0) 70%),radial-gradient(55% 65% at 8% 12%,#6A1530 0%,rgba(106,21,48,0) 70%),radial-gradient(75% 60% at 55% 105%,#8A0E3C 0%,rgba(138,14,60,0) 70%),linear-gradient(135deg,#5A1A3A 0%,#2D2350 50%,#173B5E 100%)}
-.g-oceano{background:radial-gradient(60% 70% at 85% 5%,#1E3F8A 0%,rgba(30,63,138,0) 70%),radial-gradient(60% 70% at 5% 95%,#0B6E78 0%,rgba(11,110,120,0) 70%),linear-gradient(140deg,#0A3A4A 0%,#123A6B 55%,#1D1F55 100%)}
-.g-aurora{background:radial-gradient(60% 70% at 10% 10%,#0F7A6A 0%,rgba(15,122,106,0) 70%),radial-gradient(60% 70% at 90% 30%,#5B2FA8 0%,rgba(91,47,168,0) 70%),radial-gradient(70% 60% at 60% 105%,#B0306E 0%,rgba(176,48,110,0) 70%),linear-gradient(135deg,#0B2E3A 0%,#2A1E5C 60%,#3D1240 100%)}
-.g-entardecer{background:radial-gradient(60% 70% at 85% 10%,#E0763A 0%,rgba(224,118,58,0) 65%),radial-gradient(60% 70% at 10% 90%,#7A1F5C 0%,rgba(122,31,92,0) 70%),linear-gradient(150deg,#8C2E3E 0%,#5A2150 55%,#24214F 100%)}
-.g-lavanda{background:radial-gradient(60% 70% at 15% 10%,#7B5BD6 0%,rgba(123,91,214,0) 70%),radial-gradient(60% 70% at 90% 90%,#D06A9E 0%,rgba(208,106,158,0) 70%),linear-gradient(140deg,#3A2E7A 0%,#5B3A8E 55%,#6E2F6A 100%)}
-.g-floresta{background:radial-gradient(60% 70% at 10% 10%,#2F7A4A 0%,rgba(47,122,74,0) 70%),radial-gradient(60% 70% at 90% 90%,#155A5A 0%,rgba(21,90,90,0) 70%),linear-gradient(140deg,#123A2A 0%,#1B4A3A 55%,#0F2E33 100%)}
-.g-grafite{background:radial-gradient(70% 70% at 85% 0%,#3A3A44 0%,rgba(58,58,68,0) 70%),linear-gradient(160deg,#1E1E24 0%,#121216 100%)}
-.g-meianoite{background:radial-gradient(60% 70% at 80% 5%,#1F2D6E 0%,rgba(31,45,110,0) 70%),radial-gradient(60% 60% at 10% 100%,#2A1550 0%,rgba(42,21,80,0) 70%),linear-gradient(160deg,#0B1030 0%,#05060F 100%)}
+.g-rubi{background:linear-gradient(160deg,#4A1A30 0%,#1C1F3C 100%)}
+.g-oceano{background:linear-gradient(160deg,#0E3A55 0%,#0B1730 100%)}
+.g-aurora{background:linear-gradient(160deg,#0D3B3C 0%,#261B47 100%)}
+.g-entardecer{background:linear-gradient(160deg,#6B2C2F 0%,#271A38 100%)}
+.g-lavanda{background:linear-gradient(160deg,#3B3070 0%,#221A3E 100%)}
+.g-floresta{background:linear-gradient(160deg,#173A2D 0%,#0D1F24 100%)}
+.g-grafite{background:linear-gradient(160deg,#2C2C31 0%,#131315 100%)}
+.g-meianoite{background:linear-gradient(160deg,#111836 0%,#05060F 100%)}
 
 /* Top bar */
 .wh-top{position:absolute;left:129px;right:129px;top:80px;height:80px}
@@ -41,21 +41,21 @@
 
 /* Strip */
 .wh-strip{position:absolute;left:129px;top:290px;width:3448px;height:500px;transition:transform .3s var(--scroll);will-change:transform}
-.wc{position:absolute;box-sizing:border-box;border-radius:34px;color:#fff;transition:transform .2s var(--focus),opacity .3s ease}
+.wc{position:absolute;box-sizing:border-box;border-radius:34px;color:#fff;transition:transform .18s var(--focus),opacity .25s ease}
 .wh.is-intro .wc,.wh.is-intro .wd,.wh.is-intro .wh-top{opacity:0;transform:translate3d(0,26px,0) scale(.97)}
 .wh-top,.wd{transition:opacity .3s ease,transform .3s var(--ease)}
 /* tvOS focus: lift + deeper shadow (no ring). The shadow is a pre-rendered layer that only fades. */
-.wc::before{content:'';position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;box-shadow:0 30px 40px rgba(0,0,0,.35),0 12px 18px rgba(0,0,0,.18);opacity:0;transition:opacity .2s ease}
-.wc.is-focus{transform:scale(var(--fs,1.1));z-index:3}
+.wc::before{content:'';position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;box-shadow:0 0 0 3px rgba(255,255,255,.78),0 14px 26px rgba(0,0,0,.3);opacity:0;transition:opacity .15s ease}
+.wc.is-focus{transform:scale(var(--fs,1.06));z-index:3}
 .wc.is-focus::before{opacity:1}
 .wc-tilt{position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;transform-origin:50% 50%}
-.wc-body{position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;overflow:hidden;box-shadow:0 6px 10px rgba(0,0,0,.1)}
+.wc-body{position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;overflow:hidden}
 /* Focused item: a hairline light on top, no idle motion (snappy, and lighter on the TV's GPU). */
 .wc-gloss{position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;opacity:0;transition:opacity .15s ease;pointer-events:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
 .is-focus>.wc-tilt>.wc-gloss{opacity:1}
 /* Press-in on OK and a bump when there is nowhere to go. */
 .wc.is-focus.is-press,.wt-dot.is-focus.is-press{animation:wpress .16s ease}
-@keyframes wpress{0%{transform:scale(var(--fs,1.1))}35%{transform:scale(var(--fsp,1.05))}100%{transform:scale(var(--fs,1.1))}}
+@keyframes wpress{0%{transform:scale(var(--fs,1.06))}35%{transform:scale(var(--fsp,1.02))}100%{transform:scale(var(--fs,1.06))}}
 .is-focus.bump-right>.wc-tilt{animation:wbump-x .2s ease}
 .is-focus.bump-left>.wc-tilt{animation:wbump-x .2s ease reverse}
 .is-focus.bump-down>.wc-tilt{animation:wbump-y .2s ease}
@@ -63,7 +63,7 @@
 @keyframes wbump-x{0%,100%{transform:translate3d(0,0,0)}40%{transform:translate3d(8px,0,0)}}
 @keyframes wbump-y{0%,100%{transform:translate3d(0,0,0)}40%{transform:translate3d(0,8px,0)}}
 .wc.is-adjust .wp-level{background:#fff}
-.wc.is-adjust::before{box-shadow:0 30px 40px rgba(0,0,0,.35),0 0 0 4px rgba(255,255,255,.5)}
+.wc.is-adjust::before{box-shadow:0 0 0 4px #fff,0 14px 26px rgba(0,0,0,.3)}
 .wc-pad{position:absolute;left:24px;top:22px;right:24px;bottom:22px}
 .wc-light .wc-body{background:#fff;color:#1D1D1F}
 .wh.is-dark .wc-light .wc-body{background:#1C1C1E;color:#fff}
@@ -80,7 +80,6 @@
 .wc-sub{font-size:18px;font-weight:500;color:#6E6E73;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .wc-hint{font-size:16px;font-weight:500;line-height:1.3;opacity:.75}
 .wc-img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s ease;border-radius:inherit}
-.whb .wc-body,.wst .wc-body,.wnw .wc-body,.ws-art{-webkit-mask-image:-webkit-radial-gradient(white,black)}
 .wc-shade-b,.wc-shade-l{border-radius:inherit}
 .wc-hero-text{position:absolute;left:26px;right:26px;bottom:22px}
 .wc-img.is-ready{opacity:1}
@@ -160,11 +159,11 @@
 
 /* TV central */
 .wt .wc-body{border-radius:52px}
-.wt-dot{position:absolute;width:84px;height:84px;border-radius:42px;color:#fff;background:rgba(130,130,130,.42);--fs:1.18;--fsp:1.1;transition:transform .2s var(--focus),background-color .15s ease,color .15s ease,box-shadow .2s ease}
+.wt-dot{position:absolute;width:84px;height:84px;border-radius:42px;color:#fff;background:rgba(130,130,130,.42);--fs:1.1;--fsp:1.05;transition:transform .18s var(--focus),background-color .15s ease,color .15s ease,box-shadow .2s ease}
 .wt-glyph .wc-ico{position:absolute;left:24px;top:24px}
 .wt-dot.is-art{background:linear-gradient(160deg,#C79A72,#8A5A3E)}
 .wt-dot.is-on{background:#0A84FF}
-.wt-dot.is-focus{transform:scale(1.18);z-index:2;color:#1D1D1F;background:rgba(255,255,255,.94);box-shadow:0 18px 26px rgba(0,0,0,.35)}
+.wt-dot.is-focus{transform:scale(1.1);z-index:2;color:#1D1D1F;background:rgba(255,255,255,.94);box-shadow:0 10px 20px rgba(0,0,0,.3)}
 
 /* News */
 .wnw-item{padding:12px 0;border-bottom:1px solid #E5E5EA}
@@ -183,14 +182,14 @@
 .wh-dock{position:absolute;left:960px;top:880px;height:124px}
 .wh-dock-bg{position:absolute;left:0;top:0;height:124px;border-radius:42px;
   background:linear-gradient(rgba(255,255,255,.62),rgba(255,255,255,.4));
-  box-shadow:0 18px 40px rgba(0,0,0,.14),inset 0 1.5px 0 rgba(255,255,255,.95),inset 0 0 0 1px rgba(255,255,255,.55)}
+  box-shadow:0 12px 30px rgba(0,0,0,.12),inset 0 1.5px 0 rgba(255,255,255,.95),inset 0 0 0 1px rgba(255,255,255,.55)}
 .wh.is-dark .wh-dock-bg{background:linear-gradient(rgba(34,34,38,.72),rgba(17,17,19,.6));box-shadow:0 18px 40px rgba(0,0,0,.32),inset 0 1.5px 0 rgba(255,255,255,.14),inset 0 0 0 1px rgba(255,255,255,.08)}
-.wd{position:absolute;top:18px;width:88px;height:88px;border-radius:20px;--fs:1.224;--fsp:1.16;transition:transform .2s var(--focus)}
-.wd::before{content:'';position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;box-shadow:0 18px 30px rgba(0,0,0,.34);opacity:0;transition:opacity .2s ease}
+.wd{position:absolute;top:18px;width:88px;height:88px;border-radius:20px;--fs:1.12;--fsp:1.07;transition:transform .18s var(--focus)}
+.wd::before{content:'';position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;box-shadow:0 0 0 3px rgba(255,255,255,.8),0 12px 22px rgba(0,0,0,.3);opacity:0;transition:opacity .15s ease}
 .wd.is-focus{z-index:2}
 .wd.is-focus::before{opacity:1}
 .wd.is-focus.is-press{animation:wpress .16s ease}
-.wd-tile{position:absolute;left:0;top:0;width:88px;height:88px;border-radius:20px;overflow:hidden;background:rgba(255,255,255,.92);color:#3A3A3C;text-align:center;font-size:13px;font-weight:600;line-height:88px;box-shadow:0 6px 5px rgba(0,0,0,.05)}
+.wd-tile{position:absolute;left:0;top:0;width:88px;height:88px;border-radius:20px;overflow:hidden;background:rgba(255,255,255,.92);color:#3A3A3C;text-align:center;font-size:13px;font-weight:600;line-height:88px}
 .wd-tile img{position:absolute;left:0;top:0;width:88px;height:88px}
 .wd-tile .wd-full{object-fit:cover}
 .wd-tile .wd-tv{object-fit:cover}
@@ -222,7 +221,7 @@
 /* Launch: the screen dims to black while the focused item pushes in, as tvOS does when opening an app. */
 .wh-veil{position:absolute;z-index:20;left:0;top:0;width:1920px;height:1080px;background:#000;opacity:0;transition:opacity .3s ease;pointer-events:none}
 .wh.is-launch .wh-veil{opacity:1}
-.wh.is-launch .is-focus{transform:scale(calc(var(--fs,1.1) * 1.08))}
+.wh.is-launch .is-focus{transform:scale(calc(var(--fs,1.06) * 1.04))}
 
 /* Toast */
 .wh-toast{position:absolute;left:0;right:0;bottom:200px;text-align:center;opacity:0;transform:translateY(10px);transition:opacity .25s ease,transform .3s var(--spring);pointer-events:none}

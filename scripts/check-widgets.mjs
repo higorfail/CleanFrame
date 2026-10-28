@@ -89,7 +89,7 @@ try {
   s = await press('ArrowDown', 'ArrowDown');
   check('Down twice reaches the dock', s.zone === 'dock', s);
   const scales = await page.$$eval('.wd', els => els.map(e => e.style.transform));
-  check('Dock lifts only the focused app (tvOS)', scales.filter(t => /scale\(1\.224\)/.test(t)).length === 1 && scales.filter(t => t === 'scale(1)').length === scales.length - 1, scales);
+  check('Dock lifts only the focused app', scales.filter(t => /scale\(1\.12\)/.test(t)).length === 1 && scales.filter(t => t === 'scale(1)').length === scales.length - 1, scales);
   check('Dock shows the focused app name', await page.locator('.wh-dock-label.is-on').count() === 1);
   await page.screenshot({ path: out + 'dock.png' });
   s = await press('ArrowUp');

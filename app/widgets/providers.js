@@ -277,8 +277,8 @@
     done({ device: true });
   }
   function changeVolume(step, done) {
-    var a = audio();
-    // Local first: instant. SmartThings when the TV refuses the web API (or it is missing).
+    var a = tvConfigured() ? null : audio();
+    // SmartThings when set up (the TV can refuse its web audio API to developer apps), else the local API.
     try {
       if (a) {
         if (step === 'mute') a.setMute(!a.isMute());
@@ -291,6 +291,13 @@
     var finish = function (err) { if (err) { done(err); return; } setTimeout(function () { tvStatus(done); }, 350); };
     if (step === 'mute') tvStatus(function (e, st) { if (e) { done(e); return; } tvCommand('audioMute', 'setMute', [st.muted ? 'unmuted' : 'muted'], finish); });
     else tvCommand('audioVolume', step > 0 ? 'volumeUp' : 'volumeDown', null, finish);
+  }
+  function setVolume(level, done) {
+    // SmartThings first when it is set up: the TV's web audio API can refuse developer apps.
+    if (tvConfigured()) { tvCommand('audioVolume', 'setVolume', [level], function (err) { done(err || null); }); return; }
+    var a = audio();
+    if (!a) { done({ device: true }); return; }
+    try { a.setVolume(level); done(null); } catch (e) { done(e); }
   }
   function pictureMode(done) {
     if (!tvConfigured()) { done({ setup: true }); return; }
@@ -324,7 +331,7 @@
 
   window.FrameWidgetsData = {
     onTV: onTV, weather: weather, spotify: spotify, spotifyControl: spotifyControl, tmdb: tmdb, stremio: stremio, pluto: pluto,
-    news: news, light: light, setLight: setLight, volume: volume, changeVolume: changeVolume, pictureMode: pictureMode, nextPictureMode: nextPictureMode, tvConfigured: tvConfigured, wifi: wifi, openUrl: openUrl,
+    news: news, light: light, setLight: setLight, volume: volume, changeVolume: changeVolume, setVolume: setVolume, pictureMode: pictureMode, nextPictureMode: nextPictureMode, tvConfigured: tvConfigured, wifi: wifi, openUrl: openUrl,
     last: last
   };
 }());

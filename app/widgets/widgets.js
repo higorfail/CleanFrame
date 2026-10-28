@@ -15,6 +15,18 @@
     ['rubi', 'Rubi'], ['oceano', 'Oceano'], ['aurora', 'Aurora'], ['entardecer', 'Entardecer'],
     ['lavanda', 'Lavanda'], ['floresta', 'Floresta'], ['grafite', 'Grafite'], ['meianoite', 'Meia-noite']
   ];
+  /* Plain colours for the background (a soft vertical fall-off keeps them from looking flat on a TV). */
+  var COLORS = [
+    ['preto', 'Preto', '#000000'], ['grafite', 'Grafite', '#1C1C1E'], ['ardosia', 'Ardósia', '#2C3440'], ['marinho', 'Marinho', '#0B1F3A'],
+    ['azul', 'Azul', '#0A3D91'], ['petroleo', 'Petróleo', '#0D4D4D'], ['verde', 'Verde', '#0F3D2E'], ['oliva', 'Oliva', '#3A3F1E'],
+    ['roxo', 'Roxo', '#3B2A6B'], ['vinho', 'Vinho', '#4A1426'], ['terracota', 'Terracota', '#7A2E1A'], ['cafe', 'Café', '#3B2A20']
+  ];
+  function color(id) { var key = String(id || '').replace(/^color:/, ''); if (String(id || '').indexOf('color:') !== 0) return null; for (var i = 0; i < COLORS.length; i++) if (COLORS[i][0] === key) return COLORS[i]; return null; }
+  function shade(hex, f) {
+    var n = parseInt(hex.slice(1), 16), r = n >> 16, g = n >> 8 & 255, b = n & 255;
+    function c(v) { v = Math.round(f < 0 ? v * (1 + f) : v + (255 - v) * f); return (v < 16 ? '0' : '') + v.toString(16); }
+    return '#' + c(r) + c(g) + c(b);
+  }
   var DAYS = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
   var MONTHS = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 
@@ -79,14 +91,16 @@
   /* ---------- State ---------- */
   var deps = null, root = null, strip = null, dockEl = null, dockBg = null, dockLabel = null, toastEl = null, sheetEl = null, capEl = null;
   var cards = {}, targets = [], dockItems = [], resolved = {};
-  var st = { zone: 'strip', focus: 'youtube', dock: 0, off: 0, adjust: false, active: false, sheet: null, toastTimer: 0, heroIndex: 0, lean: '', launching: false };
+  var st = { zone: 'strip', focus: 'youtube', dock: 0, off: 0, adjust: false, newsIndex: 0, active: false, sheet: null, toastTimer: 0, heroIndex: 0, lean: '', launching: false };
   var data = {}, timers = {}, prefs = loadPrefs();
 
   function loadPrefs() {
     var p = {};
     try { p = JSON.parse(localStorage.getItem(PREFS)) || {}; } catch (e) { p = {}; }
-    if (!gradient(p.bg) && !photo(p.bg) && !(p.bg === 'own' && CFG.wallpaperPhoto)) p.bg = 'rubi';
-    if (p.theme !== 'light' && p.theme !== 'dark' && p.theme !== 'auto') p.theme = p.dark ? 'dark' : 'light'; // v1 stored a boolean
+    if (!gradient(p.bg) && !photo(p.bg) && !color(p.bg) && !(p.bg === 'own' && CFG.wallpaperPhoto)) p.bg = 'rubi';
+    // Appearance follows the sun by default (asked for: dark from sunset, light again at sunrise).
+    if (p.themeV !== 2) { p.theme = 'auto'; p.themeV = 2; }
+    if (p.theme !== 'light' && p.theme !== 'dark' && p.theme !== 'auto') p.theme = 'auto';
     delete p.dark;
     p.sound = p.sound !== false;
     return p;
@@ -98,8 +112,15 @@
   function isDark() {
     if (prefs.theme === 'dark') return true;
     if (prefs.theme === 'light') return false;
-    var w = data && data.weather, h = new Date().getHours();
+    var w = data && data.weather, now = new Date(), h = now.getHours(), today = localDay(now), i, rise = null, set = null;
+    if (w && w.sunrise && w.sunset) for (i = 0; i < w.sunrise.length; i++) if (String(w.sunrise[i]).slice(0, 10) === today) { rise = localTime(w.sunrise[i]); set = localTime(w.sunset[i]); }
+    if (rise && set) return now < rise || now >= set;
     return w && w.day !== undefined && !w.error && !w.setup ? !w.day : h >= 18 || h < 6;
+  }
+  function localDay(d) { return d.getFullYear() + '-' + two(d.getMonth() + 1) + '-' + two(d.getDate()); }
+  function localTime(iso) { // Open-Meteo gives local wall-clock times, e.g. 2026-10-28T05:31
+    var m = /^(\d{4})-(\d\d)-(\d\d)T(\d\d):(\d\d)/.exec(String(iso));
+    return m ? new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]) : null;
   }
   function savePrefs() { try { localStorage.setItem(PREFS, JSON.stringify(prefs)); } catch (e) { toast('Não foi possível salvar.'); } }
   function gradient(id) { for (var i = 0; i < GRADIENTS.length; i++) if (GRADIENTS[i][0] === id) return GRADIENTS[i]; return null; }
@@ -329,17 +350,30 @@
     setCls(cards.light.el, 'wc wc-glass wr' + (on ? ' wr-lit' : ''));
     setBody('light', '<div class="wr-icon">' + ico('bulb', 50, 'currentColor', 1.6) + '</div>');
   }
+  /* g1: the lead story's photo with its headline, cycling through the stories that have photos
+     (preloaded, then cross-faded); the next two headlines are listed below. */
   function renderNews() {
     var list = val('news') || (demo() ? [{ title: 'Manchete principal do dia, em até duas linhas no máximo', when: 'há 20 min', image: '' }, { title: 'Segunda manchete', when: 'há 1 h' }, { title: 'Terceira manchete', when: 'há 2 h' }, { title: 'Quarta manchete', when: 'há 3 h' }] : []);
+    var c = cards.news;
     if (!list.length) { setBody('news', '<div class="wc-pad" style="left:30px;right:30px;top:28px"><div class="wc-label">Manchetes · g1</div><div class="wc-hint" style="margin-top:12px">Carregando notícias…</div></div>'); return; }
-    var lead = null, rest = [];
-    list.forEach(function (n) { if (!lead && n.image) lead = n; else rest.push(n); });
-    if (!lead) lead = rest.shift();
-    var html = '<div class="wnw-lead">' + (lead.image ? '<img class="wc-img" src="' + esc(lead.image) + '" alt="">' : '<div class="wnw-noimg"></div>') +
-      '<div class="wc-shade-b"></div><div class="wnw-badge">g1</div><div class="wnw-lead-text"><div class="wnw-title">' + esc(lead.title) + '</div><div class="wnw-when is-light">' + esc(lead.when) + '</div></div></div>' +
-      '<div class="wc-pad wnw-list">';
-    rest.slice(0, 2).forEach(function (n) { html += '<div class="wnw-item"><div class="wnw-title">' + esc(n.title) + '</div><div class="wnw-when">' + esc(n.when) + '</div></div>'; });
-    setBody('news', html + '</div>');
+    var pics = list.filter(function (n) { return n.image; }), lead = pics.length ? pics[st.newsIndex % pics.length] : list[0];
+    var rest = list.filter(function (n) { return n !== lead; }).slice(0, 2);
+    function paint() {
+      var prev = c.shownImg && c.shownImg !== lead.image ? '<img class="wc-img is-ready" src="' + esc(c.shownImg) + '" alt="">' : '';
+      var cur = lead.image ? '<img class="wc-img wc-hero-img' + (prev ? '' : ' is-ready') + '" src="' + esc(lead.image) + '" alt="">' : '<div class="wnw-noimg"></div>';
+      var html = '<div class="wnw-lead">' + prev + cur + '<div class="wc-shade-b"></div><div class="wnw-badge">g1</div>' +
+        '<div class="wnw-lead-text"><div class="wnw-title">' + esc(lead.title) + '</div><div class="wnw-when is-light">' + esc(lead.when) + '</div></div>' +
+        (pics.length > 1 ? '<div class="wnw-dots">' + pics.slice(0, 6).map(function (n) { return '<i' + (n === lead ? ' class="is-on"' : '') + '></i>'; }).join('') + '</div>' : '') + '</div><div class="wc-pad wnw-list">';
+      rest.forEach(function (n) { html += '<div class="wnw-item"><div class="wnw-title">' + esc(n.title) + '</div><div class="wnw-when">' + esc(n.when) + '</div></div>'; });
+      setBody('news', html + '</div>');
+      if (prev) { var fresh = c.body.querySelector('.wc-hero-img'); if (fresh) { void fresh.offsetWidth; fresh.className += ' is-ready'; } }
+      if (lead.image) c.shownImg = lead.image;
+    }
+    if (!lead.image || lead.image === c.shownImg) { paint(); return; }
+    var pre = new Image(), done = false;
+    pre.onload = pre.onerror = function () { if (done) return; done = true; paint(); };
+    pre.src = lead.image;
+    setTimeout(pre.onload, 4000);
   }
   function renderTop() {
     var d = new Date(), h = d.getHours(), hello = h < 5 ? 'Boa noite' : h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
@@ -362,10 +396,10 @@
     front.className += ' is-off';
   }
   function paintBg(el, id) {
-    var p = photo(id), src = p ? p.src : id === 'own' ? CFG.wallpaperPhoto : '';
+    var p = photo(id), col = color(id), src = p ? p.src : id === 'own' ? CFG.wallpaperPhoto : '';
     el._g = id;
-    el.className = 'wh-bg' + (src ? ' is-photo' : ' g-' + id);
-    el.style.backgroundImage = src ? 'url("' + src + '")' : '';
+    el.className = 'wh-bg' + (src ? ' is-photo' : col ? '' : ' g-' + id);
+    el.style.backgroundImage = src ? 'url("' + src + '")' : col ? 'linear-gradient(180deg,' + shade(col[2], 0.1) + ' 0%,' + col[2] + ' 55%,' + shade(col[2], -0.35) + ' 100%)' : '';
   }
   function renderAll() {
     renderTop(); renderBackground(); renderApps(); renderWeather(); renderSpotify(); renderStremio(); renderHbo(); renderPluto(); renderPills(); renderNet(); renderNews(); renderDock();
@@ -384,14 +418,15 @@
   }
   function renderFocus() {
     targets.forEach(function (t) {
-      var on = st.zone === 'strip' && !st.sheet && t.id === st.focus, was = t.el.className.indexOf(' is-focus') >= 0;
+      var on = st.zone === 'strip' && !st.sheet && t.id === st.focus;
       var cls = t.el.className.replace(/ is-focus| is-adjust/g, '');
       if (!on) cls = cls.replace(/ lean-\w+| is-press| bump-\w+/g, '');
-      t.el.className = cls + (on ? ' is-focus' : '') + (on && st.adjust ? ' is-adjust' : '');
-      if (on && !was && st.lean) restart(t.el, 'lean-' + st.lean);
+      var want = cls + (on ? ' is-focus' : '') + (on && st.adjust ? ' is-adjust' : '');
+      if (t.el.className !== want) t.el.className = want;
     });
     st.lean = '';
-    strip.style.transform = 'translate3d(' + (-st.off) + 'px,0,0)';
+    var shift = 'translate3d(' + (-st.off) + 'px,0,0)';
+    if (strip._shift !== shift) { strip._shift = shift; strip.style.transform = shift; }
     renderCaption();
     renderDock();
   }
@@ -429,14 +464,14 @@
     var f = st.zone === 'dock' && !st.sheet ? st.dock : -1, width = dockWidth();
     dockBg.style.left = (-width / 2) + 'px'; dockBg.style.width = width + 'px';
     dockItems.forEach(function (item, j) {
-      var info = appInfo(item.key), on = j === f, was = item.el.className.indexOf(' is-focus') >= 0;
-      item.el.style.transform = on ? 'scale(' + DOCK_FS + ')' : 'scale(1)';
-      var keep = on ? (item.el.className.match(/ lean-\w+| is-press| bump-\w+/g) || []).join('') : '';
-      item.el.className = 'wd' + (on ? ' is-focus' : '') + keep;
-      if (on && !was && st.dockLean) restart(item.el, 'lean-' + st.dockLean);
-      item.tile.className = 'wd-tile b-' + item.key + (hasAppleIcon(item.key, false) ? ' has-art' : '');
+      var info = appInfo(item.key), on = j === f;
+      var scale = on ? 'scale(' + DOCK_FS + ')' : 'scale(1)';
+      if (item.el.style.transform !== scale) item.el.style.transform = scale;
+      var keep = on ? (item.el.className.match(/ is-press| bump-\w+/g) || []).join('') : '';
+      if (item.el.className !== 'wd' + (on ? ' is-focus' : '') + keep) item.el.className = 'wd' + (on ? ' is-focus' : '') + keep;
       item.el.setAttribute('aria-label', info.name);
-      var inner = tileInner(info, false);
+      var inner = tileInner(info, false), cls = 'wd-tile b-' + item.key + (hasAppleIcon(item.key, false) ? ' has-art' : '');
+      if (item.tile.className !== cls) item.tile.className = cls;
       if (item.tile._html !== inner) { item.tile._html = inner; item.tile.innerHTML = inner; }
       if (on) { dockLabel.textContent = info.name; dockLabel.style.left = (dockLeft(j) - width / 2 + DOCK_W / 2) + 'px'; }
     });
@@ -594,44 +629,45 @@
      Focusing a background previews it live; OK keeps it; Back closes without changing. */
   function bgChoices(kind) {
     if (kind === 'grad') return GRADIENTS.map(function (g) { return { id: g[0], name: g[1] }; });
+    if (kind === 'color') return COLORS.map(function (c) { return { id: 'color:' + c[0], name: c[1], hex: c[2] }; });
     var out = photos().map(function (w) { return { id: 'photo:' + w.id, name: w.name, thumb: w.thumb || w.src }; });
     if (CFG.wallpaperPhoto) out.unshift({ id: 'own', name: 'Sua foto', thumb: CFG.wallpaperPhoto });
     return out;
   }
   function sheetRows() {
     return [
-      { kind: 'grad', items: bgChoices('grad') }, { kind: 'photo', items: bgChoices('photo') },
-      { kind: 'theme', items: ['light', 'dark', 'auto'] }, { kind: 'sound', items: ['on', 'off'] },
-      { kind: 'link', items: ['cleanframe'] }, { kind: 'link', items: ['tv'] }
+      { kind: 'color', items: bgChoices('color') }, { kind: 'grad', items: bgChoices('grad') }, { kind: 'photo', items: bgChoices('photo') },
+      { kind: 'theme', items: ['auto', 'light', 'dark'] }, { kind: 'sound', items: ['on', 'off'] },
+      { kind: 'link', items: ['cleanframe'] }
     ];
   }
   function openSheet() {
     var rows = sheetRows(), r, c;
     st.sheet = { row: 0, col: 0, preview: null };
-    for (r = 0; r < 2; r++) for (c = 0; c < rows[r].items.length; c++) if (rows[r].items[c].id === prefs.bg) { st.sheet.row = r; st.sheet.col = c; }
+    for (r = 0; r < 3; r++) for (c = 0; c < rows[r].items.length; c++) if (rows[r].items[c].id === prefs.bg) { st.sheet.row = r; st.sheet.col = c; }
     previewSwatch();
   }
   function previewSwatch() {
     var row = sheetRows()[st.sheet.row];
-    st.sheet.preview = row.kind === 'grad' || row.kind === 'photo' ? row.items[st.sheet.col].id : null;
+    st.sheet.preview = row.kind !== 'theme' && row.kind !== 'sound' && row.kind !== 'link' ? row.items[st.sheet.col].id : null;
   }
   function closeSheet() { st.sheet = null; }
   function sheetKey(k) {
     var rows = sheetRows(), sh = st.sheet, row = rows[sh.row];
     if (k === 'back') { closeSheet(); return; }
     if (k === 'up' || k === 'down') {
-      var wasScroll = row.kind === 'grad' || row.kind === 'photo';
+      var wasScroll = row.kind !== 'theme' && row.kind !== 'sound' && row.kind !== 'link';
       sh.row = Math.max(0, Math.min(rows.length - 1, sh.row + (k === 'up' ? -1 : 1)));
-      var next = rows[sh.row], isScroll = next.kind === 'grad' || next.kind === 'photo', c;
+      var next = rows[sh.row], isScroll = next.kind !== 'theme' && next.kind !== 'sound' && next.kind !== 'link', c;
       if (next === row) return;
       sh.col = wasScroll === isScroll ? Math.min(sh.col, next.items.length - 1) : 0;
       if (isScroll) for (c = 0; c < next.items.length; c++) if (next.items[c].id === prefs.bg) sh.col = c;
-      if (next.kind === 'theme') sh.col = Math.max(0, ['light', 'dark', 'auto'].indexOf(prefs.theme));
+      if (next.kind === 'theme') sh.col = Math.max(0, ['auto', 'light', 'dark'].indexOf(prefs.theme));
     } else if (k === 'left' || k === 'right') {
       sh.col = Math.max(0, Math.min(row.items.length - 1, sh.col + (k === 'left' ? -1 : 1)));
     } else if (k === 'ok') {
       var value = row.items[sh.col];
-      if (row.kind === 'grad' || row.kind === 'photo') { prefs.bg = value.id; savePrefs(); toast('Fundo ' + value.name + ' aplicado'); }
+      if (row.kind !== 'theme' && row.kind !== 'sound' && row.kind !== 'link') { prefs.bg = value.id; savePrefs(); toast('Fundo ' + value.name + ' aplicado'); }
       else if (row.kind === 'theme') { prefs.theme = value; savePrefs(); }
       else if (row.kind === 'sound') { prefs.sound = value === 'on'; savePrefs(); sound('select'); }
       else if (value === 'cleanframe') { closeSheet(); deps.openSettings(); return; }
@@ -641,7 +677,7 @@
   }
   function renderSheet() {
     if (!sheetEl) return;
-    var sh = st.sheet, html, rows = sheetRows(), INNER = 544;
+    var sh = st.sheet, html, rows = sheetRows(), INNER = 528;
     sheetEl.className = 'wh-sheet' + (sh ? ' is-open' : '');
     if (!sh) return;
     function focused(r, c) { return sh.row === r && sh.col === c ? ' is-focus' : ''; }
@@ -651,24 +687,27 @@
       var off = Math.max(0, Math.min(full - INNER, col * pitch - (INNER - pitch) / 2));
       return '<div class="wsh-scroll"><div class="wsh-track" style="width:' + full + 'px;transform:translate3d(' + (-Math.round(off)) + 'px,0,0)">' + inner + '</div></div>';
     }
-    var grads = '', pics = '';
-    rows[0].items.forEach(function (g, c) {
-      grads += '<div class="wsh-sw' + focused(0, c) + (prefs.bg === g.id ? ' is-on' : '') + '" data-sheet="0,' + c + '"><b class="g-' + g.id + '"></b><span>' + esc(g.name) + '</span></div>';
+    var cols = '', grads = '', pics = '';
+    rows[0].items.forEach(function (k, c) {
+      cols += '<div class="wsh-sw' + focused(0, c) + (prefs.bg === k.id ? ' is-on' : '') + '" data-sheet="0,' + c + '"><b style="background:' + k.hex + '"></b><span>' + esc(k.name) + '</span></div>';
     });
-    rows[1].items.forEach(function (w, c) {
-      pics += '<div class="wsh-ph' + focused(1, c) + (prefs.bg === w.id ? ' is-on' : '') + '" data-sheet="1,' + c + '"><b><img src="' + esc(w.thumb) + '" alt=""></b><span>' + esc(w.name) + '</span></div>';
+    rows[1].items.forEach(function (g, c) {
+      grads += '<div class="wsh-sw' + focused(1, c) + (prefs.bg === g.id ? ' is-on' : '') + '" data-sheet="1,' + c + '"><b class="g-' + g.id + '"></b><span>' + esc(g.name) + '</span></div>';
     });
-    var themes = [['light', 'Clara'], ['dark', 'Escura'], ['auto', 'Automática']];
+    rows[2].items.forEach(function (w, c) {
+      pics += '<div class="wsh-ph' + focused(2, c) + (prefs.bg === w.id ? ' is-on' : '') + '" data-sheet="2,' + c + '"><b><img src="' + esc(w.thumb) + '" alt=""></b><span>' + esc(w.name) + '</span></div>';
+    });
+    var themes = [['auto', 'Pôr do sol'], ['light', 'Clara'], ['dark', 'Escura']];
     html = '<h2>Personalizar</h2>' +
-      '<div class="wsh-section" style="top:128px"><div class="wsh-cap">Degradês</div>' + scroller(0, 112, grads) + '</div>' +
-      '<div class="wsh-section" style="top:322px"><div class="wsh-cap">Fotos</div>' + scroller(1, 176, pics) + '</div>' +
-      '<div class="wsh-section" style="top:516px"><div class="wsh-cap">Aparência</div><div class="wsh-row">' +
-      themes.map(function (t, c) { return '<span class="wsh-opt' + focused(2, c) + (prefs.theme === t[0] ? ' is-on' : '') + '" data-sheet="2,' + c + '">' + t[1] + '</span>'; }).join('') + '</div></div>' +
-      '<div class="wsh-section" style="top:646px"><div class="wsh-cap">Sons</div><div class="wsh-row">' +
-      '<span class="wsh-opt' + focused(3, 0) + (prefs.sound ? ' is-on' : '') + '" data-sheet="3,0">Ligados</span>' +
-      '<span class="wsh-opt' + focused(3, 1) + (!prefs.sound ? ' is-on' : '') + '" data-sheet="3,1">Desligados</span></div></div>' +
-      '<div class="wsh-section" style="top:776px"><div class="wsh-link' + focused(4, 0) + '" data-sheet="4,0">Mais opções do CleanFrame</div>' +
-      '<div class="wsh-link' + focused(5, 0) + '" data-sheet="5,0">Ajustes da TV</div></div>';
+      '<div class="wsh-section" style="top:112px"><div class="wsh-cap">Cores</div>' + scroller(0, 112, cols) + '</div>' +
+      '<div class="wsh-section" style="top:294px"><div class="wsh-cap">Degradês</div>' + scroller(1, 112, grads) + '</div>' +
+      '<div class="wsh-section" style="top:476px"><div class="wsh-cap">Fotos</div>' + scroller(2, 176, pics) + '</div>' +
+      '<div class="wsh-section" style="top:660px"><div class="wsh-cap">Aparência</div><div class="wsh-row">' +
+      themes.map(function (t, c) { return '<span class="wsh-opt' + focused(3, c) + (prefs.theme === t[0] ? ' is-on' : '') + '" data-sheet="3,' + c + '">' + t[1] + '</span>'; }).join('') + '</div></div>' +
+      '<div class="wsh-section" style="top:778px"><div class="wsh-cap">Sons</div><div class="wsh-row">' +
+      '<span class="wsh-opt' + focused(4, 0) + (prefs.sound ? ' is-on' : '') + '" data-sheet="4,0">Ligados</span>' +
+      '<span class="wsh-opt' + focused(4, 1) + (!prefs.sound ? ' is-on' : '') + '" data-sheet="4,1">Desligados</span></div></div>' +
+      '<div class="wsh-section" style="top:896px"><div class="wsh-link' + focused(5, 0) + '" data-sheet="5,0">Mais opções do CleanFrame</div></div>';
     if (sheetEl._html !== html) { sheetEl._html = html; sheetEl.innerHTML = html; }
   }
 
@@ -700,7 +739,12 @@
   function stopData() { Object.keys(timers).forEach(function (name) { clearTimeout(timers[name]); }); }
   function rotateHero() {
     clearTimeout(timers.hero);
-    timers.hero = setTimeout(function () { if (data.tmdb && data.tmdb.length > 1) { st.heroIndex++; renderHbo(); } rotateHero(); }, 8000);
+    timers.hero = setTimeout(function () {
+      if (data.tmdb && data.tmdb.length > 1) { st.heroIndex++; renderHbo(); }
+      // The news photos change on the half beat, so the two cards never fade at the same moment.
+      setTimeout(function () { var n = val('news'); if (n && n.length > 1 && st.active) { st.newsIndex++; renderNews(); } }, 4000);
+      rotateHero();
+    }, 8000);
   }
   function tick() {
     clearTimeout(timers.clock);

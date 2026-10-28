@@ -107,8 +107,8 @@ try {
   check('Back without OK keeps the saved background', s.background === 'rubi' && s.sheet === null, s);
   s = await press('Enter', 'ArrowRight', 'ArrowRight', 'Enter');
   check('OK applies and saves the background', s.background === 'aurora' && (await page.evaluate(() => JSON.parse(localStorage.getItem('cleanframe.widgets.v1')).bg)) === 'aurora', s);
-  s = await press('ArrowDown', 'ArrowDown', 'ArrowRight', 'Enter');
-  check('Dark cards can be chosen', s.dark === true, s);
+  s = await press('ArrowDown', 'ArrowDown', 'ArrowRight', 'ArrowRight', 'Enter');
+  check('Dark appearance can be chosen', s.dark === true, s);
   s = await press('ArrowDown', 'ArrowRight', 'Enter');
   check('Interface sounds can be turned off', s.sound === false, s);
   s = await press('ArrowLeft', 'Enter');

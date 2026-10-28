@@ -54,7 +54,7 @@
     if (hit) { done(null, hit); return; }
     request({ url: 'https://api.open-meteo.com/v1/forecast?' + query({
       latitude: loc.latitude, longitude: loc.longitude, timezone: loc.timezone || 'auto', forecast_days: 2,
-      current: 'temperature_2m,weather_code,is_day', hourly: 'temperature_2m,weather_code,is_day', daily: 'temperature_2m_max,temperature_2m_min'
+      current: 'temperature_2m,weather_code,is_day', hourly: 'temperature_2m,weather_code,is_day', daily: 'temperature_2m_max,temperature_2m_min,sunrise,sunset'
     }) }, function (err, j) {
       if (err || !j || !j.current) { done(err || new Error('weather'), last('weather')); return; }
       var cur = wmo(j.current.weather_code, j.current.is_day), hours = [], start = 0, i;
@@ -63,7 +63,8 @@
         hours.push({ h: j.hourly.time[i].slice(11, 13) + 'h', t: Math.round(j.hourly.temperature_2m[i]), icon: wmo(j.hourly.weather_code[i], j.hourly.is_day[i]).icon });
       }
       var data = { label: loc.label || '', temp: Math.round(j.current.temperature_2m), icon: cur.icon, text: cur.text,
-        max: Math.round(j.daily.temperature_2m_max[0]), min: Math.round(j.daily.temperature_2m_min[0]), hours: hours, day: !!j.current.is_day };
+        max: Math.round(j.daily.temperature_2m_max[0]), min: Math.round(j.daily.temperature_2m_min[0]), hours: hours, day: !!j.current.is_day,
+        sunrise: j.daily.sunrise || [], sunset: j.daily.sunset || [] };
       save('weather', data); done(null, data);
     });
   }

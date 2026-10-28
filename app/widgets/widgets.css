@@ -285,8 +285,8 @@
 .wnw-list .wnw-item{padding:9px 0}
 
 /* Personalise sheet: sideways rows for gradients and photos. */
-.wsh-scroll{position:relative;margin-top:16px;height:150px;overflow:hidden}
-.wsh-track{position:absolute;left:0;top:4px;height:146px;white-space:nowrap;transition:transform .3s var(--scroll)}
+.wsh-scroll{position:relative;margin-top:6px;height:140px;overflow:hidden}
+.wsh-track{position:absolute;left:8px;top:10px;height:124px;white-space:nowrap;transition:transform .3s var(--scroll)}
 .wsh-track .wsh-sw{margin:0 16px 0 0;width:96px}
 .wsh-track .wsh-sw span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .wsh-ph{position:relative;display:inline-block;vertical-align:top;width:160px;margin-right:16px;text-align:center;transition:transform .2s var(--spring)}
@@ -296,3 +296,7 @@
 .wsh-ph.is-focus{transform:scale(1.06)}
 .wsh-ph.is-focus b{box-shadow:0 0 0 4px #fff}
 .wsh-ph.is-on span{color:#fff;font-weight:700}
+
+.wnw-dots{position:absolute;right:22px;top:30px;height:8px}
+.wnw-dots i{display:inline-block;width:8px;height:8px;border-radius:4px;margin-left:6px;background:rgba(255,255,255,.4)}
+.wnw-dots i.is-on{background:#fff}

@@ -9,7 +9,7 @@
   var CFG = window.FrameWidgetsConfig || {}, D = window.FrameWidgetsData;
   var PREFS = 'cleanframe.widgets.v1';
   var C = 232, G = 36, S = C + G, PILL = 98, VIS = 1662, PEEK = 183, MAXOFF = 7 * S;
-  var DOCK_W = 88, DOCK_GAP = 26, DOCK_PAD = 18, DOCK_FS = 1.12, STRIP_X = 129, STRIP_Y = 290;
+  var DOCK_W = 96, DOCK_GAP = 28, DOCK_PAD = 20, DOCK_FS = 1.12, STRIP_X = 129, STRIP_Y = 290;
   var A = window.FrameApple || null;
   /* Background gradients. A third item 'light' marks a pale one, so the wallpaper chrome turns dark over it. */
   var GRADIENTS = [
@@ -147,8 +147,7 @@
     { id: 'netflix', at: cell(6, 0), cls: 'wc-app', app: 'netflix', ring: 60, fs: 1.08 },
     { id: 'pluto', at: cell(6, 1, 2, 1), cls: 'wpl', ring: 44 },
     { id: 'wifi', at: { x: 7 * S, y: 0, w: C, h: PILL }, cls: 'wc-glass wn', ring: 59, fs: 1.05 },
-    { id: 'theme', at: { x: 7 * S, y: PILL + G, w: PILL, h: PILL }, cls: 'wc-glass wr', ring: 59, fs: 1.08 },
-    { id: 'light', at: { x: 7 * S + PILL + G, y: PILL + G, w: PILL, h: PILL }, cls: 'wc-glass wr', ring: 59, fs: 1.08 },
+    { id: 'theme', at: { x: 7 * S, y: PILL + G, w: C, h: PILL }, cls: 'wc-glass wtheme', ring: 49, fs: 1.05 },
     { id: 'mercadoplay', at: cell(8, 0), cls: 'wc-app', app: 'mercadoplay', ring: 60, fs: 1.08 },
     { id: 'tv', at: cell(8, 1), cls: 'wc-dim wt', ring: 60, group: true },
     { id: 'news', at: cell(9, 0, 2, 2), cls: 'wc-light wnw', ring: 44 },
@@ -274,9 +273,13 @@
   }
   function demo() { return !onTV(); }
   function val(name) { var v = data[name]; return v && (v.error || v.device || v.setup) ? null : v; }
+  var SKY = { sun: 'clear', moon: 'clearnight', partly: 'partly', cloudmoon: 'partlynight', cloud: 'cloud',
+    fog: 'fog', drizzle: 'rain', rain: 'rain', snow: 'snow', storm: 'storm' };
   function renderWeather() {
-    var w = val('weather') || (demo() ? { label: (CFG.location || {}).label, temp: 21, icon: 'moon', text: 'Céu limpo', max: 26, min: 18 } : null);
-    if (!w) { setBody('weather', '<div class="wc-pad"><div class="ww-city">' + esc((CFG.location || {}).label) + '</div><div class="wc-hint" style="margin-top:12px">Buscando a previsão…</div></div>'); return; }
+    var w = val('weather') || (demo() ? { label: (CFG.location || {}).label, temp: 21, icon: 'moon', text: 'Céu limpo', max: 26, min: 18, day: false } : null);
+    if (!w) { setCls(cards.weather.el, 'wc ww'); setBody('weather', '<div class="wc-pad"><div class="ww-city">' + esc((CFG.location || {}).label) + '</div><div class="wc-hint" style="margin-top:12px">Buscando a previsão…</div></div>'); return; }
+    var night = w.day === false || /night/.test(SKY[w.icon] || '');
+    setCls(cards.weather.el, 'wc ww sky-' + (SKY[w.icon] || 'clear') + (night ? ' is-night' : ''));
     setBody('weather', '<div class="wc-pad"><div class="ww-city">' + esc(w.label) + '</div><div class="ww-temp">' + w.temp + '°</div>' +
       '<div class="ww-foot">' + ico(w.icon, 26, '#fff') + '<div class="ww-cond">' + esc(w.text) + '</div><div class="ww-range">Máx ' + w.max + '° Mín ' + w.min + '°</div></div></div>');
   }
@@ -354,11 +357,8 @@
   function renderNet() {
     var w = val('wifi') || (demo() ? { on: true, ssid: 'Nome da rede' } : { on: false, ssid: '' });
     setBody('wifi', '<div class="wn-dot' + (w.on ? '' : ' is-off') + '">' + ico('wifi', 36, '#fff') + '</div><div class="wn-text"><div class="wc-sub">Wi-Fi</div><div class="wc-title">' + esc(w.on ? w.ssid || 'Conectado' : 'Sem conexão') + '</div></div>');
-    setCls(cards.theme.el, 'wc wc-glass wr' + (isDark() ? '' : ' wr-on'));
-    setBody('theme', '<div class="wr-icon">' + solid('half', 50, 'currentColor') + '</div>');
-    var on = data.light && data.light.on;
-    setCls(cards.light.el, 'wc wc-glass wr' + (on ? ' wr-lit' : ''));
-    setBody('light', '<div class="wr-icon">' + ico('bulb', 50, 'currentColor', 1.6) + '</div>');
+    setCls(cards.theme.el, 'wc wc-glass wtheme');
+    setBody('theme', '<div class="wn-dot wtheme-dot">' + solid('half', 36, '#fff') + '</div><div class="wn-text"><div class="wc-sub">Aparência</div><div class="wc-title">' + (isDark() ? 'Escura' : 'Clara') + '</div></div>');
   }
   /* g1: the lead story's photo with its headline, cycling through the stories that have photos
      (preloaded, then cross-faded); the next two headlines are listed below. */
@@ -443,7 +443,7 @@
   /* tvOS captions: the name of the focused item in SF Pro Medium, under it (above it on the top row,
      where the next row sits right below). Content widgets carry their own titles and get none. */
   var CAPTIONS = { alexa: 'Alexa', settings: 'Personalizar', browser: 'Navegador', allapps: 'Todos os apps', volume: 'Volume',
-    light: 'Luz', wifi: '', 'tv-art': 'Modo Arte', 'tv-audio': 'Saída de áudio', 'tv-picture': 'Modo de imagem', 'tv-timer': 'Timer' };
+    wifi: '', 'tv-art': 'Modo Arte', 'tv-audio': 'Saída de áudio', 'tv-picture': 'Modo de imagem', 'tv-timer': 'Timer' };
   function captionFor(id) {
     if (id === 'theme') return isDark() ? 'Modo claro' : 'Modo escuro';
     if (id === 'bright') { var pm = data.picture; return pm && pm.mode ? 'Imagem: ' + pm.mode : 'Modo de imagem'; }
@@ -605,11 +605,6 @@
         return;
       case 'wifi': toast('Abrindo os ajustes de rede da TV'); deps.tvSettings(); return;
       case 'theme': prefs.theme = isDark() ? 'light' : 'dark'; savePrefs(); renderAll(); return;
-      case 'light':
-        if (!D.setLight || !(CFG.smartthings && CFG.smartthings.token)) { toast('Conecte a luz pelo SmartThings (veja docs/widgets.md).'); return; }
-        var want = !(data.light && data.light.on);
-        D.setLight(want, function (err) { if (err) { toast('A luz não respondeu.'); return; } data.light = { on: want }; renderNet(); });
-        return;
       case 'tv-art': deps.art(); return;
       case 'tv-audio': toast('Abrindo os ajustes de som da TV'); deps.tvSettings(); return;
       case 'tv-picture': toast('Abrindo os ajustes de imagem da TV'); deps.tvSettings(); return;
@@ -722,14 +717,14 @@
   }
 
   /* ---------- Data refresh ---------- */
-  var REFRESH = { picture: 10 * 60000, weather: 20 * 60000, spotify: 15000, tmdb: 6 * 3600000, stremio: 5 * 60000, pluto: 2 * 60000, news: 15 * 60000, wifi: 60000, light: 60000, volume: 30000 };
+  var REFRESH = { picture: 10 * 60000, weather: 20 * 60000, spotify: 15000, tmdb: 6 * 3600000, stremio: 5 * 60000, pluto: 2 * 60000, news: 15 * 60000, wifi: 60000, volume: 30000 };
   var FETCH = {
     weather: function (done) { D.weather(done); }, spotify: function (done) { D.spotify(done); }, tmdb: function (done) { D.tmdb(done); },
     stremio: function (done) { D.stremio(done); }, pluto: function (done) { data.plutoTried = true; D.pluto(done); }, news: function (done) { D.news(done); },
-    wifi: function (done) { D.wifi(done); }, light: function (done) { D.light(done); }, volume: function (done) { D.volume(done); },
+    wifi: function (done) { D.wifi(done); }, volume: function (done) { D.volume(done); },
     picture: function (done) { if (D.pictureMode) D.pictureMode(done); else done({ setup: true }); }
   };
-  var RENDER = { weather: function () { var was = root.className.indexOf(' is-dark') >= 0; renderWeather(); if (was !== isDark()) renderAll(); }, spotify: renderSpotify, tmdb: renderHbo, stremio: renderStremio, pluto: renderPluto, news: renderNews, wifi: renderNet, light: renderNet, volume: renderPills, picture: renderPills };
+  var RENDER = { weather: function () { var was = root.className.indexOf(' is-dark') >= 0; renderWeather(); if (was !== isDark()) renderAll(); }, spotify: renderSpotify, tmdb: renderHbo, stremio: renderStremio, pluto: renderPluto, news: renderNews, wifi: renderNet, volume: renderPills, picture: renderPills };
   function refresh(name, now) {
     clearTimeout(timers[name]);
     if (!st.active || document.hidden) return;

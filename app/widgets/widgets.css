@@ -66,7 +66,7 @@
 
 /* Strip */
 .wh-strip{position:absolute;left:129px;top:290px;width:3448px;height:500px;transition:transform .3s var(--scroll);will-change:transform}
-.wc{position:absolute;box-sizing:border-box;border-radius:34px;color:#fff;transition:transform .18s var(--focus),opacity .25s ease}
+.wc{position:absolute;box-sizing:border-box;border-radius:44px;color:#fff;transition:transform .18s var(--focus),opacity .25s ease}
 .wh.is-intro .wc,.wh.is-intro .wd,.wh.is-intro .wh-top{opacity:0;transform:translate3d(0,26px,0) scale(.97)}
 .wh-top,.wd{transition:opacity .3s ease,transform .3s var(--ease)}
 /* tvOS focus: lift + deeper shadow (no ring). The shadow is a pre-rendered layer that only fades. */
@@ -126,11 +126,11 @@
 .wc-ico.sf{-webkit-mask-size:contain;-webkit-mask-repeat:no-repeat;-webkit-mask-position:center}
 
 /* App tiles */
-.wc-app .wc-body{border-radius:52px}
+.wc-app .wc-body{border-radius:44px}
 .wc-app .wc-mark{position:absolute;left:50%;top:44%;width:104px;height:104px;margin:-52px 0 0 -52px}
 .wc-app .wc-mark img{width:104px;height:104px;object-fit:contain}
 .wc-icon{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover}
-.wc-app,.wk{border-radius:52px}
+.wc-app,.wk{border-radius:44px}
 .wc.has-art{background:none}
 .has-art .wc-body{background:#000}
 /* iOS 26 icon rendering, kept subtle as on the App Store: a hairline light rim (brighter on top) and a soft top light. */
@@ -140,7 +140,21 @@
 .wc-app .wc-initial{position:absolute;left:0;right:0;top:56px;text-align:center;font-size:64px;font-weight:700;letter-spacing:-2px}
 
 /* Weather */
+/* Weather sky: the card's colour follows the forecast, and dims at night. */
 .ww .wc-body{background:linear-gradient(180deg,#3AA6E6 0%,#2381CF 100%)}
+.ww.sky-clear .wc-body{background:linear-gradient(180deg,#43ABEA 0%,#2179C6 100%)}
+.ww.sky-clearnight .wc-body{background:linear-gradient(180deg,#1C2C54 0%,#0B1230 100%)}
+.ww.sky-partly .wc-body{background:linear-gradient(180deg,#5AA3D4 0%,#3B78AC 100%)}
+.ww.sky-partlynight .wc-body{background:linear-gradient(180deg,#273458 0%,#131B38 100%)}
+.ww.sky-cloud .wc-body{background:linear-gradient(180deg,#6F7C8A 0%,#49535F 100%)}
+.ww.sky-fog .wc-body{background:linear-gradient(180deg,#8B919B 0%,#5D636D 100%)}
+.ww.sky-rain .wc-body{background:linear-gradient(180deg,#46586C 0%,#283341 100%)}
+.ww.sky-snow .wc-body{background:linear-gradient(180deg,#A2B8CE 0%,#6E8498 100%)}
+.ww.sky-storm .wc-body{background:linear-gradient(180deg,#2F3542 0%,#13171E 100%)}
+.ww.is-night.sky-cloud .wc-body{background:linear-gradient(180deg,#3A434F 0%,#222933 100%)}
+.ww.is-night.sky-fog .wc-body{background:linear-gradient(180deg,#474D57 0%,#2A2E37 100%)}
+.ww.is-night.sky-rain .wc-body{background:linear-gradient(180deg,#2F3B49 0%,#171E27 100%)}
+.ww.is-night.sky-storm .wc-body{background:linear-gradient(180deg,#242A34 0%,#0D1016 100%)}
 .wpl .wc-body{background:linear-gradient(180deg,#26252E 0%,#131318 100%)}
 .wst .wc-body,.whb .wc-body{background:#0B0C12}
 .ww-temp{font-size:60px;font-weight:300;line-height:66px;letter-spacing:-1.5px}
@@ -187,6 +201,10 @@
 .wn-text .wc-sub{color:inherit;opacity:.7;font-size:15px}
 .wn-text .wc-title{font-size:19px}
 .wr{border-radius:50%}
+.wtheme{border-radius:49px}
+.wtheme-dot{background:rgba(120,120,128,.5)}
+.wh.is-dark .wtheme-dot{background:rgba(120,120,128,.4)}
+.wh.on-light .wtheme-dot{background:rgba(0,0,0,.28)}
 .wr-icon{position:absolute;left:0;right:0;top:50%;margin-top:-27px;text-align:center}
 .wr-icon .wc-ico{display:inline-block}
 .wr-on{color:#1D1D1F}
@@ -195,10 +213,10 @@
 .wr-lit .wc-body,.wr-lit.is-focus .wc-body{background:#FFD60A}
 
 /* TV central */
-.wt{border-radius:52px}
+.wt{border-radius:44px}
 .wt-dot{position:absolute;width:84px;height:84px;border-radius:42px;color:#fff;background:rgba(130,130,130,.42);--fs:1.1;--fsp:1.05;transition:transform .18s var(--focus),background-color .15s ease,color .15s ease,box-shadow .2s ease}
 .wt-glyph .wc-ico{position:absolute;left:24px;top:24px}
-.wt-dot.is-art{background:linear-gradient(160deg,#C79A72,#8A5A3E)}
+.wt-dot.is-art{background:linear-gradient(160deg,#6E5AA6,#3A2C5E)}
 .wt-dot.is-on{background:#0A84FF}
 .wt-dot.is-focus{transform:scale(1.1);z-index:2;color:#1D1D1F;background:rgba(255,255,255,.94);box-shadow:0 10px 20px rgba(0,0,0,.3)}
 
@@ -211,29 +229,29 @@
 .wh.is-dark .wnw-when{color:rgba(255,255,255,.55)}
 
 /* Shortcut tiles */
-.wk .wc-body{border-radius:52px}
+.wk .wc-body{border-radius:44px}
 .wk-in{position:absolute;left:0;right:0;top:50%;margin-top:-30px;text-align:center}
 .wk-in .wc-ico{display:inline-block}
 
 /* Dock: square iPadOS icons (88px, the size set in Figma) on a MediumDark platter; only the focused icon lifts. */
-.wh-dock{position:absolute;left:960px;top:880px;height:124px}
+.wh-dock{position:absolute;left:960px;top:874px;height:132px}
 /* A dark smoky glass that lets the wallpaper through, like iOS Control Center (no live blur on the TV). */
-.wh-dock-bg{position:absolute;left:0;top:0;height:124px;border-radius:42px;
+.wh-dock-bg{position:absolute;left:0;top:0;height:132px;border-radius:44px;
   background:linear-gradient(rgba(70,70,78,.34),rgba(44,44,50,.38));
   box-shadow:0 14px 34px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.22),inset 0 0 0 1px rgba(255,255,255,.1)}
 .wh.is-dark .wh-dock-bg{background:linear-gradient(rgba(44,44,50,.42),rgba(20,20,24,.46));box-shadow:0 16px 38px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.14),inset 0 0 0 1px rgba(255,255,255,.07)}
-.wd{position:absolute;top:18px;width:88px;height:88px;border-radius:20px;--fs:1.12;--fsp:1.07;transition:transform .18s var(--focus)}
+.wd{position:absolute;top:18px;width:96px;height:96px;border-radius:22px;--fs:1.12;--fsp:1.07;transition:transform .18s var(--focus)}
 .wd::before{content:'';position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;box-shadow:0 0 0 3px rgba(255,255,255,.8),0 12px 22px rgba(0,0,0,.3);opacity:0;transition:opacity .15s ease}
 .wd.is-focus{z-index:2}
 .wd.is-focus::before{opacity:1}
 .wd.is-focus.is-press{animation:wpress .16s ease}
-.wd-tile{position:absolute;left:0;top:0;width:88px;height:88px;border-radius:20px;overflow:hidden;background:rgba(255,255,255,.92);color:#3A3A3C;text-align:center;font-size:13px;font-weight:600;line-height:88px;-webkit-mask-image:-webkit-radial-gradient(#fff,#000)}
-.wd-tile img{position:absolute;left:0;top:0;width:88px;height:88px}
+.wd-tile{position:absolute;left:0;top:0;width:96px;height:96px;border-radius:22px;overflow:hidden;background:rgba(255,255,255,.92);color:#3A3A3C;text-align:center;font-size:13px;font-weight:600;line-height:96px;-webkit-mask-image:-webkit-radial-gradient(#fff,#000)}
+.wd-tile img{position:absolute;left:0;top:0;width:96px;height:96px}
 .wd-tile .wd-full{object-fit:cover}
 .wd-tile .wd-tv{object-fit:cover}
-.wd-tile .wd-mark{left:20px;top:20px;width:48px;height:48px;object-fit:contain}
+.wd-tile .wd-mark{left:22px;top:22px;width:52px;height:52px;object-fit:contain}
 .wd-word{font-size:13px;font-weight:700}
-.wh-dock-label{position:absolute;top:134px;font-size:29px;font-weight:500;line-height:36px;white-space:nowrap;text-shadow:0 2px 8px rgba(0,0,0,.35);opacity:0;transform:translate(-50%,-6px);transition:opacity .14s ease,transform .2s var(--ease)}
+.wh-dock-label{position:absolute;top:142px;font-size:29px;font-weight:500;line-height:36px;white-space:nowrap;text-shadow:0 2px 8px rgba(0,0,0,.35);opacity:0;transform:translate(-50%,-6px);transition:opacity .14s ease,transform .2s var(--ease)}
 .wh-dock-label.is-on{opacity:1;transform:translate(-50%,0)}
 
 /* Brand tiles */

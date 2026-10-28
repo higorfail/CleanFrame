@@ -131,18 +131,27 @@
 .ww-cond{font-size:17px;font-weight:600}
 .ww-range{font-size:16px;font-weight:500;margin-top:2px}
 
-/* Spotify */
+/* Spotify — iOS Now Playing layout: art left, title top, controls centred, a progress bar with times. */
 .ws-art{position:absolute;left:22px;top:22px;width:188px;height:188px;border-radius:18px;overflow:hidden;background:linear-gradient(145deg,#2A2A33,#121218)}
-.ws-text{position:absolute;left:234px;right:22px;bottom:22px}
-.ws-text .wc-title{margin-top:4px}
-.ws-artist{font-size:20px;font-weight:500;color:#0F7A3A;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.wh.is-dark .ws-artist{color:#30D158}
-.ws-controls{margin-top:12px;height:30px}
-.ws-controls .wc-ico{display:inline-block;vertical-align:middle;margin-right:22px}
 .ws-note{position:absolute;right:22px;top:22px}
+.ws-head{position:absolute;left:234px;right:64px;top:24px}
+.ws-head .wc-title{font-size:22px}
+.ws-artist{font-size:18px;font-weight:500;color:#0F7A3A;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wh.is-dark .ws-artist{color:#30D158}
+.ws-controls{position:absolute;left:234px;right:22px;top:98px;text-align:center}
+.ws-controls .wc-ico{display:inline-block;vertical-align:middle}
+.ws-controls .ws-play{display:inline-block;vertical-align:middle;margin:0 32px}
+.ws-bar{position:absolute;left:234px;right:22px;bottom:46px;height:6px;border-radius:3px;background:rgba(120,120,128,.3);overflow:hidden}
+.wh.is-dark .ws-bar{background:rgba(255,255,255,.18)}
+.ws-bar i{display:block;height:6px;border-radius:3px;background:#1DB954}
+.ws-times{position:absolute;left:234px;right:22px;bottom:22px;font-size:14px;font-weight:500;color:#6E6E73}
+.ws-times span:last-child{float:right}
+.wh.is-dark .ws-times{color:rgba(255,255,255,.55)}
+.ws-foot{position:absolute;left:234px;right:22px;bottom:28px;font-size:14px;font-weight:600;letter-spacing:.7px;text-transform:uppercase;color:#6E6E73}
+.wh.is-dark .ws-foot{color:rgba(255,255,255,.55)}
 
 /* Pills: volume and brightness */
-.wp .wc-body{border-radius:49px}
+.wp{border-radius:49px}
 .wp-level{position:absolute;left:0;right:0;bottom:0;background:rgba(255,255,255,.92);transition:height .25s var(--ease)}
 .wp-bright .wp-level{background:rgba(250,250,240,.95)}
 .wp-icon{position:absolute;left:0;right:0;bottom:24px;text-align:center}
@@ -151,14 +160,14 @@
 .wc.is-adjust .wp-value{opacity:1}
 
 /* Network pill, theme and light buttons */
-.wn .wc-body{border-radius:49px}
+.wn{border-radius:49px}
 .wn-dot{position:absolute;left:14px;top:14px;width:70px;height:70px;border-radius:35px;background:#0A84FF}
 .wn-dot.is-off{background:rgba(255,255,255,.22)}
 .wn-dot .wc-ico{position:absolute;left:17px;top:17px}
 .wn-text{position:absolute;left:98px;right:18px;top:24px}
 .wn-text .wc-sub{color:inherit;opacity:.7;font-size:15px}
 .wn-text .wc-title{font-size:19px}
-.wr .wc-body{border-radius:50%}
+.wr{border-radius:50%}
 .wr-icon{position:absolute;left:0;right:0;top:50%;margin-top:-27px;text-align:center}
 .wr-icon .wc-ico{display:inline-block}
 .wr-on{color:#1D1D1F}
@@ -167,7 +176,7 @@
 .wr-lit .wc-body,.wr-lit.is-focus .wc-body{background:#FFD60A}
 
 /* TV central */
-.wt .wc-body{border-radius:52px}
+.wt{border-radius:52px}
 .wt-dot{position:absolute;width:84px;height:84px;border-radius:42px;color:#fff;background:rgba(130,130,130,.42);--fs:1.1;--fsp:1.05;transition:transform .18s var(--focus),background-color .15s ease,color .15s ease,box-shadow .2s ease}
 .wt-glyph .wc-ico{position:absolute;left:24px;top:24px}
 .wt-dot.is-art{background:linear-gradient(160deg,#C79A72,#8A5A3E)}
@@ -189,10 +198,11 @@
 
 /* Dock: square iPadOS icons (88px, the size set in Figma) on a MediumDark platter; only the focused icon lifts. */
 .wh-dock{position:absolute;left:960px;top:880px;height:124px}
+/* A dark smoky glass that lets the wallpaper through, like iOS Control Center (no live blur on the TV). */
 .wh-dock-bg{position:absolute;left:0;top:0;height:124px;border-radius:42px;
-  background:linear-gradient(rgba(255,255,255,.62),rgba(255,255,255,.4));
-  box-shadow:0 12px 30px rgba(0,0,0,.12),inset 0 1.5px 0 rgba(255,255,255,.95),inset 0 0 0 1px rgba(255,255,255,.55)}
-.wh.is-dark .wh-dock-bg{background:linear-gradient(rgba(34,34,38,.72),rgba(17,17,19,.6));box-shadow:0 18px 40px rgba(0,0,0,.32),inset 0 1.5px 0 rgba(255,255,255,.14),inset 0 0 0 1px rgba(255,255,255,.08)}
+  background:linear-gradient(rgba(70,70,78,.34),rgba(44,44,50,.38));
+  box-shadow:0 14px 34px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.22),inset 0 0 0 1px rgba(255,255,255,.1)}
+.wh.is-dark .wh-dock-bg{background:linear-gradient(rgba(44,44,50,.42),rgba(20,20,24,.46));box-shadow:0 16px 38px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.14),inset 0 0 0 1px rgba(255,255,255,.07)}
 .wd{position:absolute;top:18px;width:88px;height:88px;border-radius:20px;--fs:1.12;--fsp:1.07;transition:transform .18s var(--focus)}
 .wd::before{content:'';position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;box-shadow:0 0 0 3px rgba(255,255,255,.8),0 12px 22px rgba(0,0,0,.3);opacity:0;transition:opacity .15s ease}
 .wd.is-focus{z-index:2}

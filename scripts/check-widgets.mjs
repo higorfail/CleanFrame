@@ -62,7 +62,7 @@ try {
 
   check('Fresh install opens the Widgets layout', await page.evaluate(() => window.ShoreQA.state().look.layout === 'widgets'));
   check('Weather renders Open-Meteo data', /20°/.test(await text('weather')) && /Máx 26°/.test(await text('weather')), await text('weather'));
-  check('Spotify renders the current track', /Fixture Song/.test(await text('spotify')) && /TOCANDO AGORA/i.test(await text('spotify')), await text('spotify'));
+  check('Spotify renders the current track', /Fixture Song/.test(await text('spotify')) && /Fixture Artist/.test(await text('spotify')) && /0:01/.test(await text('spotify')), await text('spotify'));
   check('HBO Max card renders the TMDB catalogue', /Fixture Series/.test(await text('hbo')), await text('hbo'));
   check('Stremio picks the latest unfinished item', /Fixture Stremio/.test(await text('stremio')) && /T2 · E5/.test(await text('stremio')) && /faltam 40 min/.test(await text('stremio')), await text('stremio'));
   check('Pluto TV shows the programme on now', /Fixture Programme/.test(await text('pluto')) && /Fixture Channel/.test(await text('pluto')), await text('pluto'));

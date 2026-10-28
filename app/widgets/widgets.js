@@ -273,14 +273,17 @@
     setBody('weather', '<div class="wc-pad"><div class="ww-city">' + esc(w.label) + '</div><div class="ww-temp">' + w.temp + '°</div>' +
       '<div class="ww-foot">' + ico(w.icon, 26, '#fff') + '<div class="ww-cond">' + esc(w.text) + '</div><div class="ww-range">Máx ' + w.max + '° Mín ' + w.min + '°</div></div></div>');
   }
+  function clock(ms) { if (ms === undefined || ms === null || isNaN(ms)) return '-:--'; var s = Math.max(0, Math.round(ms / 1000)); return Math.floor(s / 60) + ':' + two(s % 60); }
   function renderSpotify() {
-    var s = data.spotify, art;
-    if (s && s.setup && !demo()) { setBody('spotify', '<div class="ws-art"></div><div class="ws-note">' + spotifyMark() + '</div><div class="ws-text"><div class="wc-label">Spotify</div><div class="wc-title">Conecte sua conta</div><div class="wc-sub">OK abre o Spotify</div></div>'); return; }
-    if (!s || s.setup || s.error) s = s && !s.setup && !s.error ? s : { label: 'Tocado recentemente', title: 'Nome da faixa', artist: 'Artista', playing: false, art: '' };
-    art = s.art ? '<img class="wc-img" src="' + esc(s.art) + '" alt="">' : '';
+    var s = data.spotify, ink = isDark() ? '#fff' : '#1D1D1F';
+    if (s && s.setup && !demo()) { setBody('spotify', '<div class="ws-art"></div><div class="ws-note">' + spotifyMark() + '</div><div class="ws-head"><div class="wc-label">Spotify</div><div class="wc-title">Conecte sua conta</div><div class="ws-artist" style="color:inherit;opacity:.6">OK abre o Spotify</div></div>'); return; }
+    if (!s || s.setup || s.error) s = s && !s.setup && !s.error ? s : { label: 'TOCADO RECENTEMENTE', title: 'Nome da faixa', artist: 'Artista', playing: false, art: '', progress: 78000, duration: 212000 };
+    var art = s.art ? '<img class="wc-img" src="' + esc(s.art) + '" alt="">' : '';
+    var bar = s.duration > 0 ? '<div class="ws-bar"><i style="width:' + Math.round(Math.max(0, Math.min(1, s.progress / s.duration)) * 100) + '%"></i></div>' +
+      '<div class="ws-times"><span>' + clock(s.progress) + '</span><span>-' + clock(s.duration - s.progress) + '</span></div>' : '<div class="ws-foot">' + esc(s.label) + '</div>';
     setBody('spotify', '<div class="ws-art">' + art + '</div><div class="ws-note">' + spotifyMark() + '</div>' +
-      '<div class="ws-text"><div class="wc-label">' + esc(s.label) + '</div><div class="wc-title">' + esc(s.title) + '</div><div class="ws-artist">' + esc(s.artist) + '</div>' +
-      '<div class="ws-controls">' + solid('prev', 26, isDark() ? '#fff' : '#1D1D1F') + solid(s.playing ? 'pause' : 'play', 30, isDark() ? '#fff' : '#1D1D1F') + solid('next', 26, isDark() ? '#fff' : '#1D1D1F') + '</div></div>');
+      '<div class="ws-head"><div class="wc-title">' + esc(s.title) + '</div><div class="ws-artist">' + esc(s.artist) + '</div></div>' +
+      '<div class="ws-controls">' + solid('prev', 24, ink) + '<span class="ws-play">' + solid(s.playing ? 'pause' : 'play', 30, ink) + '</span>' + solid('next', 24, ink) + '</div>' + bar);
   }
   function spotifyMark() { return A && A.brand && A.brand.spotify ? '<img class="ws-logo" src="' + esc(A.brand.spotify) + '" alt="Spotify">' : ico('note', 30, '#1DB954', 2); }
   function heroCard(id, brand, label, title, sub, image, progress, extra) {

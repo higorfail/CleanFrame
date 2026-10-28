@@ -20,6 +20,12 @@
 /* Each card and dock icon on its own compositor layer at a fixed raster scale: lifting one is then a GPU
    transform, not a repaint of the whole strip (measured on The Frame 2022: worst-case frame 95 ms -> 36 ms). */
 .wc,.wd,.wt-dot{will-change:transform}
+/* The focus shadow and ring fade on their own layer too, so the card underneath is never repainted
+   while it lifts; colour changes on focus are instant (a fading colour repaints every frame). */
+.wc::before,.wd::before{will-change:opacity}
+.wh-cap,.wh-dock-label{will-change:transform,opacity}
+.wc-gloss,.wc-glass .wc-body,.wh.is-dark .wc-glass .wc-body{transition:none!important}
+.wt-dot{transition:transform .18s var(--focus)!important}
 
 /* Background gradients: two layers cross-fade; only opacity animates. */
 .wh-bg{position:absolute;left:0;top:0;width:1920px;height:1080px;transition:opacity .9s ease}

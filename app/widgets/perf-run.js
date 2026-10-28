@@ -58,20 +58,15 @@
   var V = [
     ['atual', ''],
     ['sem sombras', '.wh *,.wh *::before,.wh *::after{box-shadow:none!important;text-shadow:none!important}'],
-    ['sem transições', '.wh *,.wh *::before,.wh *::after{transition:none!important;animation:none!important}'],
-    ['transições curtas', '.wc,.wd,.wt-dot{transition-duration:.12s!important}.wh-strip{transition-duration:.2s!important}'],
-    ['sem imagens', '.wh img{visibility:hidden!important}'],
     ['sem fotos dos cards', '.wh .wc-img{visibility:hidden!important}'],
-    ['fundo liso', '.wh-bg{background:#14161c!important}.wh-dim{display:none!important}'],
-    ['sem camadas dos cards', '.wc,.wd,.wt-dot{will-change:auto!important}'],
-    ['faixa sem camada', '.wh-strip{will-change:auto!important}'],
-    ['sem sombras + curtas', '.wh *,.wh *::before,.wh *::after{box-shadow:none!important}.wc,.wd,.wt-dot{transition-duration:.12s!important}']
+    ['sem legenda', '.wh-cap,.wh-dock-label{display:none!important}'],
+    ['sem transições (referência)', '.wh *,.wh *::before,.wh *::after{transition:none!important;animation:none!important}']
   ];
   var stage = document.querySelector('.stage');
   var out = { env: { ua: window.navigator.userAgent, w: window.innerWidth, h: window.innerHeight, dpr: window.devicePixelRatio, cores: window.navigator.hardwareConcurrency, mem: window.navigator.deviceMemory || null,
     stage: stage && stage.style.transform, layout: stage && stage.className, nodes: document.getElementsByTagName('*').length, imgs: document.images.length }, runs: [], idle: [] };
   var jobs = [];
-  [260, 130].forEach(function (gap) { V.forEach(function (v) { jobs.push(function (next) { measure(v[1], walk, gap, function (r) { r.name = v[0]; r.gap = gap; out.runs.push(r); post({ progress: out.runs.length, of: 20 }); next(); }); }); }); });
+  [260, 130].forEach(function (gap) { V.forEach(function (v) { jobs.push(function (next) { measure(v[1], walk, gap, function (r) { r.name = v[0]; r.gap = gap; out.runs.push(r); post({ progress: out.runs.length, of: V.length * 2 }); next(); }); }); }); });
   [['atual', ''], ['sem home antiga escondida', V[3][1]]].forEach(function (v) { jobs.push(function (next) { idle(v[1], function (r) { r.name = v[0]; out.idle.push(r); next(); }); }); });
   setTimeout(function run() {
     if (!jobs.length) { style(''); out.done = true; post(out); return; }

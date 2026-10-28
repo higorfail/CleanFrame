@@ -10,6 +10,10 @@
 - A panel keeps focus within its own controls. Back closes one panel at a time.
 - Returning to the running launcher keeps the selected app or panel item. There is no auto-return timer. Held OK and Back keys act once until the key is released.
 
+## Widgets layout
+
+The Widgets layout is a two-row widget strip with spatial remote navigation, a dock with macOS-style magnification and a Personalise sheet for gradient backgrounds and light or dark cards. It is the default for fresh installs. Behaviour, data sources and setup are described in [widgets.md](widgets.md) (Portuguese). Back from the strip returns focus to the first card; Back from the first card opens the existing Samsung Home choice.
+
 ## Settings and appearance
 
 Settings opens a grouped overview: Background, Layout, Typography, Focus, Apps on Home and Samsung. OK opens a group. Appearance groups use a two-pane screen with visible choices on the left and the committed Home preview on the right.

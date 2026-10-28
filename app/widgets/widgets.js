@@ -273,7 +273,11 @@
     byId('whHello').textContent = hello + (CFG.name ? ', ' + CFG.name : '');
     byId('whTime').textContent = two(h) + ':' + two(d.getMinutes());
     var av = byId('whAvatar'), want = CFG.profilePhoto ? '<img src="' + esc(CFG.profilePhoto) + '" alt="">' : esc((CFG.name || '·').charAt(0));
-    if (av._html !== want) { av._html = want; av.innerHTML = want; }
+    if (av._html !== want && !av._failed) {
+      av._html = want; av.innerHTML = want;
+      var im = av.getElementsByTagName('img')[0];
+      if (im) im.addEventListener('error', function () { av._failed = true; av.innerHTML = esc((CFG.name || '·').charAt(0)); });
+    }
   }
   function renderBackground() {
     var a = byId('whBgA'), b = byId('whBgB'), id = st.sheet && st.sheet.preview || prefs.bg, front = a.className.indexOf('is-off') < 0 ? a : b, back = front === a ? b : a;
@@ -522,12 +526,22 @@
     }
   }
 
+  function intro() {
+    var all = strip.querySelectorAll('.wc'), i;
+    root.className += ' is-intro';
+    for (i = 0; i < all.length; i++) all[i].style.transitionDelay = (Math.min(i, 10) * 35) + 'ms';
+    setTimeout(function () {
+      root.className = root.className.replace(' is-intro', '');
+      setTimeout(function () { for (i = 0; i < all.length; i++) all[i].style.transitionDelay = ''; }, 1000);
+    }, 60);
+  }
+
   /* ---------- Public API ---------- */
   window.FrameWidgets = {
     init: function (container, dependencies) {
       if (root || !container) return;
       deps = dependencies; root = container;
-      build(); renderAll(); tick(); resolveApps();
+      build(); renderAll(); tick(); resolveApps(); intro();
       document.addEventListener('visibilitychange', function () { if (document.hidden) stopData(); else if (st.active) { startData(); tick(); } });
     },
     setActive: function (on) {

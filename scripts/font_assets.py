@@ -64,6 +64,9 @@ def font_overlay(root=ROOT, include_private=True):
     secrets = (root / '.local/widgets-secrets.js')
     if include_private and secrets.is_file() and not secrets.is_symlink():
         assets['widgets/secrets.js'] = secrets.resolve()
+    photo = (root / '.local/widgets-profile.jpg')
+    if include_private and photo.is_file() and not photo.is_symlink():
+        assets['widgets/profile.jpg'] = photo.resolve()
     assets['assets/private-fonts.css'] = ('\n'.join(css) + '\n').encode()
     assets['assets/font-catalog.js'] = ('window.CleanFramePrivateFontIDs = '
                                        + json.dumps(private_ids + PUBLIC_FONT_IDS) + ';\n').encode()

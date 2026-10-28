@@ -8,6 +8,7 @@ The root MIT licence covers CleanFrame's original code and documentation. Third-
 | --- | --- |
 | Manrope | SIL Open Font License 1.1; `app/assets/manrope-OFL.txt` |
 | Geist and Newsreader | SIL Open Font License 1.1; licences beside the files in `app/assets/fonts/`, with exact sources and hashes in `app/assets/fonts/SOURCES.json` |
+| Inter (widgets layout) | SIL Open Font License 1.1; `app/assets/fonts/inter/OFL.txt`, Latin subset files from @fontsource/inter 5.3.0 with hashes in `app/assets/fonts/SOURCES.json` |
 | Optional PP Neue Montreal, PP Mori and PP Pangram Sans | Proprietary. Binaries stay in ignored `.local/` storage and are excluded from Git and public exports. The optional local overlay requires the user's own permission to use and embed those files. |
 
 The public app uses Manrope, Geist and Newsreader. A personal widget containing proprietary fonts must stay private. See [Pangram's licensing information](https://pangrampangram.com/pages/eula).
@@ -27,6 +28,10 @@ Brand marks identify services. Their owners retain trademark rights; this projec
 The fifteen photo pages were individually checked on 20 October 2026. Each displayed its credited author and free use under the [Unsplash License](https://unsplash.com/license). The [asset source register](docs/asset-sources.md) links every page. Runtime paths are in `app/assets/wallpapers/SOURCES.json`.
 
 Photographers retain their rights. Wallpapers, thumbnails, panel backgrounds and material fields derive from the credited photographs and retain their terms. The Unsplash licence permits copying, modification and distribution subject to its restrictions, including on selling unmodified images and building a competing image service.
+
+## Widget data services
+
+The Widgets layout reads optional services at runtime: Open-Meteo (weather, CC BY 4.0 data), the Spotify Web API, TMDB, the g1 RSS feed, SmartThings and two unofficial endpoints (Stremio library and Pluto TV guide). Their terms apply to the owner's own keys and use. This product uses the TMDB API but is not endorsed or certified by TMDB. No service content is bundled.
 
 ## Development dependencies and exports
 

@@ -34,7 +34,9 @@
 
 /* Strip */
 .wh-strip{position:absolute;left:129px;top:290px;width:3448px;height:500px;transition:transform .55s var(--ease);will-change:transform}
-.wc{position:absolute;box-sizing:border-box;border-radius:34px;color:#fff;transition:transform .28s var(--spring)}
+.wc{position:absolute;box-sizing:border-box;border-radius:34px;color:#fff;transition:transform .28s var(--spring),opacity .5s ease}
+.wh.is-intro .wc,.wh.is-intro .wd,.wh.is-intro .wh-top{opacity:0;transform:translate3d(0,26px,0) scale(.97)}
+.wh-top,.wd{transition:opacity .5s ease,transform .5s var(--ease)}
 .wc::before{content:'';position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;box-shadow:0 26px 60px rgba(0,0,0,.42);opacity:0;transition:opacity .25s ease}
 .wc::after{content:'';position:absolute;left:-10px;top:-10px;right:-10px;bottom:-10px;border-radius:var(--ring,44px);border:5px solid #fff;opacity:0;transform:scale(.97);transition:opacity .2s ease,transform .28s var(--spring);pointer-events:none}
 .wc.is-focus{transform:scale(1.045);z-index:3}

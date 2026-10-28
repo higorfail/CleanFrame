@@ -49,7 +49,7 @@
     return '<i class="wc-ico sf" style="width:' + size + 'px;height:' + size + 'px;-webkit-mask-image:url(apple/symbols/' + name + '.svg);' +
       'background-color:' + (color || 'currentColor') + '" aria-hidden="true"></i>';
   }
-  function appleIcon(key) { return A && A.icons && A.icons[key] || ''; }
+  function appleIcon(key) { return A && A.icons && (prefs && isDark() && A.icons[key + '-dark'] || A.icons[key]) || ''; }
   /* Small white service logo for the big cards (personal builds); public builds show the name in text. */
   function brandLogo(key, text, cls) {
     var src = A && A.brand && A.brand[key];
@@ -80,15 +80,26 @@
   var deps = null, root = null, strip = null, dockEl = null, dockBg = null, dockLabel = null, toastEl = null, sheetEl = null, capEl = null;
   var cards = {}, targets = [], dockItems = [], resolved = {};
   var st = { zone: 'strip', focus: 'youtube', dock: 0, off: 0, adjust: false, active: false, sheet: null, toastTimer: 0, heroIndex: 0, lean: '', launching: false };
-  var prefs = loadPrefs(), data = {}, timers = {};
+  var data = {}, timers = {}, prefs = loadPrefs();
 
   function loadPrefs() {
     var p = {};
     try { p = JSON.parse(localStorage.getItem(PREFS)) || {}; } catch (e) { p = {}; }
-    if (!gradient(p.bg)) p.bg = 'rubi';
-    p.dark = !!p.dark;
+    if (!gradient(p.bg) && !photo(p.bg) && !(p.bg === 'own' && CFG.wallpaperPhoto)) p.bg = 'rubi';
+    if (p.theme !== 'light' && p.theme !== 'dark' && p.theme !== 'auto') p.theme = p.dark ? 'dark' : 'light'; // v1 stored a boolean
+    delete p.dark;
     p.sound = p.sound !== false;
     return p;
+  }
+  /* Bundled CleanFrame photographs (assets/wallpapers/catalog.js) as backgrounds too. */
+  function photos() { return window.CleanFrameWallpapers || []; }
+  function photo(id) { var list = photos(), key = String(id || '').replace(/^photo:/, ''); if (String(id || '').indexOf('photo:') !== 0) return null; for (var i = 0; i < list.length; i++) if (list[i].id === key) return list[i]; return null; }
+  /* Dark appearance: always, never, or from sunset to sunrise (the weather's day flag; 18h-6h before it loads). */
+  function isDark() {
+    if (prefs.theme === 'dark') return true;
+    if (prefs.theme === 'light') return false;
+    var w = data && data.weather, h = new Date().getHours();
+    return w && w.day !== undefined && !w.error && !w.setup ? !w.day : h >= 18 || h < 6;
   }
   function savePrefs() { try { localStorage.setItem(PREFS, JSON.stringify(prefs)); } catch (e) { toast('Não foi possível salvar.'); } }
   function gradient(id) { for (var i = 0; i < GRADIENTS.length; i++) if (GRADIENTS[i][0] === id) return GRADIENTS[i]; return null; }
@@ -123,7 +134,7 @@
     ['tv-picture', 'picture', 24, 124, '', 'Modo de imagem'], ['tv-timer', 'timer', 124, 124, '', 'Timer']];
 
   function build() {
-    var html = '<div class="wh-bg" id="whBgA"></div><div class="wh-bg is-off" id="whBgB"></div>' +
+    var html = '<div class="wh-bg" id="whBgA"></div><div class="wh-bg is-off" id="whBgB"></div><div class="wh-dim"></div>' +
       '<div class="wh-top"><div class="wh-date"><span class="wh-small" id="whDay"></span><span class="wh-big" id="whDate"></span></div>' +
       '<div class="wh-greet"><span class="wh-small" id="whHello"></span><span class="wh-big" id="whTime"></span></div><div class="wh-avatar" id="whAvatar"></div></div>' +
       '<div class="wh-strip" id="whStrip"></div><div class="wh-dock" id="whDock"><div class="wh-dock-bg" id="whDockBg"></div><div class="wh-dock-label" id="whDockLabel"></div></div>' +
@@ -211,7 +222,7 @@
   function setCls(el, base) { var keep = el.className.match(STATE_CLS); el.className = base + (keep ? keep.join('') : ''); }
   function setBody(id, html) { var c = cards[id]; if (c.html === html) return; c.html = html; c.body.innerHTML = html; fadeImages(c.body); }
   function fadeImages(scope) {
-    var imgs = scope.querySelectorAll('img.wc-img');
+    var imgs = scope.querySelectorAll('img.wc-img:not(.wc-hero-img)');
     Array.prototype.forEach.call(imgs, function (im) {
       if (im.complete && im.naturalWidth) { im.className += ' is-ready'; return; }
       im.addEventListener('load', function () { im.className += ' is-ready'; });
@@ -248,7 +259,7 @@
     art = s.art ? '<img class="wc-img" src="' + esc(s.art) + '" alt="">' : '';
     setBody('spotify', '<div class="ws-art">' + art + '</div><div class="ws-note">' + spotifyMark() + '</div>' +
       '<div class="ws-text"><div class="wc-label">' + esc(s.label) + '</div><div class="wc-title">' + esc(s.title) + '</div><div class="ws-artist">' + esc(s.artist) + '</div>' +
-      '<div class="ws-controls">' + solid('prev', 26, prefs.dark ? '#fff' : '#1D1D1F') + solid(s.playing ? 'pause' : 'play', 30, prefs.dark ? '#fff' : '#1D1D1F') + solid('next', 26, prefs.dark ? '#fff' : '#1D1D1F') + '</div></div>');
+      '<div class="ws-controls">' + solid('prev', 26, isDark() ? '#fff' : '#1D1D1F') + solid(s.playing ? 'pause' : 'play', 30, isDark() ? '#fff' : '#1D1D1F') + solid('next', 26, isDark() ? '#fff' : '#1D1D1F') + '</div></div>');
   }
   function spotifyMark() { return A && A.brand && A.brand.spotify ? '<img class="ws-logo" src="' + esc(A.brand.spotify) + '" alt="Spotify">' : ico('note', 30, '#1DB954', 2); }
   function heroCard(id, brand, label, title, sub, image, progress, extra) {
@@ -266,15 +277,29 @@
     setBody('stremio', heroCard('stremio', 'Stremio', 'Continuar assistindo', s.title, s.empty ? s.episode : s.episode + (s.left ? ' · faltam ' + s.left + ' min' : ''), s.image, s.empty ? null : s.progress));
   }
   function renderHbo() {
-    var list = data.tmdb, item;
+    var list = data.tmdb, item, c = cards.hbo;
     if (list && list.setup && !demo()) { list = null; item = { title: 'HBO Max', kind: 'OK abre o app', year: '' }; }
     else if (!list || !list.length) item = { title: 'Nome do título', kind: 'Série', year: '2026' };
     else item = list[st.heroIndex % list.length];
-    setBody('hbo', (item.image ? '<img class="wc-img" src="' + esc(item.image) + '" alt="">' : '<div class="wc-shade-l" style="background:radial-gradient(70% 90% at 75% 30%,#2C3A66 0%,rgba(44,58,102,0) 70%),linear-gradient(160deg,#161A2A,#08090F)"></div>') +
-      '<div class="wc-shade-l"></div><div class="wc-brand" style="left:26px;top:22px">' + brandLogo('hbomax', 'HBO Max', 'is-hbo') + '</div>' +
-      '<div style="position:absolute;left:26px;right:26px;bottom:22px"><div class="wc-dark-label" style="font-size:13px">Em alta</div>' +
-      '<div style="font-size:28px;font-weight:800;letter-spacing:-.5px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:330px">' + esc(item.title) + '</div>' +
-      '<div style="font-size:16px;font-weight:500;color:rgba(255,255,255,.78);margin-top:4px">' + esc(item.kind + (item.year ? ' · ' + item.year : '')) + '</div></div>');
+    function paint() {
+      var prev = c.shownImg && c.shownImg !== item.image ? '<img class="wc-img is-ready" src="' + esc(c.shownImg) + '" alt="">' : '';
+      var cur = item.image ? '<img class="wc-img wc-hero-img' + (prev ? '' : ' is-ready') + '" src="' + esc(item.image) + '" alt="">' : '';
+      setBody('hbo', (cur || prev ? prev + cur : '<div class="wc-shade-l" style="background:radial-gradient(70% 90% at 75% 30%,#2C3A66 0%,rgba(44,58,102,0) 70%),linear-gradient(160deg,#161A2A,#08090F)"></div>') +
+        '<div class="wc-shade-l"></div><div class="wc-brand" style="left:26px;top:22px">' + brandLogo('hbomax', 'HBO Max', 'is-hbo') + '</div>' +
+        '<div class="wc-hero-text"><div class="wc-dark-label" style="font-size:13px">Em alta</div>' +
+        '<div style="font-size:28px;font-weight:800;letter-spacing:-.5px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:330px">' + esc(item.title) + '</div>' +
+        '<div style="font-size:16px;font-weight:500;color:rgba(255,255,255,.78);margin-top:4px">' + esc(item.kind + (item.year ? ' · ' + item.year : '')) + '</div></div>');
+      if (prev) {
+        var fresh = c.body.querySelector('.wc-hero-img');
+        if (fresh) { void fresh.offsetWidth; fresh.className += ' is-ready'; }
+      }
+      c.shownImg = item.image || c.shownImg;
+    }
+    if (!item.image || item.image === c.shownImg) { paint(); return; }
+    var pre = new Image(), done = false;
+    pre.onload = pre.onerror = function () { if (done) return; done = true; paint(); };
+    pre.src = item.image;
+    setTimeout(pre.onload, 4000);
   }
   function renderPluto() {
     var p = val('pluto') || (demo() || !data.plutoTried ? { channel: 'Nome do canal', title: 'Nome do programa', until: '00:30', start: 0, stop: 0, logo: '' } : null), pct = 0.42;
@@ -288,24 +313,32 @@
       '<div class="wc-bar" style="position:absolute;left:0;right:0;bottom:0;background:rgba(255,255,255,.18)"><i style="width:' + Math.round(pct * 100) + '%;background:#FFD60A"></i></div></div>');
   }
   function renderPills() {
-    var v = data.volume, level = v && !v.device ? v.level : 58, muted = v && v.muted;
-    setBody('volume', '<div class="wp-level" style="height:' + (muted ? 0 : level) + '%"></div><div class="wp-value">' + (muted ? '0' : level) + '</div><div class="wp-icon">' + ico(muted ? 'mute' : 'speaker', 40, level > 30 && !muted ? '#1D1D1F' : '#fff', 1.9) + '</div>');
-    setBody('bright', '<div class="wp-level" style="height:40%"></div><div class="wp-icon">' + sunIcon(44) + '</div>');
+    var v = data.volume, known = v && typeof v.level === 'number' && !isNaN(v.level), level = known ? Math.max(0, Math.min(100, v.level)) : demo() ? 58 : 0, muted = v && v.muted;
+    // TV volumes live low (5-30); the bar shows them on a 0-50 scale so small steps are visible.
+    var fill = muted ? 0 : Math.min(100, Math.round(level * 2));
+    setBody('volume', '<div class="wp-level" style="height:' + fill + '%"></div><div class="wp-value">' + (muted ? '0' : known || demo() ? level : '–') + '</div><div class="wp-icon">' + ico(muted ? 'mute' : 'speaker', 40, fill > 30 && !muted ? '#1D1D1F' : '#fff', 1.9) + '</div>');
+    var pm = data.picture, modes = pm && pm.modes || [], idx = pm ? modes.indexOf(pm.mode) : -1, h = idx < 0 ? 40 : Math.round(35 + 50 * idx / Math.max(1, modes.length - 1));
+    setBody('bright', '<div class="wp-level" style="height:' + h + '%"></div><div class="wp-icon">' + sunIcon(44) + '</div>');
   }
   function renderNet() {
     var w = val('wifi') || (demo() ? { on: true, ssid: 'Nome da rede' } : { on: false, ssid: '' });
     setBody('wifi', '<div class="wn-dot' + (w.on ? '' : ' is-off') + '">' + ico('wifi', 36, '#fff') + '</div><div class="wn-text"><div class="wc-sub">Wi-Fi</div><div class="wc-title">' + esc(w.on ? w.ssid || 'Conectado' : 'Sem conexão') + '</div></div>');
-    setCls(cards.theme.el, 'wc wc-glass wr' + (prefs.dark ? '' : ' wr-on'));
+    setCls(cards.theme.el, 'wc wc-glass wr' + (isDark() ? '' : ' wr-on'));
     setBody('theme', '<div class="wr-icon">' + solid('half', 50, 'currentColor') + '</div>');
     var on = data.light && data.light.on;
     setCls(cards.light.el, 'wc wc-glass wr' + (on ? ' wr-lit' : ''));
     setBody('light', '<div class="wr-icon">' + ico('bulb', 50, 'currentColor', 1.6) + '</div>');
   }
   function renderNews() {
-    var list = val('news') || (demo() ? [{ title: 'Manchete principal do dia, em até duas linhas', when: 'há 20 min' }, { title: 'Segunda manchete', when: 'há 1 h' }, { title: 'Terceira manchete', when: 'há 2 h' }, { title: 'Quarta manchete', when: 'há 3 h' }] : []);
-    var html = '<div class="wc-pad" style="left:30px;right:30px;top:28px"><div class="wc-label" style="margin-bottom:6px">Manchetes · g1</div>';
-    if (!list.length) html += '<div class="wc-hint" style="margin-top:12px">Carregando notícias…</div>';
-    list.forEach(function (n) { html += '<div class="wnw-item"><div class="wnw-title">' + esc(n.title) + '</div><div class="wnw-when">' + esc(n.when) + '</div></div>'; });
+    var list = val('news') || (demo() ? [{ title: 'Manchete principal do dia, em até duas linhas no máximo', when: 'há 20 min', image: '' }, { title: 'Segunda manchete', when: 'há 1 h' }, { title: 'Terceira manchete', when: 'há 2 h' }, { title: 'Quarta manchete', when: 'há 3 h' }] : []);
+    if (!list.length) { setBody('news', '<div class="wc-pad" style="left:30px;right:30px;top:28px"><div class="wc-label">Manchetes · g1</div><div class="wc-hint" style="margin-top:12px">Carregando notícias…</div></div>'); return; }
+    var lead = null, rest = [];
+    list.forEach(function (n) { if (!lead && n.image) lead = n; else rest.push(n); });
+    if (!lead) lead = rest.shift();
+    var html = '<div class="wnw-lead">' + (lead.image ? '<img class="wc-img" src="' + esc(lead.image) + '" alt="">' : '<div class="wnw-noimg"></div>') +
+      '<div class="wc-shade-b"></div><div class="wnw-badge">g1</div><div class="wnw-lead-text"><div class="wnw-title">' + esc(lead.title) + '</div><div class="wnw-when is-light">' + esc(lead.when) + '</div></div></div>' +
+      '<div class="wc-pad wnw-list">';
+    rest.slice(0, 2).forEach(function (n) { html += '<div class="wnw-item"><div class="wnw-title">' + esc(n.title) + '</div><div class="wnw-when">' + esc(n.when) + '</div></div>'; });
     setBody('news', html + '</div>');
   }
   function renderTop() {
@@ -324,13 +357,20 @@
   function renderBackground() {
     var a = byId('whBgA'), b = byId('whBgB'), id = st.sheet && st.sheet.preview || prefs.bg, front = a.className.indexOf('is-off') < 0 ? a : b, back = front === a ? b : a;
     if (front._g === id) return;
-    if (!front._g) { front.className = 'wh-bg g-' + id; front._g = id; return; }
-    back.className = 'wh-bg g-' + id; back._g = id;
+    if (!front._g) { paintBg(front, id); return; }
+    paintBg(back, id);
     front.className += ' is-off';
+  }
+  function paintBg(el, id) {
+    var p = photo(id), src = p ? p.src : id === 'own' ? CFG.wallpaperPhoto : '';
+    el._g = id;
+    el.className = 'wh-bg' + (src ? ' is-photo' : ' g-' + id);
+    el.style.backgroundImage = src ? 'url("' + src + '")' : '';
   }
   function renderAll() {
     renderTop(); renderBackground(); renderApps(); renderWeather(); renderSpotify(); renderStremio(); renderHbo(); renderPluto(); renderPills(); renderNet(); renderNews(); renderDock();
-    root.className = 'wh' + (prefs.dark ? ' is-dark' : '') + (st.sheet ? ' has-sheet' : '') + (st.launching ? ' is-launch' : '');
+    var bgPhoto = !!(photo(st.sheet && st.sheet.preview || prefs.bg) || (st.sheet && st.sheet.preview || prefs.bg) === 'own');
+    root.className = 'wh' + (isDark() ? ' is-dark' : '') + (bgPhoto ? ' on-photo' : '') + (st.sheet ? ' has-sheet' : '') + (st.launching ? ' is-launch' : '');
     renderFocus(); renderSheet();
   }
 
@@ -357,11 +397,12 @@
   }
   /* tvOS captions: the name of the focused item in SF Pro Medium, under it (above it on the top row,
      where the next row sits right below). Content widgets carry their own titles and get none. */
-  var CAPTIONS = { alexa: 'Alexa', settings: 'Personalizar', browser: 'Navegador', allapps: 'Todos os apps', volume: 'Volume', bright: 'Brilho',
-    light: 'Luz da sala', wifi: '', 'tv-art': 'Modo Arte', 'tv-audio': 'Saída de áudio', 'tv-picture': 'Modo de imagem', 'tv-timer': 'Timer' };
+  var CAPTIONS = { alexa: 'Alexa', settings: 'Personalizar', browser: 'Navegador', allapps: 'Todos os apps', volume: 'Volume',
+    light: 'Luz', wifi: '', 'tv-art': 'Modo Arte', 'tv-audio': 'Saída de áudio', 'tv-picture': 'Modo de imagem', 'tv-timer': 'Timer' };
   function captionFor(id) {
-    if (id === 'theme') return prefs.dark ? 'Cartões claros' : 'Cartões escuros';
-    if (st.adjust && id === 'volume') return 'Volume  ▲ ▼';
+    if (id === 'theme') return isDark() ? 'Modo claro' : 'Modo escuro';
+    if (id === 'bright') { var pm = data.picture; return pm && pm.mode ? 'Imagem: ' + pm.mode : 'Modo de imagem'; }
+    if (id === 'volume') { var v = data.volume; return st.adjust ? 'Volume ' + (v && v.level !== undefined ? v.level : '') + '  ▲ ▼' : 'Volume · OK para ajustar'; }
     if (CAPTIONS[id] !== undefined) return CAPTIONS[id];
     var c = cards[id];
     return c && c.def.app ? appInfo(c.def.app).name : '';
@@ -511,10 +552,13 @@
       case 'weather': toast('Atualizando a previsão…'); refresh('weather', true); return;
       case 'volume':
         if (!onTV()) { deviceOnly('O volume funciona quando o app estiver na TV.'); return; }
-        st.adjust = !st.adjust; return;
-      case 'bright': toast('Abrindo os ajustes de imagem da TV'); deps.tvSettings(); return;
+        st.adjust = !st.adjust; if (st.adjust) refresh('volume', true); return;
+      case 'bright':
+        if (!D.tvConfigured || !D.tvConfigured()) { toast('A Samsung não libera o brilho para apps. Abrindo os ajustes de imagem.'); deps.tvSettings(); return; }
+        D.nextPictureMode(function (err, pm) { if (err) { toast('A TV não respondeu. Tente de novo.'); return; } data.picture = pm; renderPills(); renderCaption(); toast('Modo de imagem: ' + pm.mode); });
+        return;
       case 'wifi': toast('Abrindo os ajustes de rede da TV'); deps.tvSettings(); return;
-      case 'theme': prefs.dark = !prefs.dark; savePrefs(); renderAll(); return;
+      case 'theme': prefs.theme = isDark() ? 'light' : 'dark'; savePrefs(); renderAll(); return;
       case 'light':
         if (!D.setLight || !(CFG.smartthings && CFG.smartthings.token)) { toast('Conecte a luz pelo SmartThings (veja docs/widgets.md).'); return; }
         var want = !(data.light && data.light.on);
@@ -533,7 +577,10 @@
   }
   function adjustKey(k) {
     if (k === 'up' || k === 'down') {
-      D.changeVolume(k === 'up' ? 1 : -1, function (err, v) { if (!err && v) { data.volume = v; renderPills(); } });
+      D.changeVolume(k === 'up' ? 1 : -1, function (err, v) {
+        if (err) { toast('O volume não respondeu' + (err.message || err.name ? ': ' + (err.message || err.name) : '.')); return; }
+        if (v) { data.volume = v; renderPills(); renderCaption(); }
+      });
       return true;
     }
     if (k === 'ok' || k === 'back') { st.adjust = false; return true; }
@@ -541,32 +588,50 @@
     return false;
   }
 
-  /* ---------- Personalise sheet ---------- */
+  /* ---------- Personalise sheet ----------
+     Rows: gradients and photos (one row each, scrolling sideways), appearance, sounds, links.
+     Focusing a background previews it live; OK keeps it; Back closes without changing. */
+  function bgChoices(kind) {
+    if (kind === 'grad') return GRADIENTS.map(function (g) { return { id: g[0], name: g[1] }; });
+    var out = photos().map(function (w) { return { id: 'photo:' + w.id, name: w.name, thumb: w.thumb || w.src }; });
+    if (CFG.wallpaperPhoto) out.unshift({ id: 'own', name: 'Sua foto', thumb: CFG.wallpaperPhoto });
+    return out;
+  }
   function sheetRows() {
     return [
-      { kind: 'swatch', items: [0, 1, 2, 3] }, { kind: 'swatch', items: [4, 5, 6, 7] },
-      { kind: 'theme', items: ['light', 'dark'] }, { kind: 'sound', items: ['on', 'off'] }, { kind: 'link', items: ['cleanframe'] }, { kind: 'link', items: ['tv'] }
+      { kind: 'grad', items: bgChoices('grad') }, { kind: 'photo', items: bgChoices('photo') },
+      { kind: 'theme', items: ['light', 'dark', 'auto'] }, { kind: 'sound', items: ['on', 'off'] },
+      { kind: 'link', items: ['cleanframe'] }, { kind: 'link', items: ['tv'] }
     ];
   }
-  function openSheet() { st.sheet = { row: 0, col: Math.max(0, gradientIndex(prefs.bg) % 4), preview: null }; st.sheet.row = gradientIndex(prefs.bg) >= 4 ? 1 : 0; previewSwatch(); }
-  function gradientIndex(id) { for (var i = 0; i < GRADIENTS.length; i++) if (GRADIENTS[i][0] === id) return i; return 0; }
+  function openSheet() {
+    var rows = sheetRows(), r, c;
+    st.sheet = { row: 0, col: 0, preview: null };
+    for (r = 0; r < 2; r++) for (c = 0; c < rows[r].items.length; c++) if (rows[r].items[c].id === prefs.bg) { st.sheet.row = r; st.sheet.col = c; }
+    previewSwatch();
+  }
   function previewSwatch() {
     var row = sheetRows()[st.sheet.row];
-    st.sheet.preview = row.kind === 'swatch' ? GRADIENTS[row.items[st.sheet.col]][0] : null;
+    st.sheet.preview = row.kind === 'grad' || row.kind === 'photo' ? row.items[st.sheet.col].id : null;
   }
   function closeSheet() { st.sheet = null; }
   function sheetKey(k) {
     var rows = sheetRows(), sh = st.sheet, row = rows[sh.row];
     if (k === 'back') { closeSheet(); return; }
     if (k === 'up' || k === 'down') {
+      var wasScroll = row.kind === 'grad' || row.kind === 'photo';
       sh.row = Math.max(0, Math.min(rows.length - 1, sh.row + (k === 'up' ? -1 : 1)));
-      sh.col = Math.min(sh.col, rows[sh.row].items.length - 1);
+      var next = rows[sh.row], isScroll = next.kind === 'grad' || next.kind === 'photo', c;
+      if (next === row) return;
+      sh.col = wasScroll === isScroll ? Math.min(sh.col, next.items.length - 1) : 0;
+      if (isScroll) for (c = 0; c < next.items.length; c++) if (next.items[c].id === prefs.bg) sh.col = c;
+      if (next.kind === 'theme') sh.col = Math.max(0, ['light', 'dark', 'auto'].indexOf(prefs.theme));
     } else if (k === 'left' || k === 'right') {
       sh.col = Math.max(0, Math.min(row.items.length - 1, sh.col + (k === 'left' ? -1 : 1)));
     } else if (k === 'ok') {
       var value = row.items[sh.col];
-      if (row.kind === 'swatch') { prefs.bg = GRADIENTS[value][0]; savePrefs(); toast('Fundo ' + GRADIENTS[value][1] + ' aplicado'); }
-      else if (row.kind === 'theme') { prefs.dark = value === 'dark'; savePrefs(); }
+      if (row.kind === 'grad' || row.kind === 'photo') { prefs.bg = value.id; savePrefs(); toast('Fundo ' + value.name + ' aplicado'); }
+      else if (row.kind === 'theme') { prefs.theme = value; savePrefs(); }
       else if (row.kind === 'sound') { prefs.sound = value === 'on'; savePrefs(); sound('select'); }
       else if (value === 'cleanframe') { closeSheet(); deps.openSettings(); return; }
       else { closeSheet(); deps.tvSettings(); return; }
@@ -575,36 +640,46 @@
   }
   function renderSheet() {
     if (!sheetEl) return;
-    var sh = st.sheet, html, rows = sheetRows();
+    var sh = st.sheet, html, rows = sheetRows(), INNER = 544;
     sheetEl.className = 'wh-sheet' + (sh ? ' is-open' : '');
     if (!sh) return;
     function focused(r, c) { return sh.row === r && sh.col === c ? ' is-focus' : ''; }
-    html = '<h2>Personalizar</h2><div class="wsh-section" style="top:140px"><div class="wsh-cap">Fundo</div><div class="wsh-swatches" style="height:300px">';
-    [0, 1].forEach(function (r) {
-      rows[r].items.forEach(function (gi, c) {
-        var g = GRADIENTS[gi];
-        html += '<div class="wsh-sw' + focused(r, c) + (prefs.bg === g[0] ? ' is-on' : '') + '" data-sheet="' + r + ',' + c + '"><b class="g-' + g[0] + '"></b><span>' + g[1] + '</span></div>';
-      });
+    function scroller(r, pitch, inner) {
+      var n = rows[r].items.length, full = n * pitch - 16, col = sh.row === r ? sh.col : 0;
+      for (var c = 0; c < n; c++) if (rows[r].items[c].id === prefs.bg && sh.row !== r) col = c;
+      var off = Math.max(0, Math.min(full - INNER, col * pitch - (INNER - pitch) / 2));
+      return '<div class="wsh-scroll"><div class="wsh-track" style="width:' + full + 'px;transform:translate3d(' + (-Math.round(off)) + 'px,0,0)">' + inner + '</div></div>';
+    }
+    var grads = '', pics = '';
+    rows[0].items.forEach(function (g, c) {
+      grads += '<div class="wsh-sw' + focused(0, c) + (prefs.bg === g.id ? ' is-on' : '') + '" data-sheet="0,' + c + '"><b class="g-' + g.id + '"></b><span>' + esc(g.name) + '</span></div>';
     });
-    html += '</div></div><div class="wsh-section" style="top:500px"><div class="wsh-cap">Cartões</div><div class="wsh-row">' +
-      '<span class="wsh-opt' + focused(2, 0) + (!prefs.dark ? ' is-on' : '') + '" data-sheet="2,0">Claros</span>' +
-      '<span class="wsh-opt' + focused(2, 1) + (prefs.dark ? ' is-on' : '') + '" data-sheet="2,1">Escuros</span></div></div>' +
-      '<div class="wsh-section" style="top:630px"><div class="wsh-cap">Sons</div><div class="wsh-row">' +
+    rows[1].items.forEach(function (w, c) {
+      pics += '<div class="wsh-ph' + focused(1, c) + (prefs.bg === w.id ? ' is-on' : '') + '" data-sheet="1,' + c + '"><b><img src="' + esc(w.thumb) + '" alt=""></b><span>' + esc(w.name) + '</span></div>';
+    });
+    var themes = [['light', 'Clara'], ['dark', 'Escura'], ['auto', 'Automática']];
+    html = '<h2>Personalizar</h2>' +
+      '<div class="wsh-section" style="top:128px"><div class="wsh-cap">Degradês</div>' + scroller(0, 112, grads) + '</div>' +
+      '<div class="wsh-section" style="top:322px"><div class="wsh-cap">Fotos</div>' + scroller(1, 176, pics) + '</div>' +
+      '<div class="wsh-section" style="top:516px"><div class="wsh-cap">Aparência</div><div class="wsh-row">' +
+      themes.map(function (t, c) { return '<span class="wsh-opt' + focused(2, c) + (prefs.theme === t[0] ? ' is-on' : '') + '" data-sheet="2,' + c + '">' + t[1] + '</span>'; }).join('') + '</div></div>' +
+      '<div class="wsh-section" style="top:646px"><div class="wsh-cap">Sons</div><div class="wsh-row">' +
       '<span class="wsh-opt' + focused(3, 0) + (prefs.sound ? ' is-on' : '') + '" data-sheet="3,0">Ligados</span>' +
       '<span class="wsh-opt' + focused(3, 1) + (!prefs.sound ? ' is-on' : '') + '" data-sheet="3,1">Desligados</span></div></div>' +
-      '<div class="wsh-section" style="top:770px"><div class="wsh-link' + focused(4, 0) + '" data-sheet="4,0">Mais opções do CleanFrame</div>' +
+      '<div class="wsh-section" style="top:776px"><div class="wsh-link' + focused(4, 0) + '" data-sheet="4,0">Mais opções do CleanFrame</div>' +
       '<div class="wsh-link' + focused(5, 0) + '" data-sheet="5,0">Ajustes da TV</div></div>';
     if (sheetEl._html !== html) { sheetEl._html = html; sheetEl.innerHTML = html; }
   }
 
   /* ---------- Data refresh ---------- */
-  var REFRESH = { weather: 20 * 60000, spotify: 15000, tmdb: 6 * 3600000, stremio: 5 * 60000, pluto: 2 * 60000, news: 15 * 60000, wifi: 60000, light: 60000, volume: 30000 };
+  var REFRESH = { picture: 10 * 60000, weather: 20 * 60000, spotify: 15000, tmdb: 6 * 3600000, stremio: 5 * 60000, pluto: 2 * 60000, news: 15 * 60000, wifi: 60000, light: 60000, volume: 30000 };
   var FETCH = {
     weather: function (done) { D.weather(done); }, spotify: function (done) { D.spotify(done); }, tmdb: function (done) { D.tmdb(done); },
     stremio: function (done) { D.stremio(done); }, pluto: function (done) { data.plutoTried = true; D.pluto(done); }, news: function (done) { D.news(done); },
-    wifi: function (done) { D.wifi(done); }, light: function (done) { D.light(done); }, volume: function (done) { D.volume(done); }
+    wifi: function (done) { D.wifi(done); }, light: function (done) { D.light(done); }, volume: function (done) { D.volume(done); },
+    picture: function (done) { if (D.pictureMode) D.pictureMode(done); else done({ setup: true }); }
   };
-  var RENDER = { weather: renderWeather, spotify: renderSpotify, tmdb: renderHbo, stremio: renderStremio, pluto: renderPluto, news: renderNews, wifi: renderNet, light: renderNet, volume: renderPills };
+  var RENDER = { weather: function () { var was = root.className.indexOf(' is-dark') >= 0; renderWeather(); if (was !== isDark()) renderAll(); }, spotify: renderSpotify, tmdb: renderHbo, stremio: renderStremio, pluto: renderPluto, news: renderNews, wifi: renderNet, light: renderNet, volume: renderPills, picture: renderPills };
   function refresh(name, now) {
     clearTimeout(timers[name]);
     if (!st.active || document.hidden) return;
@@ -629,6 +704,7 @@
     clearTimeout(timers.clock);
     if (!root) return;
     renderTop();
+    if ((root.className.indexOf(' is-dark') >= 0) !== isDark()) renderAll();
     timers.clock = setTimeout(tick, 60000 - Date.now() % 60000 + 50);
   }
 
@@ -699,7 +775,8 @@
       renderFocus();
       return true;
     },
-    qa: function () { return { zone: st.zone, focus: st.zone === 'dock' ? dockItems[st.dock] && dockItems[st.dock].key : st.focus, offset: st.off, background: prefs.bg, dark: prefs.dark, sound: prefs.sound, apple: !!A, sheet: st.sheet ? { row: st.sheet.row, col: st.sheet.col } : null, adjust: st.adjust }; },
-    gradients: GRADIENTS.map(function (g) { return g[0]; })
+    qa: function () { return { zone: st.zone, focus: st.zone === 'dock' ? dockItems[st.dock] && dockItems[st.dock].key : st.focus, offset: st.off, background: prefs.bg, dark: isDark(), theme: prefs.theme, sound: prefs.sound, apple: !!A, sheet: st.sheet ? { row: st.sheet.row, col: st.sheet.col } : null, adjust: st.adjust }; },
+    gradients: GRADIENTS.map(function (g) { return g[0]; }),
+    photos: function () { return bgChoices('photo').map(function (p) { return p.id; }); }
   };
 }());

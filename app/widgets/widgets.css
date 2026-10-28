@@ -1,6 +1,7 @@
 /* Frame Home widgets layout. Chromium 85 safe: explicit edges, child margins, transform/opacity animation only.
    Motion and type follow tvOS (Human Interface Guidelines + tvOS 18 design kit values, scaled to this stage):
-   focus lift x1.06-1.224 with shadow 0 30 40 .35, lean + sway + specular sheen, white focused buttons,
+   focus lift x1.06-1.224 with shadow 0 30 40 .35, a quick spring with a little overshoot (as Free My TV's web home,
+   MIT, github.com/simbasjungles/free-my-tv), no idle motion, white focused buttons,
    SF Pro (personal builds) with the tvOS type ramp 23/25/29/31/38/48/57/76. */
 @font-face{font-family:'Frame Inter';font-weight:300;font-display:swap;src:url(../assets/fonts/inter/Inter-300.woff2) format('woff2')}
 @font-face{font-family:'Frame Inter';font-weight:400;font-display:swap;src:url(../assets/fonts/inter/Inter-400.woff2) format('woff2')}
@@ -10,8 +11,8 @@
 @font-face{font-family:'Frame Inter';font-weight:800;font-display:swap;src:url(../assets/fonts/inter/Inter-800.woff2) format('woff2')}
 
 .wh{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:hidden;display:none;color:#fff;font-family:'Frame SF Text','Frame Inter',Manrope,Arial,sans-serif;font-size:20px;line-height:1.2;letter-spacing:-.01em;-webkit-font-smoothing:antialiased;
-  --display:'Frame SF Display','Frame Inter',Manrope,Arial,sans-serif;--ease:cubic-bezier(.2,.8,.2,1);--spring:cubic-bezier(.34,1.32,.64,1);
-  --focus:cubic-bezier(.2,.9,.25,1);--scroll:cubic-bezier(.25,.8,.25,1)}
+  --display:'Frame SF Display','Frame Inter',Manrope,Arial,sans-serif;--ease:cubic-bezier(.2,.9,.3,1);--spring:cubic-bezier(.2,.9,.3,1.2);
+  --focus:cubic-bezier(.2,.9,.3,1.2);--scroll:cubic-bezier(.2,.9,.3,1)}
 .wh[data-sf] .ww-temp,.wh[data-sf] .wh-big,.wh[data-sf] .wc-title,.wh[data-sf] .wh-sheet h2{font-family:var(--display)}
 .stage.l-widgets .wh{display:block}
 .stage.l-widgets .home{visibility:hidden}
@@ -39,54 +40,35 @@
 .wh-avatar img{display:block;width:77px;height:77px;object-fit:cover}
 
 /* Strip */
-.wh-strip{position:absolute;left:129px;top:290px;width:3448px;height:500px;transition:transform .6s var(--scroll);will-change:transform}
-.wc{position:absolute;box-sizing:border-box;border-radius:34px;color:#fff;transition:transform .3s var(--focus),opacity .5s ease}
+.wh-strip{position:absolute;left:129px;top:290px;width:3448px;height:500px;transition:transform .3s var(--scroll);will-change:transform}
+.wc{position:absolute;box-sizing:border-box;border-radius:34px;color:#fff;transition:transform .2s var(--focus),opacity .3s ease}
 .wh.is-intro .wc,.wh.is-intro .wd,.wh.is-intro .wh-top{opacity:0;transform:translate3d(0,26px,0) scale(.97)}
-.wh-top,.wd{transition:opacity .5s ease,transform .5s var(--ease)}
+.wh-top,.wd{transition:opacity .3s ease,transform .3s var(--ease)}
 /* tvOS focus: lift + deeper shadow (no ring). The shadow is a pre-rendered layer that only fades. */
-.wc::before{content:'';position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;box-shadow:0 30px 40px rgba(0,0,0,.35),0 12px 18px rgba(0,0,0,.18);opacity:0;transition:opacity .3s ease}
+.wc::before{content:'';position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;box-shadow:0 30px 40px rgba(0,0,0,.35),0 12px 18px rgba(0,0,0,.18);opacity:0;transition:opacity .2s ease}
 .wc.is-focus{transform:scale(var(--fs,1.1));z-index:3}
 .wc.is-focus::before{opacity:1}
 .wc-tilt{position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;transform-origin:50% 50%}
 .wc-body{position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;overflow:hidden;box-shadow:0 6px 10px rgba(0,0,0,.1)}
-/* Specular sheen: a soft highlight and a hairline rim that drift with the sway. Focused item only. */
-.wc-gloss{position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;overflow:hidden;opacity:0;transition:opacity .3s ease;pointer-events:none;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
-.wc-gloss::before{content:'';position:absolute;left:-30%;top:-95%;width:160%;height:150%;background:radial-gradient(closest-side,rgba(255,255,255,.08),rgba(255,255,255,0))}
+/* Focused item: a hairline light on top, no idle motion (snappy, and lighter on the TV's GPU). */
+.wc-gloss{position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;opacity:0;transition:opacity .15s ease;pointer-events:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
 .is-focus>.wc-tilt>.wc-gloss{opacity:1}
-.is-focus>.wc-tilt{animation:wsway 7s ease-in-out .6s infinite}
-.is-focus>.wc-tilt>.wc-gloss::before{animation:wsheen 7s ease-in-out .6s infinite}
-/* Lean toward the direction of travel, then settle into the sway. */
-.is-focus.lean-right>.wc-tilt{animation:wlean-right .6s var(--focus),wsway 7s ease-in-out .6s infinite}
-.is-focus.lean-left>.wc-tilt{animation:wlean-left .6s var(--focus),wsway 7s ease-in-out .6s infinite}
-.is-focus.lean-up>.wc-tilt{animation:wlean-up .6s var(--focus),wsway 7s ease-in-out .6s infinite}
-.is-focus.lean-down>.wc-tilt{animation:wlean-down .6s var(--focus),wsway 7s ease-in-out .6s infinite}
-.is-focus.lean-right>.wc-tilt>.wc-gloss::before{animation:wsheen-right .6s var(--focus),wsheen 7s ease-in-out .6s infinite}
-.is-focus.lean-left>.wc-tilt>.wc-gloss::before{animation:wsheen-left .6s var(--focus),wsheen 7s ease-in-out .6s infinite}
-@keyframes wlean-right{0%{transform:perspective(1100px) rotateY(7deg) translate3d(-10px,0,0)}100%{transform:perspective(1100px) rotateY(0) translate3d(0,0,0)}}
-@keyframes wlean-left{0%{transform:perspective(1100px) rotateY(-7deg) translate3d(10px,0,0)}100%{transform:perspective(1100px) rotateY(0) translate3d(0,0,0)}}
-@keyframes wlean-up{0%{transform:perspective(1100px) rotateX(-7deg) translate3d(0,10px,0)}100%{transform:perspective(1100px) rotateX(0) translate3d(0,0,0)}}
-@keyframes wlean-down{0%{transform:perspective(1100px) rotateX(7deg) translate3d(0,-10px,0)}100%{transform:perspective(1100px) rotateX(0) translate3d(0,0,0)}}
-@keyframes wsway{0%,100%{transform:perspective(1100px) rotateX(0) rotateY(0)}25%{transform:perspective(1100px) rotateX(1.4deg) rotateY(-1.8deg)}50%{transform:perspective(1100px) rotateX(-.8deg) rotateY(1.4deg)}75%{transform:perspective(1100px) rotateX(-1.4deg) rotateY(-.6deg)}}
-@keyframes wsheen{0%,100%{transform:translate3d(0,0,0)}25%{transform:translate3d(9%,-4%,0)}50%{transform:translate3d(-8%,3%,0)}75%{transform:translate3d(4%,5%,0)}}
-@keyframes wsheen-right{0%{transform:translate3d(-14%,0,0)}100%{transform:translate3d(0,0,0)}}
-@keyframes wsheen-left{0%{transform:translate3d(14%,0,0)}100%{transform:translate3d(0,0,0)}}
 /* Press-in on OK and a bump when there is nowhere to go. */
-.wc.is-focus.is-press,.wt-dot.is-focus.is-press{animation:wpress .26s ease}
+.wc.is-focus.is-press,.wt-dot.is-focus.is-press{animation:wpress .16s ease}
 @keyframes wpress{0%{transform:scale(var(--fs,1.1))}35%{transform:scale(var(--fsp,1.05))}100%{transform:scale(var(--fs,1.1))}}
-.is-focus.bump-right>.wc-tilt{animation:wbump-x .32s ease}
-.is-focus.bump-left>.wc-tilt{animation:wbump-x .32s ease reverse}
-.is-focus.bump-down>.wc-tilt{animation:wbump-y .32s ease}
-.is-focus.bump-up>.wc-tilt{animation:wbump-y .32s ease reverse}
-@keyframes wbump-x{0%,100%{transform:translate3d(0,0,0)}30%{transform:perspective(1100px) rotateY(-4deg) translate3d(9px,0,0)}65%{transform:translate3d(-3px,0,0)}}
-@keyframes wbump-y{0%,100%{transform:translate3d(0,0,0)}30%{transform:perspective(1100px) rotateX(4deg) translate3d(0,9px,0)}65%{transform:translate3d(0,-3px,0)}}
+.is-focus.bump-right>.wc-tilt{animation:wbump-x .2s ease}
+.is-focus.bump-left>.wc-tilt{animation:wbump-x .2s ease reverse}
+.is-focus.bump-down>.wc-tilt{animation:wbump-y .2s ease}
+.is-focus.bump-up>.wc-tilt{animation:wbump-y .2s ease reverse}
+@keyframes wbump-x{0%,100%{transform:translate3d(0,0,0)}40%{transform:translate3d(8px,0,0)}}
+@keyframes wbump-y{0%,100%{transform:translate3d(0,0,0)}40%{transform:translate3d(0,8px,0)}}
 .wc.is-adjust .wp-level{background:#fff}
 .wc.is-adjust::before{box-shadow:0 30px 40px rgba(0,0,0,.35),0 0 0 4px rgba(255,255,255,.5)}
 .wc-pad{position:absolute;left:24px;top:22px;right:24px;bottom:22px}
 .wc-light .wc-body{background:#fff;color:#1D1D1F}
 .wh.is-dark .wc-light .wc-body{background:#1C1C1E;color:#fff}
 /* tvOS buttons: translucent grey at rest, white with a dark glyph when focused. */
-.wc-glass .wc-body{background:rgba(130,130,130,.42);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);transition:background-color .25s ease,color .25s ease}
+.wc-glass .wc-body{background:rgba(130,130,130,.42);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);transition:background-color .15s ease,color .15s ease}
 .wc-glass{color:#fff}
 .wc-glass.is-focus{color:#1D1D1F}
 .wc-glass.is-focus .wc-body{background:rgba(255,255,255,.94)}
@@ -97,7 +79,10 @@
 .wc-title{font-size:22px;font-weight:600;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .wc-sub{font-size:18px;font-weight:500;color:#6E6E73;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .wc-hint{font-size:16px;font-weight:500;line-height:1.3;opacity:.75}
-.wc-img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .6s ease}
+.wc-img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s ease;border-radius:inherit}
+.whb .wc-body,.wst .wc-body,.wnw .wc-body,.ws-art{-webkit-mask-image:-webkit-radial-gradient(white,black)}
+.wc-shade-b,.wc-shade-l{border-radius:inherit}
+.wc-hero-text{position:absolute;left:26px;right:26px;bottom:22px}
 .wc-img.is-ready{opacity:1}
 .wc-shade-b{position:absolute;left:0;top:0;right:0;bottom:0;background:linear-gradient(180deg,rgba(0,0,0,0) 35%,rgba(0,0,0,.82) 100%)}
 .wc-shade-l{position:absolute;left:0;top:0;right:0;bottom:0;background:linear-gradient(90deg,rgba(0,0,0,.78) 0%,rgba(0,0,0,.2) 65%,rgba(0,0,0,0) 100%)}
@@ -120,15 +105,6 @@
 .wc-icon{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover}
 .wc-app,.wk{border-radius:52px}
 .wc.has-art{background:none}
-/* tvOS layered icon: the logo layer drifts against the background while focused (parallax depth). */
-.wc-fg{transition:transform .4s var(--focus)}
-.wd-tile .wc-fg{transition:transform .4s var(--focus)}
-.is-focus .wc-fg{transform:scale(1.04);animation:wparallax 7s ease-in-out .6s infinite}
-.is-focus.lean-right .wc-fg{animation:wpar-right .6s var(--focus),wparallax 7s ease-in-out .6s infinite}
-.is-focus.lean-left .wc-fg{animation:wpar-left .6s var(--focus),wparallax 7s ease-in-out .6s infinite}
-@keyframes wparallax{0%,100%{transform:scale(1.04) translate3d(0,0,0)}25%{transform:scale(1.04) translate3d(-5px,-3px,0)}50%{transform:scale(1.04) translate3d(4px,2px,0)}75%{transform:scale(1.04) translate3d(-2px,4px,0)}}
-@keyframes wpar-right{0%{transform:scale(1.04) translate3d(-12px,0,0)}100%{transform:scale(1.04) translate3d(0,0,0)}}
-@keyframes wpar-left{0%{transform:scale(1.04) translate3d(12px,0,0)}100%{transform:scale(1.04) translate3d(0,0,0)}}
 .has-art .wc-body{background:#000}
 /* iOS 26 icon rendering, kept subtle as on the App Store: a hairline light rim (brighter on top) and a soft top light. */
 .wc-app .wc-body::after,.wk.has-art .wc-body::after,.wd-tile::after{content:'';position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;pointer-events:none;
@@ -184,7 +160,7 @@
 
 /* TV central */
 .wt .wc-body{border-radius:52px}
-.wt-dot{position:absolute;width:84px;height:84px;border-radius:42px;color:#fff;background:rgba(130,130,130,.42);--fs:1.18;--fsp:1.1;transition:transform .3s var(--focus),background-color .25s ease,color .25s ease,box-shadow .3s ease}
+.wt-dot{position:absolute;width:84px;height:84px;border-radius:42px;color:#fff;background:rgba(130,130,130,.42);--fs:1.18;--fsp:1.1;transition:transform .2s var(--focus),background-color .15s ease,color .15s ease,box-shadow .2s ease}
 .wt-glyph .wc-ico{position:absolute;left:24px;top:24px}
 .wt-dot.is-art{background:linear-gradient(160deg,#C79A72,#8A5A3E)}
 .wt-dot.is-on{background:#0A84FF}
@@ -205,19 +181,22 @@
 
 /* Dock: square iPadOS icons (88px, the size set in Figma) on a MediumDark platter; only the focused icon lifts. */
 .wh-dock{position:absolute;left:960px;top:880px;height:124px}
-.wh-dock-bg{position:absolute;left:0;top:0;height:124px;border-radius:40px;background:rgba(30,30,30,.5);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
-.wd{position:absolute;top:18px;width:88px;height:88px;border-radius:20px;--fs:1.224;--fsp:1.16;transition:transform .3s var(--focus)}
-.wd::before{content:'';position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;box-shadow:0 30px 40px rgba(0,0,0,.35);opacity:0;transition:opacity .3s ease}
+.wh-dock-bg{position:absolute;left:0;top:0;height:124px;border-radius:42px;
+  background:linear-gradient(rgba(255,255,255,.62),rgba(255,255,255,.4));
+  box-shadow:0 18px 40px rgba(0,0,0,.14),inset 0 1.5px 0 rgba(255,255,255,.95),inset 0 0 0 1px rgba(255,255,255,.55)}
+.wh.is-dark .wh-dock-bg{background:linear-gradient(rgba(34,34,38,.72),rgba(17,17,19,.6));box-shadow:0 18px 40px rgba(0,0,0,.32),inset 0 1.5px 0 rgba(255,255,255,.14),inset 0 0 0 1px rgba(255,255,255,.08)}
+.wd{position:absolute;top:18px;width:88px;height:88px;border-radius:20px;--fs:1.224;--fsp:1.16;transition:transform .2s var(--focus)}
+.wd::before{content:'';position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;box-shadow:0 18px 30px rgba(0,0,0,.34);opacity:0;transition:opacity .2s ease}
 .wd.is-focus{z-index:2}
 .wd.is-focus::before{opacity:1}
-.wd.is-focus.is-press{animation:wpress .26s ease}
+.wd.is-focus.is-press{animation:wpress .16s ease}
 .wd-tile{position:absolute;left:0;top:0;width:88px;height:88px;border-radius:20px;overflow:hidden;background:rgba(255,255,255,.92);color:#3A3A3C;text-align:center;font-size:13px;font-weight:600;line-height:88px;box-shadow:0 6px 5px rgba(0,0,0,.05)}
 .wd-tile img{position:absolute;left:0;top:0;width:88px;height:88px}
 .wd-tile .wd-full{object-fit:cover}
 .wd-tile .wd-tv{object-fit:cover}
 .wd-tile .wd-mark{left:20px;top:20px;width:48px;height:48px;object-fit:contain}
 .wd-word{font-size:13px;font-weight:700}
-.wh-dock-label{position:absolute;top:134px;font-size:29px;font-weight:500;line-height:36px;white-space:nowrap;text-shadow:0 2px 8px rgba(0,0,0,.35);opacity:0;transform:translate(-50%,-6px);transition:opacity .25s ease,transform .3s var(--focus)}
+.wh-dock-label{position:absolute;top:134px;font-size:29px;font-weight:500;line-height:36px;white-space:nowrap;text-shadow:0 2px 8px rgba(0,0,0,.35);opacity:0;transform:translate(-50%,-6px);transition:opacity .14s ease,transform .2s var(--ease)}
 .wh-dock-label.is-on{opacity:1;transform:translate(-50%,0)}
 
 /* Brand tiles */
@@ -236,7 +215,7 @@
 .b-browser{background:linear-gradient(150deg,#7A5CFA,#3E7BFA)}
 
 /* tvOS caption: the focused item's name in SF Pro Medium 29, white on the wallpaper. */
-.wh-cap{position:absolute;z-index:4;font-size:29px;font-weight:500;line-height:36px;white-space:nowrap;text-shadow:0 2px 8px rgba(0,0,0,.35);opacity:0;transform:translate(-50%,-6px);transition:opacity .25s ease,transform .3s var(--focus);pointer-events:none}
+.wh-cap{position:absolute;z-index:4;font-size:29px;font-weight:500;line-height:36px;white-space:nowrap;text-shadow:0 2px 8px rgba(0,0,0,.35);opacity:0;transform:translate(-50%,-6px);transition:opacity .14s ease,transform .2s var(--ease);pointer-events:none}
 .wh-cap.is-above{transform:translate(-50%,6px)}
 .wh-cap.is-on{opacity:1;transform:translate(-50%,0)}
 
@@ -251,9 +230,10 @@
 .wh-toast.is-on{opacity:1;transform:translateY(0)}
 
 /* Personalise sheet */
-.wh-top,.wh-strip,.wh-dock{transition-property:opacity,transform;transition-duration:.4s,.55s}
+.wh-top,.wh-dock{transition-property:opacity,transform;transition-duration:.25s,.3s}
+.wh-strip{transition-property:opacity,transform;transition-duration:.25s,.3s}
 .wh.has-sheet .wh-top,.wh.has-sheet .wh-strip,.wh.has-sheet .wh-dock{opacity:.3}
-.wh-sheet{position:absolute;z-index:10;right:48px;top:48px;bottom:48px;width:640px;border-radius:44px;background:rgba(24,24,28,.97);box-shadow:0 40px 90px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.1);opacity:0;transform:translateX(60px);transition:opacity .3s ease,transform .45s var(--ease);pointer-events:none}
+.wh-sheet{position:absolute;z-index:10;right:48px;top:48px;bottom:48px;width:640px;border-radius:44px;background:rgba(24,24,28,.97);box-shadow:0 40px 90px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.1);opacity:0;transform:translateX(60px);transition:opacity .2s ease,transform .3s var(--ease);pointer-events:none}
 .wh-sheet.is-open{opacity:1;transform:translateX(0)}
 .wh-sheet h2{margin:0;position:absolute;left:48px;top:40px;font-size:48px;font-weight:700;line-height:56px;letter-spacing:-.4px}
 .wsh-section{position:absolute;left:48px;right:48px}
@@ -274,3 +254,46 @@
 .wsh-link.is-focus{background:#fff;color:#1D1D1F;transform:scale(1.03)}
 
 @media (prefers-reduced-motion: reduce){.wh *,.wh *::before,.wh *::after{transition-duration:.01s!important;animation:none!important}}
+
+/* Backgrounds: photos from the CleanFrame gallery, with a light scrim so white text stays readable. */
+.wh-bg.is-photo{background-size:cover;background-position:center}
+.wh-dim{position:absolute;left:0;top:0;width:1920px;height:1080px;background:#000;opacity:0;transition:opacity .6s ease;pointer-events:none}
+.wh.on-photo .wh-dim{opacity:.22}
+.wh.is-dark .wh-dim{opacity:.42}
+.wh.is-dark.on-photo .wh-dim{opacity:.55}
+
+/* Dark appearance (iOS-style): dark cards and glass, dark app icons (personal builds), darker background. */
+.wh.is-dark .wc-glass .wc-body{background:rgba(44,44,48,.62);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),inset 0 0 0 1px rgba(255,255,255,.07)}
+.wh.is-dark .wc-glass.is-focus .wc-body{background:rgba(255,255,255,.94)}
+.wh.is-dark .wc-dim .wc-body{background:rgba(20,20,22,.62)}
+.wh.is-dark .ww .wc-body{background:linear-gradient(180deg,#1B4F7A 0%,#0F2E4D 100%)}
+.wh.is-dark .wnw .wc-body{background:#1C1C1E}
+.wh.is-dark .wd-tile{background:#1C1C1E;color:#F5F5F7}
+.wh.is-dark .b-youtube,.wh.is-dark .b-globoplay,.wh.is-dark .b-mercadoplay,.wh.is-dark .b-pluto,.wh.is-dark .b-browser,.wh.is-dark .b-stremio{background:linear-gradient(#2C2C30,#141416)}
+.wh.is-dark .b-mercadoplay{color:#FFE600}
+.wh.is-dark .wr-on .wc-body{background:rgba(44,44,48,.62)}
+.wh.is-dark .wr-on{color:#fff}
+
+/* News: the lead story with its photo, two more headlines below. */
+.wnw-lead{position:absolute;left:0;top:0;right:0;height:268px;overflow:hidden;background:#2C2C30}
+.wnw-noimg{position:absolute;left:0;top:0;right:0;bottom:0;background:linear-gradient(150deg,#C4170C,#7A0E08)}
+.wnw-badge{position:absolute;left:24px;top:20px;padding:0 12px;height:34px;border-radius:10px;background:#C4170C;color:#fff;font-size:20px;font-weight:800;line-height:34px;letter-spacing:-.3px}
+.wnw-lead-text{position:absolute;left:24px;right:24px;bottom:18px;color:#fff}
+.wnw-lead-text .wnw-title{font-size:25px;font-weight:700;max-height:62px}
+.wnw-when.is-light{color:rgba(255,255,255,.75)}
+.wnw-list{top:278px!important;left:24px!important;right:24px!important}
+.wnw-list .wnw-title{font-size:20px;max-height:50px}
+.wnw-list .wnw-item{padding:9px 0}
+
+/* Personalise sheet: sideways rows for gradients and photos. */
+.wsh-scroll{position:relative;margin-top:16px;height:150px;overflow:hidden}
+.wsh-track{position:absolute;left:0;top:4px;height:146px;white-space:nowrap;transition:transform .3s var(--scroll)}
+.wsh-track .wsh-sw{margin:0 16px 0 0;width:96px}
+.wsh-track .wsh-sw span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wsh-ph{position:relative;display:inline-block;vertical-align:top;width:160px;margin-right:16px;text-align:center;transition:transform .2s var(--spring)}
+.wsh-ph b{display:block;width:160px;height:96px;border-radius:18px;overflow:hidden;box-shadow:inset 0 0 0 2px rgba(255,255,255,.18);background:#333}
+.wsh-ph img{display:block;width:160px;height:96px;object-fit:cover}
+.wsh-ph span{display:block;margin-top:8px;font-size:15px;font-weight:500;color:rgba(255,255,255,.7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wsh-ph.is-focus{transform:scale(1.06)}
+.wsh-ph.is-focus b{box-shadow:0 0 0 4px #fff}
+.wsh-ph.is-on span{color:#fff;font-weight:700}

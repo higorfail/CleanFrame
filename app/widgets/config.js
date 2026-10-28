@@ -31,12 +31,12 @@ window.FrameWidgetsConfig = {
     stremio: { name: 'Stremio', ids: ['IkWsFHtOY9.Stremio'], match: 'stremio', brand: 'stremio' },
     spotify: { name: 'Spotify', ids: ['rJeHak5zRg.Spotify'], match: 'spotify', brand: 'spotify' },
     hbomax: { name: 'HBO Max', ids: ['5b8c3eb16b.BeamCTVDev', 'cj37Ni3qXM.HBONow'], match: '^(hbo ?)?max$|hbo max', brand: 'hbomax' },
-    pluto: { name: 'Pluto TV', ids: [], match: 'pluto' },
-    globoplay: { name: 'Globoplay', ids: [], match: 'globoplay' },
+    pluto: { name: 'Pluto TV', ids: ['X1pKpFCiUu.PlutoTV'], match: 'pluto' },
+    globoplay: { name: 'Globoplay', ids: ['LnLzvqrcEY.globo', 'org.tizen.globoplayaria'], match: 'globoplay' },
     netflix: { name: 'Netflix', ids: ['org.tizen.netflix-app'], match: 'netflix', brand: 'netflix' },
-    mercadoplay: { name: 'Mercado Play', ids: [], match: 'mercado ?play' },
-    alexa: { name: 'Alexa', ids: [], match: 'alexa' },
-    browser: { name: 'Navegador', ids: ['org.tizen.browser'], match: 'internet|browser|navegador' }
+    mercadoplay: { name: 'Mercado Play', ids: ['nbCEREFaoy.mercadoplay'], match: 'mercado ?play' },
+    alexa: { name: 'Alexa', ids: ['AQKO41xyKP.AmazonAlexa'], match: 'alexa' },
+    browser: { name: 'Navegador', ids: ['org.tizen.browser', 'com.samsung.tv.knox-browser'], match: 'internet|browser|navegador' }
   },
   dock: ['youtube', 'stremio', 'spotify', 'hbomax', 'pluto', 'globoplay', 'netflix', 'mercadoplay']
 };

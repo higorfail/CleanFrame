@@ -63,7 +63,7 @@
         hours.push({ h: j.hourly.time[i].slice(11, 13) + 'h', t: Math.round(j.hourly.temperature_2m[i]), icon: wmo(j.hourly.weather_code[i], j.hourly.is_day[i]).icon });
       }
       var data = { label: loc.label || '', temp: Math.round(j.current.temperature_2m), icon: cur.icon, text: cur.text,
-        max: Math.round(j.daily.temperature_2m_max[0]), min: Math.round(j.daily.temperature_2m_min[0]), hours: hours };
+        max: Math.round(j.daily.temperature_2m_max[0]), min: Math.round(j.daily.temperature_2m_min[0]), hours: hours, day: !!j.current.is_day };
       save('weather', data); done(null, data);
     });
   }
@@ -209,20 +209,27 @@
     var m = Math.max(1, Math.round((Date.now() - ms) / 60000));
     return m < 60 ? 'há ' + m + ' min' : m < 1440 ? 'há ' + Math.round(m / 60) + ' h' : 'há ' + Math.round(m / 1440) + ' d';
   }
+  function newsOut(list) { return list.map(function (n) { return { title: n.title, when: ago(n.t), image: n.image || '' }; }); }
+  function itemImage(item) {
+    var media = item.getElementsByTagNameNS ? item.getElementsByTagNameNS('http://search.yahoo.com/mrss/', 'content') : [];
+    for (var m = 0; m < media.length; m++) { var u = media[m].getAttribute('url'); if (u && !/\.(mp4|m3u8)(\?|$)/i.test(u)) return u; }
+    var desc = item.getElementsByTagName('description')[0], hit = desc && /<img[^>]+src=["']([^"']+)["']/i.exec(desc.textContent);
+    return hit ? hit[1] : '';
+  }
   function news(done) {
-    var hit = fresh('news', 15 * 60000);
-    if (hit) { done(null, hit.map(function (n) { return { title: n.title, when: ago(n.t) }; })); return; }
+    var hit = fresh('news2', 15 * 60000);
+    if (hit) { done(null, newsOut(hit)); return; }
     request({ url: CFG.news && CFG.news.feed || 'https://g1.globo.com/rss/g1/', text: true }, function (err, xml) {
       var out = [];
       try {
         var doc = new window.DOMParser().parseFromString(xml, 'text/xml'), items = doc.getElementsByTagName('item');
-        for (var i = 0; i < items.length && out.length < 4; i++) {
+        for (var i = 0; i < items.length && out.length < 8; i++) {
           var title = items[i].getElementsByTagName('title')[0], date = items[i].getElementsByTagName('pubDate')[0];
-          if (title) out.push({ title: title.textContent.replace(/\s+/g, ' ').trim(), t: date ? Date.parse(date.textContent) || Date.now() : Date.now() });
+          if (title) out.push({ title: title.textContent.replace(/\s+/g, ' ').trim(), t: date ? Date.parse(date.textContent) || Date.now() : Date.now(), image: itemImage(items[i]) });
         }
       } catch (e) { err = err || e; }
-      if (err || !out.length) { var old = last('news'); done(err || new Error('news'), old && old.map(function (n) { return { title: n.title, when: ago(n.t) }; })); return; }
-      save('news', out); done(null, out.map(function (n) { return { title: n.title, when: ago(n.t) }; }));
+      if (err || !out.length) { var old = last('news2'); done(err || new Error('news'), old && newsOut(old)); return; }
+      save('news2', out); done(null, newsOut(out));
     });
   }
 
@@ -241,21 +248,60 @@
       body: JSON.stringify({ commands: [{ component: 'main', capability: 'switch', command: on ? 'on' : 'off' }] }) }, done);
   }
 
+  /* ---------- The TV through SmartThings (volume, picture mode). Works where the web API is blocked. ---------- */
+  function tvConfigured() { return !!(CFG.smartthings && CFG.smartthings.token && CFG.smartthings.tvId); }
+  function stDevice(path) { return 'https://api.smartthings.com/v1/devices/' + encodeURIComponent(CFG.smartthings.tvId) + path; }
+  function stHeaders(json) { var h = { Authorization: 'Bearer ' + CFG.smartthings.token }; if (json) h['Content-Type'] = 'application/json'; return h; }
+  function tvStatus(done) {
+    request({ url: stDevice('/components/main/status'), headers: stHeaders() }, function (err, j) {
+      if (err || !j) { done(err || new Error('tv')); return; }
+      try {
+        var pm = j['custom.picturemode'] || {}, modes = pm.supportedPictureModes && pm.supportedPictureModes.value || [];
+        done(null, { level: +j.audioVolume.volume.value, muted: j.audioMute.mute.value === 'muted',
+          picture: pm.pictureMode && pm.pictureMode.value || '', pictures: modes });
+      } catch (e) { done(e); }
+    });
+  }
+  function tvCommand(capability, command, args, done) {
+    var cmd = { component: 'main', capability: capability, command: command };
+    if (args) cmd['arguments'] = args;
+    request({ method: 'POST', url: stDevice('/commands'), headers: stHeaders(true), body: JSON.stringify({ commands: [cmd] }) }, function (err) { done(err || null); });
+  }
+
   /* ---------- The TV itself ---------- */
   function audio() { return window.tizen && window.tizen.tvaudiocontrol; }
+  function localVolume() { var a = audio(); return a ? { level: a.getVolume(), muted: a.isMute() } : null; }
   function volume(done) {
-    var a = audio();
-    if (!a) { done({ device: true }); return; }
-    try { done(null, { level: a.getVolume(), muted: a.isMute() }); } catch (e) { done(e); }
+    if (tvConfigured()) { tvStatus(function (err, s) { if (!err) { done(null, s); return; } try { var v = localVolume(); if (v) { done(null, v); return; } } catch (e) { /* fall through */ } done(err); }); return; }
+    try { var v = localVolume(); if (v) { done(null, v); return; } } catch (e) { done(e); return; }
+    done({ device: true });
   }
   function changeVolume(step, done) {
     var a = audio();
-    if (!a) { done({ device: true }); return; }
+    // Local first: instant. SmartThings when the TV refuses the web API (or it is missing).
     try {
-      if (step === 'mute') a.setMute(!a.isMute());
-      else if (step > 0) a.setVolumeUp(); else a.setVolumeDown();
-      done(null, { level: a.getVolume(), muted: a.isMute() });
-    } catch (e) { done(e); }
+      if (a) {
+        if (step === 'mute') a.setMute(!a.isMute());
+        else if (step > 0) a.setVolumeUp(); else a.setVolumeDown();
+        done(null, { level: a.getVolume(), muted: a.isMute() });
+        return;
+      }
+    } catch (e) { if (!tvConfigured()) { done(e); return; } }
+    if (!tvConfigured()) { done({ device: true }); return; }
+    var finish = function (err) { if (err) { done(err); return; } setTimeout(function () { tvStatus(done); }, 350); };
+    if (step === 'mute') tvStatus(function (e, st) { if (e) { done(e); return; } tvCommand('audioMute', 'setMute', [st.muted ? 'unmuted' : 'muted'], finish); });
+    else tvCommand('audioVolume', step > 0 ? 'volumeUp' : 'volumeDown', null, finish);
+  }
+  function pictureMode(done) {
+    if (!tvConfigured()) { done({ setup: true }); return; }
+    tvStatus(function (err, s) { done(err, s && { mode: s.picture, modes: s.pictures }); });
+  }
+  function nextPictureMode(done) {
+    pictureMode(function (err, p) {
+      if (err || !p || !p.modes.length) { done(err || new Error('picture')); return; }
+      var next = p.modes[(p.modes.indexOf(p.mode) + 1) % p.modes.length];
+      tvCommand('custom.picturemode', 'setPictureMode', [next], function (e) { done(e, e ? null : { mode: next, modes: p.modes }); });
+    });
   }
   function wifi(done) {
     var s = window.tizen && window.tizen.systeminfo;
@@ -278,7 +324,7 @@
 
   window.FrameWidgetsData = {
     onTV: onTV, weather: weather, spotify: spotify, spotifyControl: spotifyControl, tmdb: tmdb, stremio: stremio, pluto: pluto,
-    news: news, light: light, setLight: setLight, volume: volume, changeVolume: changeVolume, wifi: wifi, openUrl: openUrl,
+    news: news, light: light, setLight: setLight, volume: volume, changeVolume: changeVolume, pictureMode: pictureMode, nextPictureMode: nextPictureMode, tvConfigured: tvConfigured, wifi: wifi, openUrl: openUrl,
     last: last
   };
 }());

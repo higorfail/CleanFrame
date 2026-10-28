@@ -183,15 +183,15 @@
       renderApps(); renderDock();
     });
   }
-  /* Apple icon rule, the same everywhere (strip and dock): one icon per app. First the Apple TV icon,
+  /* Apple icon rule. Strip: one icon per app. First the Apple TV icon,
      squared (fitted to the width, its own background extended) and split into background + logo layers
      that separate in depth while focused; then the iPadOS icon; then the TV's own icon; then the brand mark.
-     Every Apple icon gets the same tvOS 26 glass material and Apple corner radius in CSS. */
+     Strip icons get the tvOS 26 glass material in CSS. Dock: the square iPadOS icon as it is. */
   function hasAppleIcon(key) { return !!(appleIcon(key + '-tvbg') && appleIcon(key + '-tvfg') || appleIcon(key)); }
   function tileInner(info, big) {
     var mark = info.brand ? 'assets/icons/' + info.brand + '.svg' : '', back = appleIcon(info.key + '-tvbg'), front = appleIcon(info.key + '-tvfg'), apple = appleIcon(info.key);
     var cls = big ? 'wc-icon' : 'wd-full';
-    if (back && front) return '<img class="' + cls + '" src="' + esc(back) + '" alt=""><img class="' + cls + ' wc-fg" src="' + esc(front) + '" alt="">';
+    if (big && back && front) return '<img class="' + cls + '" src="' + esc(back) + '" alt=""><img class="' + cls + ' wc-fg" src="' + esc(front) + '" alt="">';
     if (apple) return '<img class="' + cls + '" src="' + esc(apple) + '" alt="">';
     if (info.icon) return '<img class="' + (big ? 'wc-icon' : 'wd-tv') + '" src="' + esc(info.icon) + '" alt="">';
     if (big) return (mark ? '<div class="wc-mark"><img src="' + mark + '" alt=""></div>' : '<div class="wc-initial">' + esc(info.name.charAt(0)) + '</div>');
@@ -393,7 +393,7 @@
       var keep = on ? (item.el.className.match(/ lean-\w+| is-press| bump-\w+/g) || []).join('') : '';
       item.el.className = 'wd' + (on ? ' is-focus' : '') + keep;
       if (on && !was && st.dockLean) restart(item.el, 'lean-' + st.dockLean);
-      item.tile.className = 'wd-tile b-' + item.key + (hasAppleIcon(item.key) ? ' has-art' : '');
+      item.tile.className = 'wd-tile b-' + item.key + (appleIcon(item.key) ? ' has-art' : '');
       item.el.setAttribute('aria-label', info.name);
       var inner = tileInner(info, false);
       if (item.tile._html !== inner) { item.tile._html = inner; item.tile.innerHTML = inner; }

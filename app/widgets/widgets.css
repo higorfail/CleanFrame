@@ -38,6 +38,22 @@
 .g-floresta{background:linear-gradient(160deg,#173A2D 0%,#0D1F24 100%)}
 .g-grafite{background:linear-gradient(160deg,#2C2C31 0%,#131315 100%)}
 .g-meianoite{background:linear-gradient(160deg,#111836 0%,#05060F 100%)}
+/* Darker set */
+.g-onix{background:linear-gradient(160deg,#242428 0%,#0A0A0C 100%)}
+.g-breu{background:linear-gradient(160deg,#131316 0%,#000000 100%)}
+.g-carvao{background:linear-gradient(160deg,#3A3A40 0%,#141416 100%)}
+.g-abissal{background:linear-gradient(160deg,#0A2630 0%,#040810 100%)}
+.g-espaco{background:linear-gradient(160deg,#141A2E 0%,#02030A 100%)}
+/* Richer colours */
+.g-esmeralda{background:linear-gradient(160deg,#0E5A43 0%,#08241C 100%)}
+.g-cobre{background:linear-gradient(160deg,#7A3B1E 0%,#2A1510 100%)}
+.g-safira{background:linear-gradient(160deg,#153A8A 0%,#0A1636 100%)}
+/* Lighter set (dark chrome applied through on-light-bg) */
+.g-neve{background:linear-gradient(160deg,#FBFBFD 0%,#D7DBE2 100%)}
+.g-prata{background:linear-gradient(160deg,#E8EAEE 0%,#B9BFC9 100%)}
+.g-areia{background:linear-gradient(160deg,#EFE6D2 0%,#D3C2A0 100%)}
+.g-perola{background:linear-gradient(160deg,#F4ECEF 0%,#D8C8D2 100%)}
+.g-ceu{background:linear-gradient(160deg,#DCEBFA 0%,#A9C6E8 100%)}
 
 /* Top bar */
 .wh-top{position:absolute;left:129px;right:129px;top:80px;height:80px}
@@ -58,7 +74,10 @@
 .wc.is-focus{transform:scale(var(--fs,1.06));z-index:3}
 .wc.is-focus::before{opacity:1}
 .wc-tilt{position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;transform-origin:50% 50%}
-.wc-body{position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;overflow:hidden}
+/* Force the rounded clip onto the card's own layer: Chromium 85 (Tizen) does not clip a composited
+   child (a loaded image) to the parent's border-radius with overflow:hidden alone, so image corners
+   poked out square. The radial mask clips reliably on that engine and is static (no per-frame cost). */
+.wc-body{position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;overflow:hidden;-webkit-mask-image:-webkit-radial-gradient(#fff,#000)}
 /* Focused item: a hairline light on top, no idle motion (snappy, and lighter on the TV's GPU). */
 .wc-gloss{position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;opacity:0;transition:opacity .15s ease;pointer-events:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
 .is-focus>.wc-tilt>.wc-gloss{opacity:1}
@@ -132,7 +151,7 @@
 .ww-range{font-size:16px;font-weight:500;margin-top:2px}
 
 /* Spotify — iOS Now Playing layout: art left, title top, controls centred, a progress bar with times. */
-.ws-art{position:absolute;left:22px;top:22px;width:188px;height:188px;border-radius:18px;overflow:hidden;background:linear-gradient(145deg,#2A2A33,#121218)}
+.ws-art{position:absolute;left:22px;top:22px;width:188px;height:188px;border-radius:18px;overflow:hidden;background:linear-gradient(145deg,#2A2A33,#121218);-webkit-mask-image:-webkit-radial-gradient(#fff,#000)}
 .ws-note{position:absolute;right:22px;top:22px}
 .ws-head{position:absolute;left:234px;right:64px;top:24px}
 .ws-head .wc-title{font-size:22px}
@@ -208,7 +227,7 @@
 .wd.is-focus{z-index:2}
 .wd.is-focus::before{opacity:1}
 .wd.is-focus.is-press{animation:wpress .16s ease}
-.wd-tile{position:absolute;left:0;top:0;width:88px;height:88px;border-radius:20px;overflow:hidden;background:rgba(255,255,255,.92);color:#3A3A3C;text-align:center;font-size:13px;font-weight:600;line-height:88px}
+.wd-tile{position:absolute;left:0;top:0;width:88px;height:88px;border-radius:20px;overflow:hidden;background:rgba(255,255,255,.92);color:#3A3A3C;text-align:center;font-size:13px;font-weight:600;line-height:88px;-webkit-mask-image:-webkit-radial-gradient(#fff,#000)}
 .wd-tile img{position:absolute;left:0;top:0;width:88px;height:88px}
 .wd-tile .wd-full{object-fit:cover}
 .wd-tile .wd-tv{object-fit:cover}
@@ -279,6 +298,16 @@
 .wh.on-photo .wh-dim{opacity:.22}
 .wh.is-dark .wh-dim{opacity:.42}
 .wh.is-dark.on-photo .wh-dim{opacity:.55}
+
+/* Light backgrounds: the wallpaper chrome (date, greeting, captions, dock label, glass buttons) turns dark
+   so it stays readable over a white/light gradient. The cards keep their own colours. */
+.wh.on-light .wh-small{color:rgba(0,0,0,.55)}
+.wh.on-light .wh-big,.wh.on-light .wh-cap,.wh.on-light .wh-dock-label{color:#1D1D1F;text-shadow:none}
+.wh.on-light .wh-avatar{box-shadow:0 0 0 2px rgba(0,0,0,.25)}
+.wh.on-light .wc-glass{color:#1D1D1F}
+.wh.on-light .wc-glass .wc-body{background:rgba(255,255,255,.5);box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
+.wh.on-light .wn-text .wc-sub,.wh.on-light .wn-text .wc-title{color:#1D1D1F}
+.wh.on-light .wh-dock-bg{background:linear-gradient(rgba(255,255,255,.44),rgba(255,255,255,.32));box-shadow:0 14px 34px rgba(0,0,0,.14),inset 0 1px 0 rgba(255,255,255,.7),inset 0 0 0 1px rgba(0,0,0,.05)}
 
 /* Dark appearance (iOS-style): dark cards and glass, dark app icons (personal builds), darker background. */
 .wh.is-dark .wc-glass .wc-body{background:rgba(44,44,48,.62);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),inset 0 0 0 1px rgba(255,255,255,.07)}

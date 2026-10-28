@@ -11,17 +11,24 @@
   var C = 232, G = 36, S = C + G, PILL = 98, VIS = 1662, PEEK = 183, MAXOFF = 7 * S;
   var DOCK_W = 88, DOCK_GAP = 26, DOCK_PAD = 18, DOCK_FS = 1.12, STRIP_X = 129, STRIP_Y = 290;
   var A = window.FrameApple || null;
+  /* Background gradients. A third item 'light' marks a pale one, so the wallpaper chrome turns dark over it. */
   var GRADIENTS = [
     ['rubi', 'Rubi'], ['oceano', 'Oceano'], ['aurora', 'Aurora'], ['entardecer', 'Entardecer'],
-    ['lavanda', 'Lavanda'], ['floresta', 'Floresta'], ['grafite', 'Grafite'], ['meianoite', 'Meia-noite']
+    ['lavanda', 'Lavanda'], ['floresta', 'Floresta'], ['esmeralda', 'Esmeralda'], ['safira', 'Safira'],
+    ['cobre', 'Cobre'], ['grafite', 'Grafite'], ['carvao', 'Carvão'], ['espaco', 'Espaço'],
+    ['abissal', 'Abissal'], ['meianoite', 'Meia-noite'], ['onix', 'Ônix'], ['breu', 'Breu'],
+    ['neve', 'Neve', 1], ['prata', 'Prata', 1], ['ceu', 'Céu', 1], ['areia', 'Areia', 1], ['perola', 'Pérola', 1]
   ];
   /* Plain colours for the background (a soft vertical fall-off keeps them from looking flat on a TV). */
   var COLORS = [
-    ['preto', 'Preto', '#000000'], ['grafite', 'Grafite', '#1C1C1E'], ['ardosia', 'Ardósia', '#2C3440'], ['marinho', 'Marinho', '#0B1F3A'],
+    ['branco', 'Branco', '#F4F4F6', 1], ['nuvem', 'Nuvem', '#D4D9E0', 1], ['prata', 'Prata', '#AEB4BE', 1], ['areia', 'Areia', '#D9C7A0', 1],
+    ['grafite', 'Grafite', '#1C1C1E'], ['ardosia', 'Ardósia', '#2C3440'], ['preto', 'Preto', '#000000'], ['marinho', 'Marinho', '#0B1F3A'],
     ['azul', 'Azul', '#0A3D91'], ['petroleo', 'Petróleo', '#0D4D4D'], ['verde', 'Verde', '#0F3D2E'], ['oliva', 'Oliva', '#3A3F1E'],
     ['roxo', 'Roxo', '#3B2A6B'], ['vinho', 'Vinho', '#4A1426'], ['terracota', 'Terracota', '#7A2E1A'], ['cafe', 'Café', '#3B2A20']
   ];
   function color(id) { var key = String(id || '').replace(/^color:/, ''); if (String(id || '').indexOf('color:') !== 0) return null; for (var i = 0; i < COLORS.length; i++) if (COLORS[i][0] === key) return COLORS[i]; return null; }
+  /* Whether the chosen background is pale (so the date, captions and glass buttons switch to dark ink). */
+  function lightBg(id) { var g = gradient(id), c = color(id); return !!(g && g[2] || c && c[3]); }
   function shade(hex, f) {
     var n = parseInt(hex.slice(1), 16), r = n >> 16, g = n >> 8 & 255, b = n & 255;
     function c(v) { v = Math.round(f < 0 ? v * (1 + f) : v + (255 - v) * f); return (v < 16 ? '0' : '') + v.toString(16); }
@@ -406,8 +413,8 @@
   }
   function renderAll() {
     renderTop(); renderBackground(); renderApps(); renderWeather(); renderSpotify(); renderStremio(); renderHbo(); renderPluto(); renderPills(); renderNet(); renderNews(); renderDock();
-    var bgPhoto = !!(photo(st.sheet && st.sheet.preview || prefs.bg) || (st.sheet && st.sheet.preview || prefs.bg) === 'own');
-    root.className = 'wh' + (isDark() ? ' is-dark' : '') + (bgPhoto ? ' on-photo' : '') + (st.sheet ? ' has-sheet' : '') + (st.launching ? ' is-launch' : '');
+    var bg = st.sheet && st.sheet.preview || prefs.bg, bgPhoto = !!(photo(bg) || bg === 'own');
+    root.className = 'wh' + (isDark() ? ' is-dark' : '') + (bgPhoto ? ' on-photo' : '') + (!bgPhoto && lightBg(bg) ? ' on-light' : '') + (st.sheet ? ' has-sheet' : '') + (st.launching ? ' is-launch' : '');
     renderFocus(); renderSheet();
   }
 

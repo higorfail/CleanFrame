@@ -59,13 +59,13 @@
     ['atual', ''],
     ['sem sombras', '.wh *,.wh *::before,.wh *::after{box-shadow:none!important;text-shadow:none!important}'],
     ['sem transições', '.wh *,.wh *::before,.wh *::after{transition:none!important;animation:none!important}'],
-    ['sem home antiga escondida', '.stage .home,.stage .bg,.stage .appearance{display:none!important}'],
-    ['fundo liso', '.wh-bg{background:#14161c!important}.wh-dim{display:none!important}'],
-    ['dock sem vidro', '.wh-dock-bg{background:#2a2a2e!important;box-shadow:none!important}'],
-    ['sem camada da faixa', '.wh-strip{will-change:auto!important}'],
-    ['cards com camada própria', '.wc,.wd{will-change:transform}'],
+    ['transições curtas', '.wc,.wd,.wt-dot{transition-duration:.12s!important}.wh-strip{transition-duration:.2s!important}'],
     ['sem imagens', '.wh img{visibility:hidden!important}'],
-    ['tudo junto', '.wh *,.wh *::before,.wh *::after{box-shadow:none!important;text-shadow:none!important}.stage .home,.stage .bg{display:none!important}.wh-bg{background:#14161c!important}']
+    ['sem fotos dos cards', '.wh .wc-img{visibility:hidden!important}'],
+    ['fundo liso', '.wh-bg{background:#14161c!important}.wh-dim{display:none!important}'],
+    ['sem camadas dos cards', '.wc,.wd,.wt-dot{will-change:auto!important}'],
+    ['faixa sem camada', '.wh-strip{will-change:auto!important}'],
+    ['sem sombras + curtas', '.wh *,.wh *::before,.wh *::after{box-shadow:none!important}.wc,.wd,.wt-dot{transition-duration:.12s!important}']
   ];
   var stage = document.querySelector('.stage');
   var out = { env: { ua: window.navigator.userAgent, w: window.innerWidth, h: window.innerHeight, dpr: window.devicePixelRatio, cores: window.navigator.hardwareConcurrency, mem: window.navigator.deviceMemory || null,

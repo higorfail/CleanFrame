@@ -15,8 +15,11 @@
   --focus:cubic-bezier(.2,.8,.2,1);--scroll:cubic-bezier(.2,.9,.3,1)}
 .wh[data-sf] .ww-temp,.wh[data-sf] .wh-big,.wh[data-sf] .wc-title,.wh[data-sf] .wh-sheet h2{font-family:var(--display)}
 .stage.l-widgets .wh{display:block}
-.stage.l-widgets .home{visibility:hidden}
-.stage.l-widgets .bg{visibility:hidden}
+/* The List/Dock home stays out of layout and paint while Widgets shows (measured on the TV: it kept working hidden). */
+.stage.l-widgets .home,.stage.l-widgets .bg{display:none}
+/* Each card and dock icon on its own compositor layer at a fixed raster scale: lifting one is then a GPU
+   transform, not a repaint of the whole strip (measured on The Frame 2022: worst-case frame 95 ms -> 36 ms). */
+.wc,.wd,.wt-dot{will-change:transform}
 
 /* Background gradients: two layers cross-fade; only opacity animates. */
 .wh-bg{position:absolute;left:0;top:0;width:1920px;height:1080px;transition:opacity .9s ease}

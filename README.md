@@ -1,5 +1,7 @@
 # CleanFrame
 
+> **Neste fork:** layout **Widgets** (home com widgets, dock com lupa e fundos em degradê) para a The Frame 2022. Guia em português: [docs/widgets.md](docs/widgets.md).
+
 A quieter home screen for Samsung The Frame. Your apps, a photograph and the time, with an interface made for the TV remote.
 
 ![CleanFrame browser preview using the bundled Manrope font](docs/images/cleanframe-dock.jpg)

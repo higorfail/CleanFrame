@@ -183,16 +183,12 @@
       renderApps(); renderDock();
     });
   }
-  /* Apple icon rule. Strip: one icon per app. First the Apple TV icon,
-     squared (fitted to the width, its own background extended) and split into background + logo layers
-     that separate in depth while focused; then the iPadOS icon; then the TV's own icon; then the brand mark.
-     Strip icons get the tvOS 26 glass material in CSS. Dock: the square iPadOS icon as it is. */
-  function hasAppleIcon(key) { return !!(appleIcon(key + '-tvbg') && appleIcon(key + '-tvfg') || appleIcon(key)); }
+  /* Apple icon rule, the same in the strip and the dock: the square iPadOS 26 icon (Apple's own Liquid Glass
+     rendering, uncropped), then the TV's own icon, then the brand mark. */
+  function hasAppleIcon(key) { return !!appleIcon(key); }
   function tileInner(info, big) {
-    var mark = info.brand ? 'assets/icons/' + info.brand + '.svg' : '', back = appleIcon(info.key + '-tvbg'), front = appleIcon(info.key + '-tvfg'), apple = appleIcon(info.key);
-    var cls = big ? 'wc-icon' : 'wd-full';
-    if (big && back && front) return '<img class="' + cls + '" src="' + esc(back) + '" alt=""><img class="' + cls + ' wc-fg" src="' + esc(front) + '" alt="">';
-    if (apple) return '<img class="' + cls + '" src="' + esc(apple) + '" alt="">';
+    var mark = info.brand ? 'assets/icons/' + info.brand + '.svg' : '', apple = appleIcon(info.key);
+    if (apple) return '<img class="' + (big ? 'wc-icon' : 'wd-full') + '" src="' + esc(apple) + '" alt="">';
     if (info.icon) return '<img class="' + (big ? 'wc-icon' : 'wd-tv') + '" src="' + esc(info.icon) + '" alt="">';
     if (big) return (mark ? '<div class="wc-mark"><img src="' + mark + '" alt=""></div>' : '<div class="wc-initial">' + esc(info.name.charAt(0)) + '</div>');
     return mark ? '<img class="wd-mark" src="' + mark + '" alt="">' : '<span class="wd-word">' + esc(info.name) + '</span>';

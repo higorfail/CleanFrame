@@ -1,0 +1,566 @@
+/* Frame Home widgets layout: a two-row widget strip, a magnifying dock and a personalise sheet.
+   ES5 only. Navigation is spatial; animation uses transforms and opacity. */
+(function () {
+  'use strict';
+  var CFG = window.FrameWidgetsConfig || {}, D = window.FrameWidgetsData;
+  var PREFS = 'cleanframe.widgets.v1';
+  var C = 232, G = 36, S = C + G, PILL = 98, VIS = 1662, PEEK = 183, MAXOFF = 7 * S;
+  var DOCK_SIZE = 88, DOCK_GAP = 26, DOCK_PAD = 18;
+  var GRADIENTS = [
+    ['rubi', 'Rubi'], ['oceano', 'Oceano'], ['aurora', 'Aurora'], ['entardecer', 'Entardecer'],
+    ['lavanda', 'Lavanda'], ['floresta', 'Floresta'], ['grafite', 'Grafite'], ['meianoite', 'Meia-noite']
+  ];
+  var DAYS = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+  var MONTHS = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+
+  /* ---------- Icons (24-unit grid, stroke) ---------- */
+  var P = {
+    sun: '<circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/>',
+    moon: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
+    cloud: '<path d="M17.5 19H8a5 5 0 1 1 1.2-9.86A6 6 0 0 1 20.5 12a3.5 3.5 0 0 1-3 7z"/>',
+    partly: '<path d="M8 6.5a4 4 0 0 1 6.6 1.5"/><path d="M4 9.5H2.5M6 4.5 5 3.5M10 2.5V1"/><path d="M17.5 21H9a4.5 4.5 0 1 1 1-8.9A5.5 5.5 0 0 1 20.5 14.5 3.3 3.3 0 0 1 17.5 21z"/>',
+    cloudmoon: '<path d="M14 3.5a5 5 0 0 0 6.5 6.5"/><path d="M17.5 21H9a4.5 4.5 0 1 1 1-8.9A5.5 5.5 0 0 1 20.5 14.5 3.3 3.3 0 0 1 17.5 21z"/>',
+    fog: '<path d="M4 9h16M3 13h18M5 17h14"/>',
+    drizzle: '<path d="M17.5 15H8a5 5 0 1 1 1.2-9.86A6 6 0 0 1 20.5 8a3.5 3.5 0 0 1-3 7z"/><path d="M9 18.5v1.5M13 18.5v1.5M17 18.5v1.5"/>',
+    rain: '<path d="M17.5 15H8a5 5 0 1 1 1.2-9.86A6 6 0 0 1 20.5 8a3.5 3.5 0 0 1-3 7z"/><path d="M9 18l-1 3M13 18l-1 3M17 18l-1 3"/>',
+    snow: '<path d="M12 3v18M4.5 7.5l15 9M19.5 7.5l-15 9"/>',
+    storm: '<path d="M17.5 15H8a5 5 0 1 1 1.2-9.86A6 6 0 0 1 20.5 8a3.5 3.5 0 0 1-3 7z"/><path d="M13 15l-2.5 4h3L11 23"/>',
+    note: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+    speaker: '<path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6"/><path d="M18.5 6.5a8 8 0 0 1 0 11"/>',
+    mute: '<path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 9l4 6M21 9l-4 6"/>',
+    wifi: '<path d="M2.5 9a14 14 0 0 1 19 0"/><path d="M5.5 12.5a9.5 9.5 0 0 1 13 0"/><path d="M8.5 16a5 5 0 0 1 7 0"/><path d="M12 19.3h.01"/>',
+    bulb: '<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/>',
+    art: '<rect x="3" y="4" width="18" height="16" rx="2"/><rect x="7" y="8" width="10" height="8" rx="1"/>',
+    audio: '<rect x="6" y="3" width="12" height="18" rx="2"/><circle cx="12" cy="14" r="3.5"/><circle cx="12" cy="7" r="1"/>',
+    picture: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 15l3.5-4 3 3 2-2 2.5 3"/>',
+    timer: '<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/>',
+    mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
+    gear: '<circle cx="12" cy="12" r="3.2"/><path d="m9 3-.6 2.4-2 1.2L4 6l-2 3.5L3.8 11v2L2 14.5 4 18l2.4-.6 2 1.2L9 21h6l.6-2.4 2-1.2 2.4.6 2-3.5-1.8-1.5v-2L22 9.5 20 6l-2.4.6-2-1.2L15 3Z"/>',
+    globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
+    apps: '<rect x="4" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6"/>'
+  };
+  function ico(name, size, color, width) {
+    return '<svg class="wc-ico" width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" stroke="' + (color || 'currentColor') +
+      '" stroke-width="' + (width || 1.8) + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + P[name] + '</svg>';
+  }
+  function solid(name, size, color) {
+    var paths = { prev: '<path d="M11 6v12L3 12z"/><path d="M20 6v12l-8-6z"/>', next: '<path d="M4 6v12l8-6z"/><path d="M13 6v12l8-6z"/>',
+      play: '<path d="M7 4.5v15l13-7.5z"/>', pause: '<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>',
+      half: '<circle cx="12" cy="12" r="9" fill="none" stroke="' + color + '" stroke-width="2.2"/><path d="M12 3a9 9 0 0 1 0 18z"/>',
+      sundisc: '<circle cx="12" cy="12" r="4.4"/>' };
+    return '<svg class="wc-ico" width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="' + color + '" aria-hidden="true">' + paths[name] + '</svg>';
+  }
+  function sunIcon(size) {
+    return '<svg class="wc-ico" width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="#FFCC00"/>' +
+      '<path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4" stroke="#F2B705" stroke-width="2" stroke-linecap="round"/></svg>';
+  }
+  function esc(s) { return String(s === undefined || s === null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function two(n) { return (n < 10 ? '0' : '') + n; }
+
+  /* ---------- State ---------- */
+  var deps = null, root = null, strip = null, dockEl = null, dockBg = null, dockLabel = null, toastEl = null, sheetEl = null;
+  var cards = {}, targets = [], dockItems = [], resolved = {};
+  var st = { zone: 'strip', focus: 'youtube', dock: 0, off: 0, adjust: false, active: false, sheet: null, toastTimer: 0, heroIndex: 0 };
+  var prefs = loadPrefs(), data = {}, timers = {};
+
+  function loadPrefs() {
+    var p = {};
+    try { p = JSON.parse(localStorage.getItem(PREFS)) || {}; } catch (e) { p = {}; }
+    if (!gradient(p.bg)) p.bg = 'rubi';
+    p.dark = !!p.dark;
+    return p;
+  }
+  function savePrefs() { try { localStorage.setItem(PREFS, JSON.stringify(prefs)); } catch (e) { toast('Não foi possível salvar.'); } }
+  function gradient(id) { for (var i = 0; i < GRADIENTS.length; i++) if (GRADIENTS[i][0] === id) return GRADIENTS[i]; return null; }
+  function onTV() { return D && D.onTV(); }
+
+  /* ---------- Layout ---------- */
+  function cell(col, row, cols, rows) { cols = cols || 1; rows = rows || 1; return { x: col * S, y: row * S, w: cols * C + (cols - 1) * G, h: rows * C + (rows - 1) * G }; }
+  var CARDS = [
+    { id: 'youtube', at: cell(0, 0), cls: 'wc-app', app: 'youtube', ring: 60 },
+    { id: 'weather', at: cell(1, 0), cls: 'ww', ring: 44 },
+    { id: 'spotify', at: cell(0, 1, 2, 1), cls: 'wc-light ws', ring: 44 },
+    { id: 'stremio', at: cell(2, 0, 2, 2), cls: 'wst', ring: 44 },
+    { id: 'volume', at: { x: 4 * S, y: 0, w: PILL, h: C }, cls: 'wc-dim wp', ring: 59 },
+    { id: 'bright', at: { x: 4 * S + PILL + G, y: 0, w: PILL, h: C }, cls: 'wc-dim wp wp-bright', ring: 59 },
+    { id: 'globoplay', at: cell(5, 0), cls: 'wc-app', app: 'globoplay', ring: 60 },
+    { id: 'hbo', at: cell(4, 1, 2, 1), cls: 'whb', ring: 44 },
+    { id: 'netflix', at: cell(6, 0), cls: 'wc-app', app: 'netflix', ring: 60 },
+    { id: 'pluto', at: cell(6, 1, 2, 1), cls: 'wpl', ring: 44 },
+    { id: 'wifi', at: { x: 7 * S, y: 0, w: C, h: PILL }, cls: 'wc-dim wn', ring: 59 },
+    { id: 'theme', at: { x: 7 * S, y: PILL + G, w: PILL, h: PILL }, cls: 'wr', ring: 59 },
+    { id: 'light', at: { x: 7 * S + PILL + G, y: PILL + G, w: PILL, h: PILL }, cls: 'wc-glass wr', ring: 59 },
+    { id: 'mercadoplay', at: cell(8, 0), cls: 'wc-app', app: 'mercadoplay', ring: 60 },
+    { id: 'tv', at: cell(8, 1), cls: 'wc-dim wt', ring: 60, group: true },
+    { id: 'news', at: cell(9, 0, 2, 2), cls: 'wc-light wnw', ring: 44 },
+    { id: 'alexa', at: cell(11, 0), cls: 'wc-glass wk', ring: 60 },
+    { id: 'settings', at: cell(12, 0), cls: 'wc-glass wk', ring: 60 },
+    { id: 'browser', at: cell(11, 1), cls: 'wc-glass wk', ring: 60 },
+    { id: 'allapps', at: cell(12, 1), cls: 'wc-glass wk', ring: 60 }
+  ];
+  var TV_DOTS = [['tv-art', 'art', 24, 24, 'is-art', 'Modo Arte'], ['tv-audio', 'audio', 124, 24, 'is-on', 'Saída de áudio'],
+    ['tv-picture', 'picture', 24, 124, '', 'Modo de imagem'], ['tv-timer', 'timer', 124, 124, '', 'Timer']];
+
+  function build() {
+    var html = '<div class="wh-bg" id="whBgA"></div><div class="wh-bg is-off" id="whBgB"></div>' +
+      '<div class="wh-top"><div class="wh-date"><span class="wh-small" id="whDay"></span><span class="wh-big" id="whDate"></span></div>' +
+      '<div class="wh-greet"><span class="wh-small" id="whHello"></span><span class="wh-big" id="whTime"></span></div><div class="wh-avatar" id="whAvatar"></div></div>' +
+      '<div class="wh-strip" id="whStrip"></div><div class="wh-dock" id="whDock"><div class="wh-dock-bg" id="whDockBg"></div><div class="wh-dock-label" id="whDockLabel"></div></div>' +
+      '<div class="wh-toast" id="whToast"><span></span></div><div class="wh-sheet" id="whSheet" role="dialog" aria-label="Personalizar"></div>';
+    root.innerHTML = html;
+    strip = byId('whStrip'); dockEl = byId('whDock'); dockBg = byId('whDockBg'); dockLabel = byId('whDockLabel'); toastEl = byId('whToast'); sheetEl = byId('whSheet');
+    CARDS.forEach(function (c) {
+      var el = document.createElement('div');
+      el.className = 'wc ' + c.cls;
+      el.setAttribute('data-card', c.id);
+      el.style.left = c.at.x + 'px'; el.style.top = c.at.y + 'px'; el.style.width = c.at.w + 'px'; el.style.height = c.at.h + 'px';
+      el.style.setProperty('--ring', c.ring + 'px');
+      el.innerHTML = '<div class="wc-body"></div>';
+      strip.appendChild(el);
+      cards[c.id] = { def: c, el: el, body: el.firstChild, html: null };
+      if (!c.group) targets.push({ id: c.id, x: c.at.x, y: c.at.y, w: c.at.w, h: c.at.h, el: el });
+    });
+    TV_DOTS.forEach(function (d) {
+      var dot = document.createElement('div'), base = cards.tv.def.at;
+      dot.className = 'wt-dot ' + d[4]; dot.setAttribute('data-target', d[0]); dot.setAttribute('aria-label', d[5]);
+      dot.style.left = d[2] + 'px'; dot.style.top = d[3] + 'px';
+      dot.innerHTML = ico(d[1], 36, '#fff');
+      cards.tv.el.appendChild(dot);
+      targets.push({ id: d[0], x: base.x + d[2], y: base.y + d[3], w: 84, h: 84, el: dot });
+    });
+    (CFG.dock || []).forEach(function (key, i) {
+      var el = document.createElement('div');
+      el.className = 'wd'; el.setAttribute('data-dock', String(i));
+      el.innerHTML = '<div class="wd-tile"></div>';
+      dockEl.appendChild(el);
+      dockItems.push({ key: key, el: el, tile: el.firstChild });
+    });
+    root.addEventListener('click', onClick);
+  }
+  function byId(id) { return document.getElementById(id); }
+
+  /* ---------- Apps ---------- */
+  function appInfo(key) {
+    var conf = CFG.apps && CFG.apps[key] || { name: key }, r = resolved[key];
+    return { key: key, name: conf.name, brand: conf.brand || '', appId: r ? r.appId : onTV() ? '' : (conf.ids || [])[0] || '', icon: r ? r.icon : '' };
+  }
+  function resolveApps() {
+    if (!onTV() || !window.FrameDevice) return;
+    window.FrameDevice.apps(function (err, list) {
+      if (err || !list) return;
+      Object.keys(CFG.apps || {}).forEach(function (key) {
+        var conf = CFG.apps[key], hit = null, re = new RegExp(conf.match || ('^' + conf.name + '$'), 'i');
+        list.forEach(function (a) { if (!hit && (conf.ids || []).indexOf(a.appId) >= 0) hit = a; });
+        list.forEach(function (a) { if (!hit && re.test(a.name)) hit = a; });
+        if (hit) resolved[key] = { appId: hit.appId, icon: hit.icon || '' };
+      });
+      renderApps(); renderDock();
+    });
+  }
+  function tileInner(info, big) {
+    var mark = info.brand ? 'assets/icons/' + info.brand + '.svg' : '';
+    if (info.icon) return '<img class="' + (big ? 'wc-icon' : '') + '" src="' + esc(info.icon) + '" alt="">';
+    if (big) return (mark ? '<div class="wc-mark"><img src="' + mark + '" alt=""></div>' : '<div class="wc-initial">' + esc(info.name.charAt(0)) + '</div>') + '<div class="wc-name">' + esc(info.name) + '</div>';
+    return mark ? '<img class="wd-mark" src="' + mark + '" alt="">' : esc(info.name);
+  }
+  function launch(key) {
+    var info = appInfo(key);
+    if (!info.appId) { toast(info.name + ' não foi encontrado na TV.'); return; }
+    deps.launch(info.appId, info.name);
+  }
+
+  /* ---------- Rendering ---------- */
+  function setCls(el, base) { el.className = base + (el.className.indexOf(' is-focus') >= 0 ? ' is-focus' : '') + (el.className.indexOf(' is-adjust') >= 0 ? ' is-adjust' : ''); }
+  function setBody(id, html) { var c = cards[id]; if (c.html === html) return; c.html = html; c.body.innerHTML = html; fadeImages(c.body); }
+  function fadeImages(scope) {
+    var imgs = scope.querySelectorAll('img.wc-img');
+    Array.prototype.forEach.call(imgs, function (im) {
+      if (im.complete && im.naturalWidth) { im.className += ' is-ready'; return; }
+      im.addEventListener('load', function () { im.className += ' is-ready'; });
+      im.addEventListener('error', function () { im.style.display = 'none'; });
+    });
+  }
+  function renderApps() {
+    ['youtube', 'globoplay', 'netflix', 'mercadoplay'].forEach(function (key) {
+      var info = appInfo(key), c = cards[key];
+      setCls(c.el, 'wc wc-app b-' + key);
+      c.el.setAttribute('aria-label', info.name);
+      setBody(key, tileInner(info, true));
+    });
+    [['alexa', 'mic', 'Alexa'], ['settings', 'gear', 'Personalizar'], ['browser', 'globe', 'Navegador'], ['allapps', 'apps', 'Todos os apps']].forEach(function (k) {
+      cards[k[0]].el.setAttribute('aria-label', k[2]);
+      setBody(k[0], '<div class="wk-in">' + ico(k[1], 48, '#fff') + '<div class="wk-name">' + k[2] + '</div></div>');
+    });
+  }
+  function demo() { return !onTV(); }
+  function val(name) { var v = data[name]; return v && (v.error || v.device || v.setup) ? null : v; }
+  function renderWeather() {
+    var w = val('weather') || (demo() ? { label: (CFG.location || {}).label, temp: 21, icon: 'moon', text: 'Céu limpo', max: 26, min: 18 } : null);
+    if (!w) { setBody('weather', '<div class="wc-pad"><div class="ww-city">' + esc((CFG.location || {}).label) + '</div><div class="wc-hint" style="margin-top:12px">Buscando a previsão…</div></div>'); return; }
+    setBody('weather', '<div class="wc-pad"><div class="ww-city">' + esc(w.label) + '</div><div class="ww-temp">' + w.temp + '°</div>' +
+      '<div class="ww-foot">' + ico(w.icon, 26, '#fff') + '<div class="ww-cond">' + esc(w.text) + '</div><div class="ww-range">Máx ' + w.max + '° Mín ' + w.min + '°</div></div></div>');
+  }
+  function renderSpotify() {
+    var s = data.spotify, art;
+    if (s && s.setup && !demo()) { setBody('spotify', '<div class="ws-art"></div><div class="ws-note">' + ico('note', 30, '#1DB954', 2) + '</div><div class="ws-text"><div class="wc-label">Spotify</div><div class="wc-title">Conecte sua conta</div><div class="wc-sub">OK abre o Spotify</div></div>'); return; }
+    if (!s || s.setup || s.error) s = s && !s.setup && !s.error ? s : { label: 'Tocado recentemente', title: 'Nome da faixa', artist: 'Artista', playing: false, art: '' };
+    art = s.art ? '<img class="wc-img" src="' + esc(s.art) + '" alt="">' : '';
+    setBody('spotify', '<div class="ws-art">' + art + '</div><div class="ws-note">' + ico('note', 30, '#1DB954', 2) + '</div>' +
+      '<div class="ws-text"><div class="wc-label">' + esc(s.label) + '</div><div class="wc-title">' + esc(s.title) + '</div><div class="ws-artist">' + esc(s.artist) + '</div>' +
+      '<div class="ws-controls">' + solid('prev', 26, prefs.dark ? '#fff' : '#1D1D1F') + solid(s.playing ? 'pause' : 'play', 30, prefs.dark ? '#fff' : '#1D1D1F') + solid('next', 26, prefs.dark ? '#fff' : '#1D1D1F') + '</div></div>');
+  }
+  function heroCard(id, brand, label, title, sub, image, progress, extra) {
+    return (image ? '<img class="wc-img" src="' + esc(image) + '" alt="">' : '<div class="wc-shade-b" style="background:radial-gradient(70% 80% at 70% 30%,#1F4A55 0%,rgba(31,74,85,0) 70%),linear-gradient(160deg,#121A20,#07090C)"></div>') +
+      '<div class="wc-shade-b"></div><div class="wc-brand">' + brand + '</div>' +
+      '<div style="position:absolute;left:30px;right:30px;bottom:30px"><div class="wc-dark-label">' + esc(label) + '</div>' +
+      '<div style="font-size:44px;font-weight:800;line-height:1.04;letter-spacing:-1px;margin-top:8px">' + esc(title) + '</div>' +
+      '<div style="font-size:18px;font-weight:500;color:rgba(255,255,255,.8);margin-top:8px">' + esc(sub) + '</div>' +
+      (progress !== null ? '<div class="wc-bar" style="margin-top:12px"><i style="width:' + Math.round(progress * 100) + '%"></i></div>' : '') + (extra || '') + '</div>';
+  }
+  function renderStremio() {
+    var s = data.stremio;
+    if (s && s.setup && !demo()) { setBody('stremio', heroCard('stremio', 'Stremio', 'Continuar assistindo', 'Conecte o Stremio', 'OK abre o app · veja docs/widgets.md', '', null)); return; }
+    if (!s || s.setup || s.error) s = s === null ? { title: 'Nada em andamento', episode: 'OK abre o Stremio', image: '', progress: null, left: 0, empty: true } : { title: 'Nome da série', episode: 'T2 · E5', left: 24, progress: 0.64, image: '' };
+    setBody('stremio', heroCard('stremio', 'Stremio', 'Continuar assistindo', s.title, s.empty ? s.episode : s.episode + (s.left ? ' · faltam ' + s.left + ' min' : ''), s.image, s.empty ? null : s.progress));
+  }
+  function renderHbo() {
+    var list = data.tmdb, item;
+    if (list && list.setup && !demo()) { list = null; item = { title: 'HBO Max', kind: 'OK abre o app', year: '' }; }
+    else if (!list || !list.length) item = { title: 'Nome do título', kind: 'Série', year: '2026' };
+    else item = list[st.heroIndex % list.length];
+    setBody('hbo', (item.image ? '<img class="wc-img" src="' + esc(item.image) + '" alt="">' : '<div class="wc-shade-l" style="background:radial-gradient(70% 90% at 75% 30%,#2C3A66 0%,rgba(44,58,102,0) 70%),linear-gradient(160deg,#161A2A,#08090F)"></div>') +
+      '<div class="wc-shade-l"></div><div style="position:absolute;left:26px;top:22px;font-size:18px;font-weight:800">HBO Max</div>' +
+      '<div style="position:absolute;left:26px;right:26px;bottom:22px"><div class="wc-dark-label" style="font-size:13px">Em alta</div>' +
+      '<div style="font-size:28px;font-weight:800;letter-spacing:-.5px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:330px">' + esc(item.title) + '</div>' +
+      '<div style="font-size:16px;font-weight:500;color:rgba(255,255,255,.78);margin-top:4px">' + esc(item.kind + (item.year ? ' · ' + item.year : '')) + '</div></div>');
+  }
+  function renderPluto() {
+    var p = val('pluto') || (demo() || !data.plutoTried ? { channel: 'Nome do canal', title: 'Nome do programa', until: '00:30', start: 0, stop: 0, logo: '' } : null), pct = 0.42;
+    if (!p) { setBody('pluto', '<div class="wc-pad" style="background:none"><div class="wc-dark-label" style="font-size:14px;color:rgba(255,255,255,.72)">Pluto TV</div><div class="wc-title" style="margin-top:40px">TV ao vivo e grátis</div><div class="wc-sub" style="color:rgba(255,255,255,.7)">OK abre o Pluto TV</div></div>'); return; }
+    if (p.stop > p.start) pct = Math.max(0, Math.min(1, (Date.now() - p.start) / (p.stop - p.start)));
+    setBody('pluto', '<div class="wc-pad"><div style="font-size:14px;font-weight:600;letter-spacing:.7px;color:rgba(255,255,255,.72)">AGORA NA PLUTO TV' +
+      '<span style="float:right;color:#FFD60A;font-size:13px;font-weight:700"><span style="display:inline-block;width:8px;height:8px;border-radius:4px;background:#FF453A;margin-right:7px"></span>AO VIVO</span></div>' +
+      '<div style="position:absolute;left:0;right:0;top:56px;height:72px"><div style="position:absolute;left:0;top:0;width:72px;height:72px;border-radius:16px;background:#3A3A42;overflow:hidden">' +
+      (p.logo ? '<img class="wc-img" src="' + esc(p.logo) + '" alt="" style="object-fit:contain">' : '') + '</div>' +
+      '<div style="position:absolute;left:90px;right:0;top:10px"><div class="wc-title">' + esc(p.title) + '</div><div class="wc-sub" style="color:rgba(255,255,255,.7)">' + esc(p.channel) + ' · até ' + esc(p.until) + '</div></div></div>' +
+      '<div class="wc-bar" style="position:absolute;left:0;right:0;bottom:0;background:rgba(255,255,255,.18)"><i style="width:' + Math.round(pct * 100) + '%;background:#FFD60A"></i></div></div>');
+  }
+  function renderPills() {
+    var v = data.volume, level = v && !v.device ? v.level : 58, muted = v && v.muted;
+    setBody('volume', '<div class="wp-level" style="height:' + (muted ? 0 : level) + '%"></div><div class="wp-value">' + (muted ? '0' : level) + '</div><div class="wp-icon">' + ico(muted ? 'mute' : 'speaker', 40, level > 30 && !muted ? '#1D1D1F' : '#fff', 1.9) + '</div>');
+    setBody('bright', '<div class="wp-level" style="height:40%"></div><div class="wp-icon">' + sunIcon(44) + '</div>');
+  }
+  function renderNet() {
+    var w = val('wifi') || (demo() ? { on: true, ssid: 'Nome da rede' } : { on: false, ssid: '' });
+    setBody('wifi', '<div class="wn-dot' + (w.on ? '' : ' is-off') + '">' + ico('wifi', 36, '#fff') + '</div><div class="wn-text"><div class="wc-sub">Wi-Fi</div><div class="wc-title">' + esc(w.on ? w.ssid || 'Conectado' : 'Sem conexão') + '</div></div>');
+    setCls(cards.theme.el, 'wc wr' + (prefs.dark ? '' : ' wr-on'));
+    setBody('theme', '<div class="wr-icon">' + solid('half', 54, prefs.dark ? '#fff' : '#000') + '</div>');
+    var on = data.light && data.light.on;
+    cards.light.body.style.background = on ? '#FFD60A' : '';
+    setBody('light', '<div class="wr-icon">' + ico('bulb', 54, on ? '#1D1D1F' : '#fff', 1.6) + '</div>');
+  }
+  function renderNews() {
+    var list = val('news') || (demo() ? [{ title: 'Manchete principal do dia, em até duas linhas', when: 'há 20 min' }, { title: 'Segunda manchete', when: 'há 1 h' }, { title: 'Terceira manchete', when: 'há 2 h' }, { title: 'Quarta manchete', when: 'há 3 h' }] : []);
+    var html = '<div class="wc-pad" style="left:30px;right:30px;top:28px"><div class="wc-label" style="margin-bottom:6px">Manchetes · g1</div>';
+    if (!list.length) html += '<div class="wc-hint" style="margin-top:12px">Carregando notícias…</div>';
+    list.forEach(function (n) { html += '<div class="wnw-item"><div class="wnw-title">' + esc(n.title) + '</div><div class="wnw-when">' + esc(n.when) + '</div></div>'; });
+    setBody('news', html + '</div>');
+  }
+  function renderTop() {
+    var d = new Date(), h = d.getHours(), hello = h < 5 ? 'Boa noite' : h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
+    byId('whDay').textContent = DAYS[d.getDay()];
+    byId('whDate').textContent = d.getDate() + ' de ' + MONTHS[d.getMonth()];
+    byId('whHello').textContent = hello + (CFG.name ? ', ' + CFG.name : '');
+    byId('whTime').textContent = two(h) + ':' + two(d.getMinutes());
+    var av = byId('whAvatar'), want = CFG.profilePhoto ? '<img src="' + esc(CFG.profilePhoto) + '" alt="">' : esc((CFG.name || '·').charAt(0));
+    if (av._html !== want) { av._html = want; av.innerHTML = want; }
+  }
+  function renderBackground() {
+    var a = byId('whBgA'), b = byId('whBgB'), id = st.sheet && st.sheet.preview || prefs.bg, front = a.className.indexOf('is-off') < 0 ? a : b, back = front === a ? b : a;
+    if (front._g === id) return;
+    if (!front._g) { front.className = 'wh-bg g-' + id; front._g = id; return; }
+    back.className = 'wh-bg g-' + id; back._g = id;
+    front.className += ' is-off';
+  }
+  function renderAll() {
+    renderTop(); renderBackground(); renderApps(); renderWeather(); renderSpotify(); renderStremio(); renderHbo(); renderPluto(); renderPills(); renderNet(); renderNews(); renderDock();
+    root.className = 'wh' + (prefs.dark ? ' is-dark' : '') + (st.sheet ? ' has-sheet' : '');
+    renderFocus(); renderSheet();
+  }
+
+  /* ---------- Focus, scrolling and dock magnification ---------- */
+  function target(id) { for (var i = 0; i < targets.length; i++) if (targets[i].id === id) return targets[i]; return targets[0]; }
+  function renderFocus() {
+    targets.forEach(function (t) {
+      var on = st.zone === 'strip' && !st.sheet && t.id === st.focus;
+      var cls = t.el.className.replace(/ is-focus| is-adjust/g, '');
+      t.el.className = cls + (on ? ' is-focus' : '') + (on && st.adjust ? ' is-adjust' : '');
+    });
+    strip.style.transform = 'translate3d(' + (-st.off) + 'px,0,0)';
+    renderDock();
+  }
+  function ensureVisible(t) {
+    if (t.x + t.w > st.off + VIS) st.off = Math.min(MAXOFF, t.x + t.w - VIS + PEEK);
+    if (t.x < st.off) st.off = Math.max(0, t.x - PEEK);
+    if (t.x + t.w <= VIS) st.off = 0;
+  }
+  function renderDock() {
+    if (!dockItems.length) return;
+    var n = dockItems.length, f = st.zone === 'dock' && !st.sheet ? st.dock : -1, scales = [], extra = [], sum = 0, base = n * DOCK_SIZE + (n - 1) * DOCK_GAP + 2 * DOCK_PAD, i;
+    for (i = 0; i < n; i++) {
+      var d = f < 0 ? 99 : Math.abs(i - f);
+      scales[i] = d === 0 ? 1.36 : d === 1 ? 1.16 : d === 2 ? 1.05 : 1;
+      extra[i] = DOCK_SIZE * (scales[i] - 1); sum += extra[i];
+    }
+    var width = base + sum, left = -width / 2, x = left + DOCK_PAD;
+    dockBg.style.left = left + 'px'; dockBg.style.width = width + 'px';
+    dockItems.forEach(function (item, j) {
+      var info = appInfo(item.key), grown = extra[j], pos = x + grown / 2;
+      item.el.style.left = (-base / 2 + DOCK_PAD + j * (DOCK_SIZE + DOCK_GAP)) + 'px';
+      item.el.style.transform = 'translate3d(' + (pos - (-base / 2 + DOCK_PAD + j * (DOCK_SIZE + DOCK_GAP))) + 'px,' + (j === f ? -10 : 0) + 'px,0) scale(' + scales[j] + ')';
+      item.el.className = 'wd' + (j === f ? ' is-focus' : '');
+      item.tile.className = 'wd-tile b-' + item.key;
+      item.el.setAttribute('aria-label', info.name);
+      var inner = tileInner(info, false);
+      if (item.tile._html !== inner) { item.tile._html = inner; item.tile.innerHTML = inner; }
+      if (j === f) { dockLabel.textContent = info.name; dockLabel.style.left = (x + (DOCK_SIZE + grown) / 2) + 'px'; }
+      x += DOCK_SIZE + grown + DOCK_GAP;
+    });
+    dockLabel.className = 'wh-dock-label' + (f >= 0 ? ' is-on' : '');
+  }
+  function move(dir) {
+    var cur = target(st.focus), cx = cur.x + cur.w / 2, cy = cur.y + cur.h / 2, best = null, bestScore = 1e9;
+    targets.forEach(function (t) {
+      if (t === cur) return;
+      var tx = t.x + t.w / 2, ty = t.y + t.h / 2, dx = tx - cx, dy = ty - cy, primary, cross;
+      if (dir === 'right') { if (t.x < cur.x + cur.w - 4 || dx <= 0) return; primary = t.x - (cur.x + cur.w); cross = Math.abs(dy); }
+      else if (dir === 'left') { if (t.x + t.w > cur.x + 4 || dx >= 0) return; primary = cur.x - (t.x + t.w); cross = Math.abs(dy); }
+      else if (dir === 'down') { if (t.y < cur.y + cur.h - 4 || dy <= 0) return; primary = t.y - (cur.y + cur.h); cross = Math.abs(dx); }
+      else { if (t.y + t.h > cur.y + 4 || dy >= 0) return; primary = cur.y - (t.y + t.h); cross = Math.abs(dx); }
+      var score = primary + cross * 1.6;
+      if (score < bestScore) { bestScore = score; best = t; }
+    });
+    return best;
+  }
+  function screenX(t) { return 129 + t.x - st.off + t.w / 2; }
+  function dockScreenX(i) { var n = dockItems.length, base = n * DOCK_SIZE + (n - 1) * DOCK_GAP + 2 * DOCK_PAD; return 960 - base / 2 + DOCK_PAD + i * (DOCK_SIZE + DOCK_GAP) + DOCK_SIZE / 2; }
+  function toDock() {
+    if (!dockItems.length) return;
+    var x = screenX(target(st.focus)), best = 0, dist = 1e9;
+    dockItems.forEach(function (item, i) { var d = Math.abs(dockScreenX(i) - x); if (d < dist) { dist = d; best = i; } });
+    st.zone = 'dock'; st.dock = best;
+  }
+  function fromDock() {
+    var x = dockScreenX(st.dock), best = null, dist = 1e9;
+    targets.forEach(function (t) {
+      if (t.y + t.h < 400) return;
+      var sx = screenX(t);
+      if (sx < 129 || sx > 1791) return;
+      var d = Math.abs(sx - x);
+      if (d < dist) { dist = d; best = t; }
+    });
+    st.zone = 'strip';
+    if (best) st.focus = best.id;
+  }
+
+  /* ---------- Actions ---------- */
+  function toast(text) {
+    if (!toastEl) return;
+    toastEl.firstChild.textContent = text;
+    toastEl.className = 'wh-toast is-on';
+    clearTimeout(st.toastTimer);
+    st.toastTimer = setTimeout(function () { toastEl.className = 'wh-toast'; }, 2600);
+  }
+  function deviceOnly(text) { toast(text || 'Disponível quando o app estiver na TV.'); }
+  function ok(id) {
+    switch (id) {
+      case 'youtube': case 'globoplay': case 'netflix': case 'mercadoplay': case 'alexa': case 'browser': launch(id); return;
+      case 'stremio': launch('stremio'); return;
+      case 'hbo': launch('hbomax'); return;
+      case 'pluto': launch('pluto'); return;
+      case 'spotify':
+        if (data.spotify && !data.spotify.setup && !data.spotify.error) {
+          D.spotifyControl(data.spotify.playing ? 'pause' : 'play', function (err) {
+            if (err) { launch('spotify'); return; }
+            data.spotify.playing = !data.spotify.playing; renderSpotify(); setTimeout(refreshSpotify, 900);
+          });
+        } else launch('spotify');
+        return;
+      case 'weather': toast('Atualizando a previsão…'); refresh('weather', true); return;
+      case 'volume':
+        if (!onTV()) { deviceOnly('O volume funciona quando o app estiver na TV.'); return; }
+        st.adjust = !st.adjust; toast(st.adjust ? 'Use ▲ ▼ para o volume · OK para sair' : 'Volume ajustado'); return;
+      case 'bright': toast('Abrindo os ajustes de imagem da TV'); deps.tvSettings(); return;
+      case 'wifi': toast('Abrindo os ajustes de rede da TV'); deps.tvSettings(); return;
+      case 'theme': prefs.dark = !prefs.dark; savePrefs(); renderAll(); return;
+      case 'light':
+        if (!D.setLight || !(CFG.smartthings && CFG.smartthings.token)) { toast('Conecte a luz pelo SmartThings (veja docs/widgets.md).'); return; }
+        var want = !(data.light && data.light.on);
+        D.setLight(want, function (err) { if (err) { toast('A luz não respondeu.'); return; } data.light = { on: want }; renderNet(); });
+        return;
+      case 'tv-art': deps.art(); return;
+      case 'tv-audio': toast('Abrindo os ajustes de som da TV'); deps.tvSettings(); return;
+      case 'tv-picture': toast('Abrindo os ajustes de imagem da TV'); deps.tvSettings(); return;
+      case 'tv-timer': toast('Abrindo o timer de desligamento da TV'); deps.tvSettings(); return;
+      case 'news':
+        D.openUrl('https://g1.globo.com', function (err) { if (err) deviceOnly('Abre o g1 no navegador da TV.'); });
+        return;
+      case 'settings': openSheet(); return;
+      case 'allapps': deps.openApps(); return;
+    }
+  }
+  function adjustKey(k) {
+    if (k === 'up' || k === 'down') {
+      D.changeVolume(k === 'up' ? 1 : -1, function (err, v) { if (!err && v) { data.volume = v; renderPills(); } });
+      return true;
+    }
+    if (k === 'ok' || k === 'back') { st.adjust = false; return true; }
+    st.adjust = false;
+    return false;
+  }
+
+  /* ---------- Personalise sheet ---------- */
+  function sheetRows() {
+    return [
+      { kind: 'swatch', items: [0, 1, 2, 3] }, { kind: 'swatch', items: [4, 5, 6, 7] },
+      { kind: 'theme', items: ['light', 'dark'] }, { kind: 'link', items: ['cleanframe'] }, { kind: 'link', items: ['tv'] }
+    ];
+  }
+  function openSheet() { st.sheet = { row: 0, col: Math.max(0, gradientIndex(prefs.bg) % 4), preview: null }; st.sheet.row = gradientIndex(prefs.bg) >= 4 ? 1 : 0; previewSwatch(); }
+  function gradientIndex(id) { for (var i = 0; i < GRADIENTS.length; i++) if (GRADIENTS[i][0] === id) return i; return 0; }
+  function previewSwatch() {
+    var row = sheetRows()[st.sheet.row];
+    st.sheet.preview = row.kind === 'swatch' ? GRADIENTS[row.items[st.sheet.col]][0] : null;
+  }
+  function closeSheet() { st.sheet = null; }
+  function sheetKey(k) {
+    var rows = sheetRows(), sh = st.sheet, row = rows[sh.row];
+    if (k === 'back') { closeSheet(); return; }
+    if (k === 'up' || k === 'down') {
+      sh.row = Math.max(0, Math.min(rows.length - 1, sh.row + (k === 'up' ? -1 : 1)));
+      sh.col = Math.min(sh.col, rows[sh.row].items.length - 1);
+    } else if (k === 'left' || k === 'right') {
+      sh.col = Math.max(0, Math.min(row.items.length - 1, sh.col + (k === 'left' ? -1 : 1)));
+    } else if (k === 'ok') {
+      var value = row.items[sh.col];
+      if (row.kind === 'swatch') { prefs.bg = GRADIENTS[value][0]; savePrefs(); toast('Fundo ' + GRADIENTS[value][1] + ' aplicado'); }
+      else if (row.kind === 'theme') { prefs.dark = value === 'dark'; savePrefs(); }
+      else if (value === 'cleanframe') { closeSheet(); deps.openSettings(); return; }
+      else { closeSheet(); deps.tvSettings(); return; }
+    }
+    previewSwatch();
+  }
+  function renderSheet() {
+    if (!sheetEl) return;
+    var sh = st.sheet, html, rows = sheetRows();
+    sheetEl.className = 'wh-sheet' + (sh ? ' is-open' : '');
+    if (!sh) return;
+    function focused(r, c) { return sh.row === r && sh.col === c ? ' is-focus' : ''; }
+    html = '<h2>Personalizar</h2><div class="wsh-section" style="top:140px"><div class="wsh-cap">Fundo</div><div class="wsh-swatches" style="height:300px">';
+    [0, 1].forEach(function (r) {
+      rows[r].items.forEach(function (gi, c) {
+        var g = GRADIENTS[gi];
+        html += '<div class="wsh-sw' + focused(r, c) + (prefs.bg === g[0] ? ' is-on' : '') + '" data-sheet="' + r + ',' + c + '"><b class="g-' + g[0] + '"></b><span>' + g[1] + '</span></div>';
+      });
+    });
+    html += '</div></div><div class="wsh-section" style="top:500px"><div class="wsh-cap">Cartões</div><div class="wsh-row">' +
+      '<span class="wsh-opt' + focused(2, 0) + (!prefs.dark ? ' is-on' : '') + '" data-sheet="2,0">Claros</span>' +
+      '<span class="wsh-opt' + focused(2, 1) + (prefs.dark ? ' is-on' : '') + '" data-sheet="2,1">Escuros</span></div></div>' +
+      '<div class="wsh-section" style="top:640px"><div class="wsh-link' + focused(3, 0) + '" data-sheet="3,0">Mais opções do CleanFrame</div>' +
+      '<div class="wsh-link' + focused(4, 0) + '" data-sheet="4,0">Ajustes da TV</div></div>';
+    if (sheetEl._html !== html) { sheetEl._html = html; sheetEl.innerHTML = html; }
+  }
+
+  /* ---------- Data refresh ---------- */
+  var REFRESH = { weather: 20 * 60000, spotify: 15000, tmdb: 6 * 3600000, stremio: 5 * 60000, pluto: 2 * 60000, news: 15 * 60000, wifi: 60000, light: 60000, volume: 30000 };
+  var FETCH = {
+    weather: function (done) { D.weather(done); }, spotify: function (done) { D.spotify(done); }, tmdb: function (done) { D.tmdb(done); },
+    stremio: function (done) { D.stremio(done); }, pluto: function (done) { data.plutoTried = true; D.pluto(done); }, news: function (done) { D.news(done); },
+    wifi: function (done) { D.wifi(done); }, light: function (done) { D.light(done); }, volume: function (done) { D.volume(done); }
+  };
+  var RENDER = { weather: renderWeather, spotify: renderSpotify, tmdb: renderHbo, stremio: renderStremio, pluto: renderPluto, news: renderNews, wifi: renderNet, light: renderNet, volume: renderPills };
+  function refresh(name, now) {
+    clearTimeout(timers[name]);
+    if (!st.active || document.hidden) return;
+    timers[name] = setTimeout(function () {
+      FETCH[name](function (err, value) {
+        if (err && (err.setup || err.device)) data[name] = err;
+        else if (value !== undefined) data[name] = value;
+        else if (err && !data[name]) data[name] = { error: true };
+        RENDER[name]();
+        refresh(name);
+      });
+    }, now ? 0 : REFRESH[name]);
+  }
+  function refreshSpotify() { refresh('spotify', true); }
+  function startData() { Object.keys(FETCH).forEach(function (name) { refresh(name, true); }); rotateHero(); }
+  function stopData() { Object.keys(timers).forEach(function (name) { clearTimeout(timers[name]); }); }
+  function rotateHero() {
+    clearTimeout(timers.hero);
+    timers.hero = setTimeout(function () { if (data.tmdb && data.tmdb.length > 1) { st.heroIndex++; renderHbo(); } rotateHero(); }, 8000);
+  }
+  function tick() {
+    clearTimeout(timers.clock);
+    if (!root) return;
+    renderTop();
+    timers.clock = setTimeout(tick, 60000 - Date.now() % 60000 + 50);
+  }
+
+  /* ---------- Pointer ---------- */
+  function onClick(ev) {
+    var el = ev.target, id, rc;
+    while (el && el !== root) {
+      if (el.getAttribute) {
+        if ((rc = el.getAttribute('data-sheet'))) { rc = rc.split(','); st.sheet.row = +rc[0]; st.sheet.col = +rc[1]; previewSwatch(); sheetKey('ok'); renderAll(); return; }
+        if ((id = el.getAttribute('data-target') || el.getAttribute('data-card'))) {
+          if (id === 'tv') return;
+          st.zone = 'strip'; st.focus = id; ensureVisible(target(id)); renderFocus(); ok(id); renderAll(); return;
+        }
+        if ((id = el.getAttribute('data-dock')) !== null && id !== '') { st.zone = 'dock'; st.dock = +id; renderFocus(); launch(dockItems[+id].key); return; }
+      }
+      el = el.parentNode;
+    }
+  }
+
+  /* ---------- Public API ---------- */
+  window.FrameWidgets = {
+    init: function (container, dependencies) {
+      if (root || !container) return;
+      deps = dependencies; root = container;
+      build(); renderAll(); tick(); resolveApps();
+      document.addEventListener('visibilitychange', function () { if (document.hidden) stopData(); else if (st.active) { startData(); tick(); } });
+    },
+    setActive: function (on) {
+      if (!root || st.active === !!on) return;
+      st.active = !!on;
+      if (on) { startData(); resolveApps(); } else stopData();
+    },
+    render: function () { if (root) { renderTop(); renderFocus(); renderSheet(); renderBackground(); } },
+    tick: tick,
+    key: function (k) {
+      if (!root) return false;
+      if (st.sheet) { sheetKey(k); renderAll(); return true; }
+      if (st.adjust && st.zone === 'strip' && adjustKey(k)) { renderFocus(); return true; }
+      if (k === 'back') {
+        if (st.zone === 'dock') { fromDock(); renderFocus(); return true; }
+        if (st.focus !== 'youtube' || st.off) { st.focus = 'youtube'; st.off = 0; renderFocus(); return true; }
+        return false;
+      }
+      if (st.zone === 'dock') {
+        if (k === 'left' && st.dock > 0) st.dock--;
+        else if (k === 'right' && st.dock < dockItems.length - 1) st.dock++;
+        else if (k === 'up') { fromDock(); ensureVisible(target(st.focus)); }
+        else if (k === 'ok') launch(dockItems[st.dock].key);
+        renderFocus(); return true;
+      }
+      if (k === 'ok') { ok(st.focus); renderAll(); return true; }
+      var next = move(k);
+      if (next) { st.focus = next.id; ensureVisible(next); }
+      else if (k === 'down') toDock();
+      renderFocus();
+      return true;
+    },
+    qa: function () { return { zone: st.zone, focus: st.zone === 'dock' ? dockItems[st.dock] && dockItems[st.dock].key : st.focus, offset: st.off, background: prefs.bg, dark: prefs.dark, sheet: st.sheet ? { row: st.sheet.row, col: st.sheet.col } : null, adjust: st.adjust }; },
+    gradients: GRADIENTS.map(function (g) { return g[0]; })
+  };
+}());

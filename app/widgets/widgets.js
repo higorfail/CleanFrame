@@ -183,10 +183,16 @@
       renderApps(); renderDock();
     });
   }
-  /* Icon priority: Apple's square app icon (iPadOS/iOS artwork, uncropped) > the TV's own icon > brand mark. */
+  /* Apple icon rule, the same everywhere (strip and dock): one icon per app. First the Apple TV icon,
+     squared (fitted to the width, its own background extended) and split into background + logo layers
+     that separate in depth while focused; then the iPadOS icon; then the TV's own icon; then the brand mark.
+     Every Apple icon gets the same tvOS 26 glass material and Apple corner radius in CSS. */
+  function hasAppleIcon(key) { return !!(appleIcon(key + '-tvbg') && appleIcon(key + '-tvfg') || appleIcon(key)); }
   function tileInner(info, big) {
-    var mark = info.brand ? 'assets/icons/' + info.brand + '.svg' : '', apple = appleIcon(info.key);
-    if (apple) return '<img class="' + (big ? 'wc-icon wc-apple' : 'wd-full') + '" src="' + esc(apple) + '" alt="">';
+    var mark = info.brand ? 'assets/icons/' + info.brand + '.svg' : '', back = appleIcon(info.key + '-tvbg'), front = appleIcon(info.key + '-tvfg'), apple = appleIcon(info.key);
+    var cls = big ? 'wc-icon' : 'wd-full';
+    if (back && front) return '<img class="' + cls + '" src="' + esc(back) + '" alt=""><img class="' + cls + ' wc-fg" src="' + esc(front) + '" alt="">';
+    if (apple) return '<img class="' + cls + '" src="' + esc(apple) + '" alt="">';
     if (info.icon) return '<img class="' + (big ? 'wc-icon' : 'wd-tv') + '" src="' + esc(info.icon) + '" alt="">';
     if (big) return (mark ? '<div class="wc-mark"><img src="' + mark + '" alt=""></div>' : '<div class="wc-initial">' + esc(info.name.charAt(0)) + '</div>');
     return mark ? '<img class="wd-mark" src="' + mark + '" alt="">' : '<span class="wd-word">' + esc(info.name) + '</span>';
@@ -215,16 +221,16 @@
   function renderApps() {
     ['youtube', 'globoplay', 'netflix', 'mercadoplay'].forEach(function (key) {
       var info = appInfo(key), c = cards[key];
-      setCls(c.el, 'wc wc-app b-' + key + (appleIcon(key) ? ' has-art' : ''));
+      setCls(c.el, 'wc wc-app b-' + key + (hasAppleIcon(key) ? ' has-art' : ''));
       c.el.setAttribute('aria-label', info.name);
       setBody(key, tileInner(info, true));
     });
     // Shortcuts: Apple artwork when there is one (Alexa icon, tvOS Settings), otherwise a glass tile with an SF Symbol.
-    [['alexa', 'mic', 'Alexa', 'alexa'], ['settings', 'gear', 'Personalizar', 'system-settings'], ['browser', 'globe', 'Navegador', ''], ['allapps', 'apps', 'Todos os apps', '']].forEach(function (k) {
+    [['alexa', 'mic', 'Alexa', 'alexa'], ['settings', 'gear', 'Personalizar', 'system-settings-tvsq'], ['browser', 'globe', 'Navegador', ''], ['allapps', 'apps', 'Todos os apps', '']].forEach(function (k) {
       var art = k[3] && appleIcon(k[3]);
       cards[k[0]].el.setAttribute('aria-label', k[2]);
       setCls(cards[k[0]].el, 'wc wk ' + (art ? 'has-art' : 'wc-glass'));
-      setBody(k[0], art ? '<img class="wc-icon wc-apple" src="' + esc(art) + '" alt="">' : '<div class="wk-in">' + ico(k[1], 64) + '</div>');
+      setBody(k[0], art ? '<img class="wc-icon" src="' + esc(art) + '" alt="">' : '<div class="wk-in">' + ico(k[1], 64) + '</div>');
     });
   }
   function demo() { return !onTV(); }
@@ -387,7 +393,7 @@
       var keep = on ? (item.el.className.match(/ lean-\w+| is-press| bump-\w+/g) || []).join('') : '';
       item.el.className = 'wd' + (on ? ' is-focus' : '') + keep;
       if (on && !was && st.dockLean) restart(item.el, 'lean-' + st.dockLean);
-      item.tile.className = 'wd-tile b-' + item.key + (appleIcon(item.key) ? ' has-art' : '');
+      item.tile.className = 'wd-tile b-' + item.key + (hasAppleIcon(item.key) ? ' has-art' : '');
       item.el.setAttribute('aria-label', info.name);
       var inner = tileInner(info, false);
       if (item.tile._html !== inner) { item.tile._html = inner; item.tile.innerHTML = inner; }

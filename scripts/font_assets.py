@@ -109,9 +109,9 @@ def apple_overlay(root=ROOT, include_private=True):
         out['apple/symbols/' + svg.name] = svg
         symbols.append(svg.stem)
     icons = {}
-    for jpg in files('build/icons', '.jpg'):
-        out['apple/icons/' + jpg.name] = jpg
-        icons[jpg.stem] = 'apple/icons/' + jpg.name
+    for image in files('build/icons', '.jpg') + files('build/icons', '.png'):
+        out['apple/icons/' + image.name] = image
+        icons[image.stem] = 'apple/icons/' + image.name
     brand = {}
     for svg in files('brand', '.svg'):
         out['apple/brand/' + svg.name] = svg

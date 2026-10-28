@@ -16,10 +16,13 @@ class PreviewServer(ThreadingHTTPServer):
 class Preview(SimpleHTTPRequestHandler):
     def send_head(self):
         route = unquote(urlsplit(self.path).path)
-        if route in ['/home/widgets/secrets.js', '/home/widgets/profile.jpg'] and route[len('/home/'):] not in font_overlay(include_private=self.server.include_private_fonts):
+        optional = ['/home/widgets/secrets.js', '/home/widgets/profile.jpg', '/home/apple/apple.css', '/home/apple/manifest.js']
+        overlay = font_overlay(include_private=self.server.include_private_fonts)
+        if route in optional and route[len('/home/'):] not in overlay:
             return super().send_head()
-        if route in ['/home/assets/font-catalog.js', '/home/assets/private-fonts.css', '/home/widgets/secrets.js', '/home/widgets/profile.jpg'] or route.startswith('/home/assets/private-fonts/'):
-            source = font_overlay(include_private=self.server.include_private_fonts).get(route[len('/home/'):])
+        if (route in optional or route in ['/home/assets/font-catalog.js', '/home/assets/private-fonts.css']
+                or route.startswith(('/home/assets/private-fonts/', '/home/apple/'))):
+            source = overlay.get(route[len('/home/'):])
             if source is None:
                 self.send_error(404, 'File not found')
                 return None

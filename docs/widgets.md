@@ -1,6 +1,6 @@
 # Home com widgets (Frame Home)
 
-Layout **Widgets** do CleanFrame para a Samsung The Frame: uma faixa de widgets em duas linhas que desliza para o lado, uma dock com efeito de lupa como no Mac e fundos em degradê. Em instalações novas ele é o layout padrão; quem já usava o CleanFrame encontra em Configurações → Layout → Widgets.
+Layout **Widgets** do CleanFrame para a Samsung The Frame: uma faixa de widgets em duas linhas que desliza para o lado, uma dock de ícones quadrados e fundos em degradê. O foco imita o Apple TV (tvOS): o item escolhido cresce com sombra, inclina para o lado do movimento, balança devagar com um brilho, afunda ao apertar OK, mostra o nome embaixo, e os botões de vidro ficam brancos. Ao bater na borda ele dá um tranco, e há sons suaves de navegação (Personalizar → Sons). Em instalações novas ele é o layout padrão; quem já usava o CleanFrame encontra em Configurações → Layout → Widgets.
 
 Feito para a QN43LS03BAGXZD (The Frame 2022, Tizen 6.5): só animações de posição e opacidade, sem desfoque em tempo real, dados em cache e atualizações apenas enquanto a home está visível.
 
@@ -33,6 +33,12 @@ Feito para a QN43LS03BAGXZD (The Frame 2022, Tizen 6.5): só animações de posi
 | Todos os apps | Lista de apps instalados do CleanFrame |
 
 **Personalizar:** escolha entre 8 degradês (Rubi, Oceano, Aurora, Entardecer, Lavanda, Floresta, Grafite, Meia-noite). Passar o foco mostra a prévia ao vivo; OK aplica e salva; Voltar fecha sem mudar.
+
+## Visual Apple (só no seu pacote pessoal)
+
+Fontes SF Pro, SF Symbols e os ícones dos apps (iPadOS/iOS) ficam em `.local/apple/`, fora do Git. O preview privado e o pacote pessoal geram `apple/apple.css` e `apple/manifest.js` a partir dessa pasta. A exportação pública usa os arquivos vazios de `app/apple/` e cai para Inter e os ícones próprios. Nunca publique o pacote pessoal.
+
+Ordem dos ícones: ícone quadrado da Apple → ícone instalado na TV → marca provisória.
 
 ## De onde vêm os dados
 

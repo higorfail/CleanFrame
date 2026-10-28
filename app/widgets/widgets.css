@@ -1,4 +1,7 @@
-/* Frame Home widgets layout. Chromium 85 safe: explicit edges, child margins, transform/opacity animation only. */
+/* Frame Home widgets layout. Chromium 85 safe: explicit edges, child margins, transform/opacity animation only.
+   Motion and type follow tvOS (Human Interface Guidelines + tvOS 18 design kit values, scaled to this stage):
+   focus lift x1.06-1.224 with shadow 0 30 40 .35, lean + sway + specular sheen, white focused buttons,
+   SF Pro (personal builds) with the tvOS type ramp 23/25/29/31/38/48/57/76. */
 @font-face{font-family:'Frame Inter';font-weight:300;font-display:swap;src:url(../assets/fonts/inter/Inter-300.woff2) format('woff2')}
 @font-face{font-family:'Frame Inter';font-weight:400;font-display:swap;src:url(../assets/fonts/inter/Inter-400.woff2) format('woff2')}
 @font-face{font-family:'Frame Inter';font-weight:500;font-display:swap;src:url(../assets/fonts/inter/Inter-500.woff2) format('woff2')}
@@ -6,7 +9,10 @@
 @font-face{font-family:'Frame Inter';font-weight:700;font-display:swap;src:url(../assets/fonts/inter/Inter-700.woff2) format('woff2')}
 @font-face{font-family:'Frame Inter';font-weight:800;font-display:swap;src:url(../assets/fonts/inter/Inter-800.woff2) format('woff2')}
 
-.wh{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:hidden;display:none;color:#fff;font-family:'Frame Inter',Manrope,Arial,sans-serif;font-size:20px;line-height:1.2;letter-spacing:-.01em;-webkit-font-smoothing:antialiased;--ease:cubic-bezier(.2,.8,.2,1);--spring:cubic-bezier(.34,1.32,.64,1)}
+.wh{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:hidden;display:none;color:#fff;font-family:'Frame SF Text','Frame Inter',Manrope,Arial,sans-serif;font-size:20px;line-height:1.2;letter-spacing:-.01em;-webkit-font-smoothing:antialiased;
+  --display:'Frame SF Display','Frame Inter',Manrope,Arial,sans-serif;--ease:cubic-bezier(.2,.8,.2,1);--spring:cubic-bezier(.34,1.32,.64,1);
+  --focus:cubic-bezier(.2,.9,.25,1);--scroll:cubic-bezier(.25,.8,.25,1)}
+.wh[data-sf] .ww-temp,.wh[data-sf] .wh-big,.wh[data-sf] .wc-title,.wh[data-sf] .wh-sheet h2{font-family:var(--display)}
 .stage.l-widgets .wh{display:block}
 .stage.l-widgets .home{visibility:hidden}
 .stage.l-widgets .bg{visibility:hidden}
@@ -27,28 +33,64 @@
 .wh-top{position:absolute;left:129px;right:129px;top:80px;height:80px}
 .wh-date{position:absolute;left:0;top:14px}
 .wh-greet{position:absolute;right:101px;top:14px;text-align:right}
-.wh-small{display:block;font-size:26px;font-weight:400;color:rgba(255,255,255,.72)}
-.wh-big{display:block;margin-top:4px;font-size:34px;font-weight:400;letter-spacing:-.4px}
+.wh-small{display:block;font-size:25px;font-weight:500;line-height:32px;color:rgba(255,255,255,.6)}
+.wh-big{display:block;margin-top:2px;font-size:31px;font-weight:500;line-height:38px;letter-spacing:-.2px}
 .wh-avatar{position:absolute;right:0;top:3px;width:77px;height:77px;border-radius:50%;overflow:hidden;background:linear-gradient(145deg,#8E8E93,#48484A);box-shadow:0 0 0 2px rgba(255,255,255,.7);text-align:center;line-height:77px;font-size:32px;font-weight:600}
 .wh-avatar img{display:block;width:77px;height:77px;object-fit:cover}
 
 /* Strip */
-.wh-strip{position:absolute;left:129px;top:290px;width:3448px;height:500px;transition:transform .55s var(--ease);will-change:transform}
-.wc{position:absolute;box-sizing:border-box;border-radius:34px;color:#fff;transition:transform .28s var(--spring),opacity .5s ease}
+.wh-strip{position:absolute;left:129px;top:290px;width:3448px;height:500px;transition:transform .6s var(--scroll);will-change:transform}
+.wc{position:absolute;box-sizing:border-box;border-radius:34px;color:#fff;transition:transform .3s var(--focus),opacity .5s ease}
 .wh.is-intro .wc,.wh.is-intro .wd,.wh.is-intro .wh-top{opacity:0;transform:translate3d(0,26px,0) scale(.97)}
 .wh-top,.wd{transition:opacity .5s ease,transform .5s var(--ease)}
-.wc::before{content:'';position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;box-shadow:0 26px 60px rgba(0,0,0,.42);opacity:0;transition:opacity .25s ease}
-.wc::after{content:'';position:absolute;left:-10px;top:-10px;right:-10px;bottom:-10px;border-radius:var(--ring,44px);border:5px solid #fff;opacity:0;transform:scale(.97);transition:opacity .2s ease,transform .28s var(--spring);pointer-events:none}
-.wc.is-focus{transform:scale(1.045);z-index:3}
-.wc.is-focus::before,.wc.is-focus::after{opacity:1}
-.wc.is-focus::after{transform:scale(1)}
-.wc.is-adjust::after{border-color:#0A84FF}
-.wc-body{position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;overflow:hidden;box-shadow:0 18px 44px rgba(0,0,0,.2)}
+/* tvOS focus: lift + deeper shadow (no ring). The shadow is a pre-rendered layer that only fades. */
+.wc::before{content:'';position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;box-shadow:0 30px 40px rgba(0,0,0,.35),0 12px 18px rgba(0,0,0,.18);opacity:0;transition:opacity .3s ease}
+.wc.is-focus{transform:scale(var(--fs,1.1));z-index:3}
+.wc.is-focus::before{opacity:1}
+.wc-tilt{position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;transform-origin:50% 50%}
+.wc-body{position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;overflow:hidden;box-shadow:0 6px 10px rgba(0,0,0,.1)}
+/* Specular sheen: a soft highlight and a hairline rim that drift with the sway. Focused item only. */
+.wc-gloss{position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;overflow:hidden;opacity:0;transition:opacity .3s ease;pointer-events:none;
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.32),inset 0 0 0 1px rgba(255,255,255,.12)}
+.wc-gloss::before{content:'';position:absolute;left:-30%;top:-95%;width:160%;height:150%;background:radial-gradient(closest-side,rgba(255,255,255,.26),rgba(255,255,255,.08) 55%,rgba(255,255,255,0))}
+.is-focus>.wc-tilt>.wc-gloss{opacity:1}
+.is-focus>.wc-tilt{animation:wsway 7s ease-in-out .6s infinite}
+.is-focus>.wc-tilt>.wc-gloss::before{animation:wsheen 7s ease-in-out .6s infinite}
+/* Lean toward the direction of travel, then settle into the sway. */
+.is-focus.lean-right>.wc-tilt{animation:wlean-right .6s var(--focus),wsway 7s ease-in-out .6s infinite}
+.is-focus.lean-left>.wc-tilt{animation:wlean-left .6s var(--focus),wsway 7s ease-in-out .6s infinite}
+.is-focus.lean-up>.wc-tilt{animation:wlean-up .6s var(--focus),wsway 7s ease-in-out .6s infinite}
+.is-focus.lean-down>.wc-tilt{animation:wlean-down .6s var(--focus),wsway 7s ease-in-out .6s infinite}
+.is-focus.lean-right>.wc-tilt>.wc-gloss::before{animation:wsheen-right .6s var(--focus),wsheen 7s ease-in-out .6s infinite}
+.is-focus.lean-left>.wc-tilt>.wc-gloss::before{animation:wsheen-left .6s var(--focus),wsheen 7s ease-in-out .6s infinite}
+@keyframes wlean-right{0%{transform:perspective(1100px) rotateY(7deg) translate3d(-10px,0,0)}100%{transform:perspective(1100px) rotateY(0) translate3d(0,0,0)}}
+@keyframes wlean-left{0%{transform:perspective(1100px) rotateY(-7deg) translate3d(10px,0,0)}100%{transform:perspective(1100px) rotateY(0) translate3d(0,0,0)}}
+@keyframes wlean-up{0%{transform:perspective(1100px) rotateX(-7deg) translate3d(0,10px,0)}100%{transform:perspective(1100px) rotateX(0) translate3d(0,0,0)}}
+@keyframes wlean-down{0%{transform:perspective(1100px) rotateX(7deg) translate3d(0,-10px,0)}100%{transform:perspective(1100px) rotateX(0) translate3d(0,0,0)}}
+@keyframes wsway{0%,100%{transform:perspective(1100px) rotateX(0) rotateY(0)}25%{transform:perspective(1100px) rotateX(1.4deg) rotateY(-1.8deg)}50%{transform:perspective(1100px) rotateX(-.8deg) rotateY(1.4deg)}75%{transform:perspective(1100px) rotateX(-1.4deg) rotateY(-.6deg)}}
+@keyframes wsheen{0%,100%{transform:translate3d(0,0,0)}25%{transform:translate3d(9%,-4%,0)}50%{transform:translate3d(-8%,3%,0)}75%{transform:translate3d(4%,5%,0)}}
+@keyframes wsheen-right{0%{transform:translate3d(-14%,0,0)}100%{transform:translate3d(0,0,0)}}
+@keyframes wsheen-left{0%{transform:translate3d(14%,0,0)}100%{transform:translate3d(0,0,0)}}
+/* Press-in on OK and a bump when there is nowhere to go. */
+.wc.is-focus.is-press,.wt-dot.is-focus.is-press{animation:wpress .26s ease}
+@keyframes wpress{0%{transform:scale(var(--fs,1.1))}35%{transform:scale(var(--fsp,1.05))}100%{transform:scale(var(--fs,1.1))}}
+.is-focus.bump-right>.wc-tilt{animation:wbump-x .32s ease}
+.is-focus.bump-left>.wc-tilt{animation:wbump-x .32s ease reverse}
+.is-focus.bump-down>.wc-tilt{animation:wbump-y .32s ease}
+.is-focus.bump-up>.wc-tilt{animation:wbump-y .32s ease reverse}
+@keyframes wbump-x{0%,100%{transform:translate3d(0,0,0)}30%{transform:perspective(1100px) rotateY(-4deg) translate3d(9px,0,0)}65%{transform:translate3d(-3px,0,0)}}
+@keyframes wbump-y{0%,100%{transform:translate3d(0,0,0)}30%{transform:perspective(1100px) rotateX(4deg) translate3d(0,9px,0)}65%{transform:translate3d(0,-3px,0)}}
+.wc.is-adjust .wp-level{background:#fff}
+.wc.is-adjust::before{box-shadow:0 30px 40px rgba(0,0,0,.35),0 0 0 4px rgba(255,255,255,.5)}
 .wc-pad{position:absolute;left:24px;top:22px;right:24px;bottom:22px}
 .wc-light .wc-body{background:#fff;color:#1D1D1F}
 .wh.is-dark .wc-light .wc-body{background:#1C1C1E;color:#fff}
-.wc-glass .wc-body{background:rgba(255,255,255,.16);box-shadow:inset 0 0 0 1px rgba(255,255,255,.16)}
-.wc-dim .wc-body{background:rgba(0,0,0,.28);box-shadow:inset 0 0 0 1px rgba(255,255,255,.16)}
+/* tvOS buttons: translucent grey at rest, white with a dark glyph when focused. */
+.wc-glass .wc-body{background:rgba(130,130,130,.42);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);transition:background-color .25s ease,color .25s ease}
+.wc-glass{color:#fff}
+.wc-glass.is-focus{color:#1D1D1F}
+.wc-glass.is-focus .wc-body{background:rgba(255,255,255,.94)}
+.wc-dim .wc-body{background:rgba(30,30,30,.5);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
 .wc-label{font-size:14px;font-weight:600;letter-spacing:.7px;text-transform:uppercase;color:#6E6E73}
 .wh.is-dark .wc-light .wc-label,.wh.is-dark .wc-light .wc-sub{color:rgba(255,255,255,.6)}
 .wc-dark-label{font-size:14px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:rgba(255,255,255,.85)}
@@ -63,13 +105,16 @@
 .wc-bar i{display:block;height:6px;border-radius:3px;background:#fff;transition:width .6s var(--ease)}
 .wc-brand{position:absolute;left:30px;top:26px;font-size:20px;font-weight:800;letter-spacing:-.3px}
 .wc-ico{display:block}
+.wc-ico.sf{-webkit-mask-size:contain;-webkit-mask-repeat:no-repeat;-webkit-mask-position:center}
 
 /* App tiles */
 .wc-app .wc-body{border-radius:52px}
 .wc-app .wc-mark{position:absolute;left:50%;top:44%;width:104px;height:104px;margin:-52px 0 0 -52px}
 .wc-app .wc-mark img{width:104px;height:104px;object-fit:contain}
-.wc-app .wc-icon{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover}
-.wc-app .wc-name{position:absolute;left:12px;right:12px;bottom:24px;text-align:center;font-size:19px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wc-icon{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover}
+.wc-app,.wk{border-radius:52px}
+.wc.has-art{background:none}
+.has-art .wc-body{background:#000}
 .wc-app .wc-initial{position:absolute;left:0;right:0;top:56px;text-align:center;font-size:64px;font-weight:700;letter-spacing:-2px}
 
 /* Weather */
@@ -108,24 +153,23 @@
 .wn-dot.is-off{background:rgba(255,255,255,.22)}
 .wn-dot .wc-ico{position:absolute;left:17px;top:17px}
 .wn-text{position:absolute;left:98px;right:18px;top:24px}
-.wn-text .wc-sub{color:rgba(255,255,255,.75);font-size:14px}
-.wn-text .wc-title{font-size:17px}
-.wr .wc-body{border-radius:50%;background:rgba(255,255,255,.18)}
+.wn-text .wc-sub{color:inherit;opacity:.7;font-size:15px}
+.wn-text .wc-title{font-size:19px}
+.wr .wc-body{border-radius:50%}
 .wr-icon{position:absolute;left:0;right:0;top:50%;margin-top:-27px;text-align:center}
 .wr-icon .wc-ico{display:inline-block}
-.wr-on .wc-body{background:#fff}
+.wr-on{color:#1D1D1F}
+.wr-on .wc-body{background:rgba(255,255,255,.82)}
+.wr-lit{color:#1D1D1F}
+.wr-lit .wc-body,.wr-lit.is-focus .wc-body{background:#FFD60A}
 
 /* TV central */
 .wt .wc-body{border-radius:52px}
-.wt-dot{position:absolute;width:84px;height:84px;border-radius:42px;background:rgba(255,255,255,.2)}
-.wt-dot .wc-ico{position:absolute;left:24px;top:24px}
+.wt-dot{position:absolute;width:84px;height:84px;border-radius:42px;color:#fff;background:rgba(130,130,130,.42);--fs:1.18;--fsp:1.1;transition:transform .3s var(--focus),background-color .25s ease,color .25s ease,box-shadow .3s ease}
+.wt-glyph .wc-ico{position:absolute;left:24px;top:24px}
 .wt-dot.is-art{background:linear-gradient(160deg,#C79A72,#8A5A3E)}
 .wt-dot.is-on{background:#0A84FF}
-.wt-dot.is-focus{transform:scale(1.12)}
-.wt-dot{transition:transform .25s var(--spring)}
-.wt-dot::after{content:'';position:absolute;left:-7px;top:-7px;right:-7px;bottom:-7px;border-radius:50%;border:4px solid #fff;opacity:0;transition:opacity .18s}
-.wt-dot.is-focus::after{opacity:1}
-.wc.wt.is-focus::after{opacity:0}
+.wt-dot.is-focus{transform:scale(1.18);z-index:2;color:#1D1D1F;background:rgba(255,255,255,.94);box-shadow:0 18px 26px rgba(0,0,0,.35)}
 
 /* News */
 .wnw-item{padding:12px 0;border-bottom:1px solid #E5E5EA}
@@ -137,21 +181,24 @@
 
 /* Shortcut tiles */
 .wk .wc-body{border-radius:52px}
-.wk-in{position:absolute;left:0;right:0;top:72px;text-align:center}
+.wk-in{position:absolute;left:0;right:0;top:50%;margin-top:-30px;text-align:center}
 .wk-in .wc-ico{display:inline-block}
-.wk-name{margin-top:14px;font-size:20px;font-weight:600}
 
-/* Dock with macOS-style magnification (transforms only). */
-.wh-dock{position:absolute;left:960px;bottom:52px;height:124px}
-.wh-dock-bg{position:absolute;left:0;top:0;height:124px;border-radius:40px;background:rgba(255,255,255,.14);box-shadow:inset 0 0 0 1px rgba(255,255,255,.2);transition:left .3s var(--ease),width .3s var(--ease)}
-.wd{position:absolute;top:18px;width:88px;height:88px;transform-origin:50% 100%;transition:transform .3s var(--spring)}
-.wd-tile{position:absolute;left:0;top:0;width:88px;height:88px;border-radius:21px;overflow:hidden;background:rgba(255,255,255,.92);color:#3A3A3C;text-align:center;font-size:13px;font-weight:600;line-height:88px}
-.wd-tile img{position:absolute;left:0;top:0;width:88px;height:88px;object-fit:cover}
-.wd-tile .wd-mark{position:absolute;left:20px;top:20px;width:48px;height:48px;object-fit:contain}
-.wd-dot{position:absolute;left:41px;bottom:-14px;width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.7);opacity:0}
-.wd.is-running .wd-dot{opacity:1}
-.wd.is-focus .wd-tile{box-shadow:0 0 0 3px #fff,0 14px 30px rgba(0,0,0,.35)}
-.wh-dock-label{position:absolute;top:-62px;height:40px;padding:0 18px;border-radius:20px;background:rgba(20,20,24,.82);font-size:20px;font-weight:600;line-height:40px;white-space:nowrap;opacity:0;transform:translate(-50%,8px);transition:opacity .2s ease,transform .3s var(--spring),left .3s var(--ease)}
+/* Dock: square iPadOS icons (88px, the size set in Figma) on a MediumDark platter; only the focused icon lifts. */
+.wh-dock{position:absolute;left:960px;top:880px;height:124px}
+.wh-dock-bg{position:absolute;left:0;top:0;height:124px;border-radius:40px;background:rgba(30,30,30,.5);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+.wd{position:absolute;top:18px;width:88px;height:88px;border-radius:20px;--fs:1.224;--fsp:1.16;transition:transform .3s var(--focus)}
+.wd::before{content:'';position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;box-shadow:0 30px 40px rgba(0,0,0,.35);opacity:0;transition:opacity .3s ease}
+.wd.is-focus{z-index:2}
+.wd.is-focus::before{opacity:1}
+.wd.is-focus.is-press{animation:wpress .26s ease}
+.wd-tile{position:absolute;left:0;top:0;width:88px;height:88px;border-radius:20px;overflow:hidden;background:rgba(255,255,255,.92);color:#3A3A3C;text-align:center;font-size:13px;font-weight:600;line-height:88px;box-shadow:0 6px 5px rgba(0,0,0,.05)}
+.wd-tile img{position:absolute;left:0;top:0;width:88px;height:88px}
+.wd-tile .wd-full{object-fit:cover}
+.wd-tile .wd-tv{object-fit:cover}
+.wd-tile .wd-mark{left:20px;top:20px;width:48px;height:48px;object-fit:contain}
+.wd-word{font-size:13px;font-weight:700}
+.wh-dock-label{position:absolute;top:134px;font-size:29px;font-weight:500;line-height:36px;white-space:nowrap;text-shadow:0 2px 8px rgba(0,0,0,.35);opacity:0;transform:translate(-50%,-6px);transition:opacity .25s ease,transform .3s var(--focus)}
 .wh-dock-label.is-on{opacity:1;transform:translate(-50%,0)}
 
 /* Brand tiles */
@@ -169,9 +216,15 @@
 .b-alexa{background:#0B1A2A}
 .b-browser{background:linear-gradient(150deg,#7A5CFA,#3E7BFA)}
 
-/* Focus hint for icon-only controls */
-.wh-hint{position:absolute;z-index:4;height:40px;padding:0 18px;border-radius:20px;background:rgba(20,20,24,.82);font-size:20px;font-weight:600;line-height:40px;white-space:nowrap;opacity:0;transform:translate(-50%,6px);transition:opacity .2s ease,transform .3s var(--spring);pointer-events:none}
-.wh-hint.is-on{opacity:1;transform:translate(-50%,0)}
+/* tvOS caption: the focused item's name in SF Pro Medium 29, white on the wallpaper. */
+.wh-cap{position:absolute;z-index:4;font-size:29px;font-weight:500;line-height:36px;white-space:nowrap;text-shadow:0 2px 8px rgba(0,0,0,.35);opacity:0;transform:translate(-50%,-6px);transition:opacity .25s ease,transform .3s var(--focus);pointer-events:none}
+.wh-cap.is-above{transform:translate(-50%,6px)}
+.wh-cap.is-on{opacity:1;transform:translate(-50%,0)}
+
+/* Launch: the screen dims to black while the focused item pushes in, as tvOS does when opening an app. */
+.wh-veil{position:absolute;z-index:20;left:0;top:0;width:1920px;height:1080px;background:#000;opacity:0;transition:opacity .3s ease;pointer-events:none}
+.wh.is-launch .wh-veil{opacity:1}
+.wh.is-launch .is-focus{transform:scale(calc(var(--fs,1.1) * 1.08))}
 
 /* Toast */
 .wh-toast{position:absolute;left:0;right:0;bottom:200px;text-align:center;opacity:0;transform:translateY(10px);transition:opacity .25s ease,transform .3s var(--spring);pointer-events:none}
@@ -183,9 +236,9 @@
 .wh.has-sheet .wh-top,.wh.has-sheet .wh-strip,.wh.has-sheet .wh-dock{opacity:.3}
 .wh-sheet{position:absolute;z-index:10;right:48px;top:48px;bottom:48px;width:640px;border-radius:44px;background:rgba(24,24,28,.97);box-shadow:0 40px 90px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.1);opacity:0;transform:translateX(60px);transition:opacity .3s ease,transform .45s var(--ease);pointer-events:none}
 .wh-sheet.is-open{opacity:1;transform:translateX(0)}
-.wh-sheet h2{margin:0;position:absolute;left:48px;top:44px;font-size:40px;font-weight:700;letter-spacing:-.6px}
+.wh-sheet h2{margin:0;position:absolute;left:48px;top:40px;font-size:48px;font-weight:700;line-height:56px;letter-spacing:-.4px}
 .wsh-section{position:absolute;left:48px;right:48px}
-.wsh-cap{font-size:16px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.55)}
+.wsh-cap{font-size:23px;font-weight:500;color:rgba(255,255,255,.55)}
 .wsh-swatches{margin-top:18px;height:132px}
 .wsh-sw{position:relative;display:inline-block;vertical-align:top;width:116px;margin:0 16px 22px 0;text-align:center;transition:transform .25s var(--spring)}
 .wsh-sw:nth-child(4n){margin-right:0}
@@ -201,4 +254,4 @@
 .wsh-link{display:block;margin-top:14px;height:68px;padding:0 28px;border-radius:24px;background:rgba(255,255,255,.1);font-size:22px;font-weight:600;line-height:68px;transition:transform .25s var(--spring)}
 .wsh-link.is-focus{background:#fff;color:#1D1D1F;transform:scale(1.03)}
 
-@media (prefers-reduced-motion: reduce){.wh *,.wh *::before,.wh *::after{transition-duration:.01s!important}}
+@media (prefers-reduced-motion: reduce){.wh *,.wh *::before,.wh *::after{transition-duration:.01s!important;animation:none!important}}

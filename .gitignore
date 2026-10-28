@@ -42,3 +42,10 @@ PP*.woff2
 /explorations/
 /docs/research/
 /docs/articles/
+
+# Personal Apple look (SF Pro, SF Symbols, app icons) stays in .local/apple; never commit.
+SF-Pro*.woff2
+SF-Pro*.otf
+/app/apple/fonts/
+/app/apple/icons/
+/app/apple/symbols/

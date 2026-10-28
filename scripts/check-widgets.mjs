@@ -72,6 +72,7 @@ try {
 
   // Navigation: spatial focus, scrolling and the dock.
   check('YouTube has focus on start', (await qa()).focus === 'youtube');
+  check('The focused app shows its tvOS caption', (await page.locator('#whCap.is-on').innerText()) === 'YouTube');
   const press = async (...keys) => { for (const k of keys) { await page.keyboard.press(k); await page.waitForTimeout(80); } return qa(); };
   let s = await press('ArrowRight');
   check('Right moves to weather', s.focus === 'weather', s);
@@ -88,7 +89,7 @@ try {
   s = await press('ArrowDown', 'ArrowDown');
   check('Down twice reaches the dock', s.zone === 'dock', s);
   const scales = await page.$$eval('.wd', els => els.map(e => e.style.transform));
-  check('Dock magnifies the focused app and its neighbours', scales.some(t => /scale\(1\.36\)/.test(t)) && scales.some(t => /scale\(1\.16\)/.test(t)), scales);
+  check('Dock lifts only the focused app (tvOS)', scales.filter(t => /scale\(1\.224\)/.test(t)).length === 1 && scales.filter(t => t === 'scale(1)').length === scales.length - 1, scales);
   check('Dock shows the focused app name', await page.locator('.wh-dock-label.is-on').count() === 1);
   await page.screenshot({ path: out + 'dock.png' });
   s = await press('ArrowUp');
@@ -108,6 +109,10 @@ try {
   check('OK applies and saves the background', s.background === 'aurora' && (await page.evaluate(() => JSON.parse(localStorage.getItem('cleanframe.widgets.v1')).bg)) === 'aurora', s);
   s = await press('ArrowDown', 'ArrowDown', 'ArrowRight', 'Enter');
   check('Dark cards can be chosen', s.dark === true, s);
+  s = await press('ArrowDown', 'ArrowRight', 'Enter');
+  check('Interface sounds can be turned off', s.sound === false, s);
+  s = await press('ArrowLeft', 'Enter');
+  check('Interface sounds can be turned back on', s.sound === true, s);
   await page.screenshot({ path: out + 'sheet.png' });
   s = await press('Escape');
 

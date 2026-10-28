@@ -67,10 +67,55 @@ def font_overlay(root=ROOT, include_private=True):
     photo = (root / '.local/widgets-profile.jpg')
     if include_private and photo.is_file() and not photo.is_symlink():
         assets['widgets/profile.jpg'] = photo.resolve()
+    assets.update(apple_overlay(root, include_private))
     assets['assets/private-fonts.css'] = ('\n'.join(css) + '\n').encode()
     assets['assets/font-catalog.js'] = ('window.CleanFramePrivateFontIDs = '
                                        + json.dumps(private_ids + PUBLIC_FONT_IDS) + ';\n').encode()
     return assets
+
+
+APPLE_WEIGHTS = {'Light': 300, 'Regular': 400, 'Medium': 500, 'Semibold': 600, 'Bold': 700, 'Heavy': 800}
+
+
+def apple_overlay(root=ROOT, include_private=True):
+    """Personal Apple look (SF Pro, SF Symbols, app icons) from ignored .local/apple.
+
+    The owner's licensed copies stay out of Git and out of public exports; the public
+    app ships placeholder apple/apple.css and apple/manifest.js and falls back to Inter
+    and its own line icons.
+    """
+    base = (root / '.local/apple').resolve()
+    out = {}
+    if not include_private or not base.is_dir():
+        return out
+
+    def files(folder, suffix):
+        path = base / folder
+        if not path.is_dir():
+            return []
+        return sorted(p for p in path.iterdir() if p.suffix == suffix and p.is_file() and not p.is_symlink()
+                      and p.resolve().is_relative_to(base))
+
+    css = ['/* Personal overlay: Apple fonts from .local/apple. Never published. */']
+    for font in files('fonts', '.woff2'):
+        match = re.fullmatch(r'SF-Pro-(Display|Text)-(\w+)', font.stem)
+        if not match or match.group(2) not in APPLE_WEIGHTS:
+            continue
+        out['apple/fonts/' + font.name] = font
+        css.append("@font-face{font-family:'Frame SF " + match.group(1) + "';font-weight:" + str(APPLE_WEIGHTS[match.group(2)])
+                   + ";font-display:block;src:url(fonts/" + font.name + ") format('woff2')}")
+    symbols = []
+    for svg in files('symbols', '.svg'):
+        out['apple/symbols/' + svg.name] = svg
+        symbols.append(svg.stem)
+    icons = {}
+    for jpg in files('build/icons', '.jpg'):
+        out['apple/icons/' + jpg.name] = jpg
+        icons[jpg.stem] = 'apple/icons/' + jpg.name
+    manifest = {'fonts': len(css) > 1, 'symbols': symbols, 'icons': icons}
+    out['apple/apple.css'] = ('\n'.join(css) + '\n').encode()
+    out['apple/manifest.js'] = ('/* Personal overlay. Never published. */\nwindow.FrameApple = ' + json.dumps(manifest) + ';\n').encode()
+    return out
 
 
 def write_widget_archive(output, root=ROOT, include_private=True, identity=None):

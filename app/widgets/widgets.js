@@ -1,11 +1,16 @@
-/* Frame Home widgets layout: a two-row widget strip, a magnifying dock and a personalise sheet.
-   ES5 only. Navigation is spatial; animation uses transforms and opacity. */
+/* Frame Home widgets layout: a two-row widget strip, a tvOS-style dock and a personalise sheet.
+   ES5 only. Navigation is spatial; animation uses transforms and opacity.
+   Focus behaviour follows tvOS: lift (scale + deeper shadow), a lean toward the direction of travel,
+   a slow sway with a specular sheen, press-in on OK, captions under the focused item, glass controls
+   that turn white, an edge bump and soft interface sounds. Personal builds add SF Pro, SF Symbols
+   and Apple app icons through window.FrameApple (see apple/manifest.js); public builds fall back. */
 (function () {
   'use strict';
   var CFG = window.FrameWidgetsConfig || {}, D = window.FrameWidgetsData;
   var PREFS = 'cleanframe.widgets.v1';
   var C = 232, G = 36, S = C + G, PILL = 98, VIS = 1662, PEEK = 183, MAXOFF = 7 * S;
-  var DOCK_SIZE = 88, DOCK_GAP = 26, DOCK_PAD = 18;
+  var DOCK_W = 88, DOCK_GAP = 26, DOCK_PAD = 18, DOCK_FS = 1.224, STRIP_X = 129, STRIP_Y = 290;
+  var A = window.FrameApple || null;
   var GRADIENTS = [
     ['rubi', 'Rubi'], ['oceano', 'Oceano'], ['aurora', 'Aurora'], ['entardecer', 'Entardecer'],
     ['lavanda', 'Lavanda'], ['floresta', 'Floresta'], ['grafite', 'Grafite'], ['meianoite', 'Meia-noite']
@@ -39,11 +44,19 @@
     globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
     apps: '<rect x="4" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6"/>'
   };
+  function sym(name) { return !!(A && A.symbols && A.symbols.indexOf(name) >= 0); }
+  function sf(name, size, color) {
+    return '<i class="wc-ico sf" style="width:' + size + 'px;height:' + size + 'px;-webkit-mask-image:url(apple/symbols/' + name + '.svg);' +
+      'background-color:' + (color || 'currentColor') + '" aria-hidden="true"></i>';
+  }
+  function appleIcon(key) { return A && A.icons && A.icons[key] || ''; }
   function ico(name, size, color, width) {
+    if (sym(name)) return sf(name, Math.round(size * 0.92), color);
     return '<svg class="wc-ico" width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" stroke="' + (color || 'currentColor') +
       '" stroke-width="' + (width || 1.8) + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + P[name] + '</svg>';
   }
   function solid(name, size, color) {
+    if (sym(name)) return sf(name, size, color);
     var paths = { prev: '<path d="M11 6v12L3 12z"/><path d="M20 6v12l-8-6z"/>', next: '<path d="M4 6v12l8-6z"/><path d="M13 6v12l8-6z"/>',
       play: '<path d="M7 4.5v15l13-7.5z"/>', pause: '<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>',
       half: '<circle cx="12" cy="12" r="9" fill="none" stroke="' + color + '" stroke-width="2.2"/><path d="M12 3a9 9 0 0 1 0 18z"/>',
@@ -51,6 +64,7 @@
     return '<svg class="wc-ico" width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="' + color + '" aria-hidden="true">' + paths[name] + '</svg>';
   }
   function sunIcon(size) {
+    if (sym('sun')) return sf('sun', size, '#FFCC00');
     return '<svg class="wc-ico" width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="#FFCC00"/>' +
       '<path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4" stroke="#F2B705" stroke-width="2" stroke-linecap="round"/></svg>';
   }
@@ -58,9 +72,9 @@
   function two(n) { return (n < 10 ? '0' : '') + n; }
 
   /* ---------- State ---------- */
-  var deps = null, root = null, strip = null, dockEl = null, dockBg = null, dockLabel = null, toastEl = null, sheetEl = null;
+  var deps = null, root = null, strip = null, dockEl = null, dockBg = null, dockLabel = null, toastEl = null, sheetEl = null, capEl = null;
   var cards = {}, targets = [], dockItems = [], resolved = {};
-  var st = { zone: 'strip', focus: 'youtube', dock: 0, off: 0, adjust: false, active: false, sheet: null, toastTimer: 0, heroIndex: 0 };
+  var st = { zone: 'strip', focus: 'youtube', dock: 0, off: 0, adjust: false, active: false, sheet: null, toastTimer: 0, heroIndex: 0, lean: '', launching: false };
   var prefs = loadPrefs(), data = {}, timers = {};
 
   function loadPrefs() {
@@ -68,6 +82,7 @@
     try { p = JSON.parse(localStorage.getItem(PREFS)) || {}; } catch (e) { p = {}; }
     if (!gradient(p.bg)) p.bg = 'rubi';
     p.dark = !!p.dark;
+    p.sound = p.sound !== false;
     return p;
   }
   function savePrefs() { try { localStorage.setItem(PREFS, JSON.stringify(prefs)); } catch (e) { toast('Não foi possível salvar.'); } }
@@ -77,27 +92,28 @@
   /* ---------- Layout ---------- */
   function cell(col, row, cols, rows) { cols = cols || 1; rows = rows || 1; return { x: col * S, y: row * S, w: cols * C + (cols - 1) * G, h: rows * C + (rows - 1) * G }; }
   var CARDS = [
-    { id: 'youtube', at: cell(0, 0), cls: 'wc-app', app: 'youtube', ring: 60 },
+    { id: 'youtube', at: cell(0, 0), cls: 'wc-app', app: 'youtube', ring: 60, fs: 1.18 },
     { id: 'weather', at: cell(1, 0), cls: 'ww', ring: 44 },
     { id: 'spotify', at: cell(0, 1, 2, 1), cls: 'wc-light ws', ring: 44 },
     { id: 'stremio', at: cell(2, 0, 2, 2), cls: 'wst', ring: 44 },
-    { id: 'volume', at: { x: 4 * S, y: 0, w: PILL, h: C }, cls: 'wc-dim wp', ring: 59 },
-    { id: 'bright', at: { x: 4 * S + PILL + G, y: 0, w: PILL, h: C }, cls: 'wc-dim wp wp-bright', ring: 59 },
-    { id: 'globoplay', at: cell(5, 0), cls: 'wc-app', app: 'globoplay', ring: 60 },
+    { id: 'volume', at: { x: 4 * S, y: 0, w: PILL, h: C }, cls: 'wc-dim wp', ring: 59, fs: 1.12 },
+    { id: 'bright', at: { x: 4 * S + PILL + G, y: 0, w: PILL, h: C }, cls: 'wc-dim wp wp-bright', ring: 59, fs: 1.12 },
+    { id: 'globoplay', at: cell(5, 0), cls: 'wc-app', app: 'globoplay', ring: 60, fs: 1.18 },
     { id: 'hbo', at: cell(4, 1, 2, 1), cls: 'whb', ring: 44 },
-    { id: 'netflix', at: cell(6, 0), cls: 'wc-app', app: 'netflix', ring: 60 },
+    { id: 'netflix', at: cell(6, 0), cls: 'wc-app', app: 'netflix', ring: 60, fs: 1.18 },
     { id: 'pluto', at: cell(6, 1, 2, 1), cls: 'wpl', ring: 44 },
-    { id: 'wifi', at: { x: 7 * S, y: 0, w: C, h: PILL }, cls: 'wc-dim wn', ring: 59 },
-    { id: 'theme', at: { x: 7 * S, y: PILL + G, w: PILL, h: PILL }, cls: 'wr', ring: 59 },
-    { id: 'light', at: { x: 7 * S + PILL + G, y: PILL + G, w: PILL, h: PILL }, cls: 'wc-glass wr', ring: 59 },
-    { id: 'mercadoplay', at: cell(8, 0), cls: 'wc-app', app: 'mercadoplay', ring: 60 },
+    { id: 'wifi', at: { x: 7 * S, y: 0, w: C, h: PILL }, cls: 'wc-glass wn', ring: 59, fs: 1.1 },
+    { id: 'theme', at: { x: 7 * S, y: PILL + G, w: PILL, h: PILL }, cls: 'wc-glass wr', ring: 59, fs: 1.16 },
+    { id: 'light', at: { x: 7 * S + PILL + G, y: PILL + G, w: PILL, h: PILL }, cls: 'wc-glass wr', ring: 59, fs: 1.16 },
+    { id: 'mercadoplay', at: cell(8, 0), cls: 'wc-app', app: 'mercadoplay', ring: 60, fs: 1.18 },
     { id: 'tv', at: cell(8, 1), cls: 'wc-dim wt', ring: 60, group: true },
     { id: 'news', at: cell(9, 0, 2, 2), cls: 'wc-light wnw', ring: 44 },
-    { id: 'alexa', at: cell(11, 0), cls: 'wc-glass wk', ring: 60 },
-    { id: 'settings', at: cell(12, 0), cls: 'wc-glass wk', ring: 60 },
-    { id: 'browser', at: cell(11, 1), cls: 'wc-glass wk', ring: 60 },
-    { id: 'allapps', at: cell(12, 1), cls: 'wc-glass wk', ring: 60 }
+    { fs: 1.18, id: 'alexa', at: cell(11, 0), cls: 'wc-glass wk', ring: 60 },
+    { fs: 1.18, id: 'settings', at: cell(12, 0), cls: 'wc-glass wk', ring: 60 },
+    { fs: 1.18, id: 'browser', at: cell(11, 1), cls: 'wc-glass wk', ring: 60 },
+    { fs: 1.18, id: 'allapps', at: cell(12, 1), cls: 'wc-glass wk', ring: 60 }
   ];
+  function focusScale(c) { return c.fs || Math.max(1.06, Math.min(1.2, (c.at.w + 50) / c.at.w)); }
   var TV_DOTS = [['tv-art', 'art', 24, 24, 'is-art', 'Modo Arte'], ['tv-audio', 'audio', 124, 24, 'is-on', 'Saída de áudio'],
     ['tv-picture', 'picture', 24, 124, '', 'Modo de imagem'], ['tv-timer', 'timer', 124, 124, '', 'Timer']];
 
@@ -106,34 +122,39 @@
       '<div class="wh-top"><div class="wh-date"><span class="wh-small" id="whDay"></span><span class="wh-big" id="whDate"></span></div>' +
       '<div class="wh-greet"><span class="wh-small" id="whHello"></span><span class="wh-big" id="whTime"></span></div><div class="wh-avatar" id="whAvatar"></div></div>' +
       '<div class="wh-strip" id="whStrip"></div><div class="wh-dock" id="whDock"><div class="wh-dock-bg" id="whDockBg"></div><div class="wh-dock-label" id="whDockLabel"></div></div>' +
-      '<div class="wh-hint" id="whHint"></div><div class="wh-toast" id="whToast"><span></span></div><div class="wh-sheet" id="whSheet" role="dialog" aria-label="Personalizar"></div>';
+      '<div class="wh-cap" id="whCap"></div><div class="wh-toast" id="whToast"><span></span></div><div class="wh-sheet" id="whSheet" role="dialog" aria-label="Personalizar"></div>' +
+      '<div class="wh-veil"></div>';
     root.innerHTML = html;
-    strip = byId('whStrip'); dockEl = byId('whDock'); dockBg = byId('whDockBg'); dockLabel = byId('whDockLabel'); toastEl = byId('whToast'); sheetEl = byId('whSheet');
+    strip = byId('whStrip'); dockEl = byId('whDock'); dockBg = byId('whDockBg'); dockLabel = byId('whDockLabel'); toastEl = byId('whToast'); sheetEl = byId('whSheet'); capEl = byId('whCap');
+    if (A && A.fonts) root.setAttribute('data-sf', '1');
     CARDS.forEach(function (c) {
       var el = document.createElement('div');
       el.className = 'wc ' + c.cls;
       el.setAttribute('data-card', c.id);
       el.style.left = c.at.x + 'px'; el.style.top = c.at.y + 'px'; el.style.width = c.at.w + 'px'; el.style.height = c.at.h + 'px';
-      el.style.setProperty('--ring', c.ring + 'px');
-      el.innerHTML = '<div class="wc-body"></div>';
+      var fs = focusScale(c);
+      el.style.setProperty('--fs', String(fs));
+      el.style.setProperty('--fsp', String(Math.round(fs * 0.95 * 1000) / 1000));
+      el.innerHTML = '<div class="wc-tilt"><div class="wc-body"></div><div class="wc-gloss"></div></div>';
       strip.appendChild(el);
-      cards[c.id] = { def: c, el: el, body: el.firstChild, html: null };
+      cards[c.id] = { def: c, el: el, tilt: el.firstChild, body: el.firstChild.firstChild, html: null };
       if (!c.group) targets.push({ id: c.id, x: c.at.x, y: c.at.y, w: c.at.w, h: c.at.h, el: el });
     });
     TV_DOTS.forEach(function (d) {
       var dot = document.createElement('div'), base = cards.tv.def.at;
       dot.className = 'wt-dot ' + d[4]; dot.setAttribute('data-target', d[0]); dot.setAttribute('aria-label', d[5]);
       dot.style.left = d[2] + 'px'; dot.style.top = d[3] + 'px';
-      dot.innerHTML = ico(d[1], 36, '#fff');
+      dot.innerHTML = '<div class="wc-tilt"><div class="wt-glyph">' + ico(d[1], 36) + '</div><div class="wc-gloss"></div></div>';
       cards.tv.el.appendChild(dot);
       targets.push({ id: d[0], x: base.x + d[2], y: base.y + d[3], w: 84, h: 84, el: dot });
     });
     (CFG.dock || []).forEach(function (key, i) {
       var el = document.createElement('div');
       el.className = 'wd'; el.setAttribute('data-dock', String(i));
-      el.innerHTML = '<div class="wd-tile"></div>';
+      el.innerHTML = '<div class="wc-tilt"><div class="wd-tile"></div><div class="wc-gloss"></div></div>';
+      el.style.left = (dockLeft(i) - dockWidth() / 2) + 'px';
       dockEl.appendChild(el);
-      dockItems.push({ key: key, el: el, tile: el.firstChild });
+      dockItems.push({ key: key, el: el, tilt: el.firstChild, tile: el.firstChild.firstChild });
     });
     root.addEventListener('click', onClick);
   }
@@ -157,20 +178,26 @@
       renderApps(); renderDock();
     });
   }
+  /* Icon priority: Apple's square app icon (iPadOS/iOS artwork, uncropped) > the TV's own icon > brand mark. */
   function tileInner(info, big) {
-    var mark = info.brand ? 'assets/icons/' + info.brand + '.svg' : '';
-    if (info.icon) return '<img class="' + (big ? 'wc-icon' : '') + '" src="' + esc(info.icon) + '" alt="">';
-    if (big) return (mark ? '<div class="wc-mark"><img src="' + mark + '" alt=""></div>' : '<div class="wc-initial">' + esc(info.name.charAt(0)) + '</div>') + '<div class="wc-name">' + esc(info.name) + '</div>';
-    return mark ? '<img class="wd-mark" src="' + mark + '" alt="">' : esc(info.name);
+    var mark = info.brand ? 'assets/icons/' + info.brand + '.svg' : '', apple = appleIcon(info.key);
+    if (apple) return '<img class="' + (big ? 'wc-icon wc-apple' : 'wd-full') + '" src="' + esc(apple) + '" alt="">';
+    if (info.icon) return '<img class="' + (big ? 'wc-icon' : 'wd-tv') + '" src="' + esc(info.icon) + '" alt="">';
+    if (big) return (mark ? '<div class="wc-mark"><img src="' + mark + '" alt=""></div>' : '<div class="wc-initial">' + esc(info.name.charAt(0)) + '</div>');
+    return mark ? '<img class="wd-mark" src="' + mark + '" alt="">' : '<span class="wd-word">' + esc(info.name) + '</span>';
   }
+  /* tvOS-style launch: the focused item pushes in while the screen fades, then the app opens. */
   function launch(key) {
     var info = appInfo(key);
     if (!info.appId) { toast(info.name + ' não foi encontrado na TV.'); return; }
-    deps.launch(info.appId, info.name);
+    st.launching = true; root.className += ' is-launch';
+    setTimeout(function () { deps.launch(info.appId, info.name); }, 300);
+    setTimeout(function () { st.launching = false; root.className = root.className.replace(/ is-launch/g, ''); }, 1600);
   }
 
   /* ---------- Rendering ---------- */
-  function setCls(el, base) { el.className = base + (el.className.indexOf(' is-focus') >= 0 ? ' is-focus' : '') + (el.className.indexOf(' is-adjust') >= 0 ? ' is-adjust' : ''); }
+  var STATE_CLS = / is-focus| is-adjust| is-press| lean-\w+| bump-\w+/g;
+  function setCls(el, base) { var keep = el.className.match(STATE_CLS); el.className = base + (keep ? keep.join('') : ''); }
   function setBody(id, html) { var c = cards[id]; if (c.html === html) return; c.html = html; c.body.innerHTML = html; fadeImages(c.body); }
   function fadeImages(scope) {
     var imgs = scope.querySelectorAll('img.wc-img');
@@ -183,13 +210,16 @@
   function renderApps() {
     ['youtube', 'globoplay', 'netflix', 'mercadoplay'].forEach(function (key) {
       var info = appInfo(key), c = cards[key];
-      setCls(c.el, 'wc wc-app b-' + key);
+      setCls(c.el, 'wc wc-app b-' + key + (appleIcon(key) ? ' has-art' : ''));
       c.el.setAttribute('aria-label', info.name);
       setBody(key, tileInner(info, true));
     });
-    [['alexa', 'mic', 'Alexa'], ['settings', 'gear', 'Personalizar'], ['browser', 'globe', 'Navegador'], ['allapps', 'apps', 'Todos os apps']].forEach(function (k) {
+    // Shortcuts: Apple artwork when there is one (Alexa icon, tvOS Settings), otherwise a glass tile with an SF Symbol.
+    [['alexa', 'mic', 'Alexa', 'alexa'], ['settings', 'gear', 'Personalizar', 'system-settings'], ['browser', 'globe', 'Navegador', ''], ['allapps', 'apps', 'Todos os apps', '']].forEach(function (k) {
+      var art = k[3] && appleIcon(k[3]);
       cards[k[0]].el.setAttribute('aria-label', k[2]);
-      setBody(k[0], '<div class="wk-in">' + ico(k[1], 48, '#fff') + '<div class="wk-name">' + k[2] + '</div></div>');
+      setCls(cards[k[0]].el, 'wc wk ' + (art ? 'has-art' : 'wc-glass'));
+      setBody(k[0], art ? '<img class="wc-icon wc-apple" src="' + esc(art) + '" alt="">' : '<div class="wk-in">' + ico(k[1], 64) + '</div>');
     });
   }
   function demo() { return !onTV(); }
@@ -253,11 +283,11 @@
   function renderNet() {
     var w = val('wifi') || (demo() ? { on: true, ssid: 'Nome da rede' } : { on: false, ssid: '' });
     setBody('wifi', '<div class="wn-dot' + (w.on ? '' : ' is-off') + '">' + ico('wifi', 36, '#fff') + '</div><div class="wn-text"><div class="wc-sub">Wi-Fi</div><div class="wc-title">' + esc(w.on ? w.ssid || 'Conectado' : 'Sem conexão') + '</div></div>');
-    setCls(cards.theme.el, 'wc wr' + (prefs.dark ? '' : ' wr-on'));
-    setBody('theme', '<div class="wr-icon">' + solid('half', 54, prefs.dark ? '#fff' : '#000') + '</div>');
+    setCls(cards.theme.el, 'wc wc-glass wr' + (prefs.dark ? '' : ' wr-on'));
+    setBody('theme', '<div class="wr-icon">' + solid('half', 50, 'currentColor') + '</div>');
     var on = data.light && data.light.on;
-    cards.light.body.style.background = on ? '#FFD60A' : '';
-    setBody('light', '<div class="wr-icon">' + ico('bulb', 54, on ? '#1D1D1F' : '#fff', 1.6) + '</div>');
+    setCls(cards.light.el, 'wc wc-glass wr' + (on ? ' wr-lit' : ''));
+    setBody('light', '<div class="wr-icon">' + ico('bulb', 50, 'currentColor', 1.6) + '</div>');
   }
   function renderNews() {
     var list = val('news') || (demo() ? [{ title: 'Manchete principal do dia, em até duas linhas', when: 'há 20 min' }, { title: 'Segunda manchete', when: 'há 1 h' }, { title: 'Terceira manchete', when: 'há 2 h' }, { title: 'Quarta manchete', when: 'há 3 h' }] : []);
@@ -288,60 +318,76 @@
   }
   function renderAll() {
     renderTop(); renderBackground(); renderApps(); renderWeather(); renderSpotify(); renderStremio(); renderHbo(); renderPluto(); renderPills(); renderNet(); renderNews(); renderDock();
-    root.className = 'wh' + (prefs.dark ? ' is-dark' : '') + (st.sheet ? ' has-sheet' : '');
+    root.className = 'wh' + (prefs.dark ? ' is-dark' : '') + (st.sheet ? ' has-sheet' : '') + (st.launching ? ' is-launch' : '');
     renderFocus(); renderSheet();
   }
 
   /* ---------- Focus, scrolling and dock magnification ---------- */
   function target(id) { for (var i = 0; i < targets.length; i++) if (targets[i].id === id) return targets[i]; return targets[0]; }
+  function restart(el, cls) {
+    var family = cls === 'is-press' ? 'is-press' : cls.split('-')[0] + '-\\w+';
+    el.className = el.className.replace(new RegExp(' ' + family, 'g'), '');
+    void el.offsetWidth; // restart the CSS animation
+    el.className += ' ' + cls;
+  }
   function renderFocus() {
     targets.forEach(function (t) {
-      var on = st.zone === 'strip' && !st.sheet && t.id === st.focus;
+      var on = st.zone === 'strip' && !st.sheet && t.id === st.focus, was = t.el.className.indexOf(' is-focus') >= 0;
       var cls = t.el.className.replace(/ is-focus| is-adjust/g, '');
+      if (!on) cls = cls.replace(/ lean-\w+| is-press| bump-\w+/g, '');
       t.el.className = cls + (on ? ' is-focus' : '') + (on && st.adjust ? ' is-adjust' : '');
+      if (on && !was && st.lean) restart(t.el, 'lean-' + st.lean);
     });
+    st.lean = '';
     strip.style.transform = 'translate3d(' + (-st.off) + 'px,0,0)';
-    renderHint();
+    renderCaption();
     renderDock();
   }
-  var HINTS = { volume: 'Volume', bright: 'Brilho', light: 'Luz da sala', 'tv-art': 'Modo Arte', 'tv-audio': 'Saída de áudio', 'tv-picture': 'Modo de imagem', 'tv-timer': 'Timer para desligar' };
-  function renderHint() {
-    var el = byId('whHint'), t = target(st.focus), text = st.focus === 'theme' ? (prefs.dark ? 'Cartões claros' : 'Cartões escuros') : HINTS[st.focus];
-    if (!el) return;
-    if (st.zone !== 'strip' || st.sheet || !text) { el.className = 'wh-hint'; return; }
-    if (st.adjust) text = 'Volume · ▲ ▼ · OK para sair';
-    el.textContent = text;
-    el.style.left = (129 + t.x - st.off + t.w / 2) + 'px';
-    el.style.top = (t.y < C ? 290 + t.y - 58 : 290 + t.y + t.h + 18) + 'px';
-    el.className = 'wh-hint is-on';
+  /* tvOS captions: the name of the focused item in SF Pro Medium, under it (above it on the top row,
+     where the next row sits right below). Content widgets carry their own titles and get none. */
+  var CAPTIONS = { alexa: 'Alexa', settings: 'Personalizar', browser: 'Navegador', allapps: 'Todos os apps', volume: 'Volume', bright: 'Brilho',
+    light: 'Luz da sala', wifi: '', 'tv-art': 'Modo Arte', 'tv-audio': 'Saída de áudio', 'tv-picture': 'Modo de imagem', 'tv-timer': 'Timer' };
+  function captionFor(id) {
+    if (id === 'theme') return prefs.dark ? 'Cartões claros' : 'Cartões escuros';
+    if (st.adjust && id === 'volume') return 'Volume  ▲ ▼';
+    if (CAPTIONS[id] !== undefined) return CAPTIONS[id];
+    var c = cards[id];
+    return c && c.def.app ? appInfo(c.def.app).name : '';
+  }
+  function renderCaption() {
+    var t = target(st.focus), text = captionFor(st.focus), c = cards[st.focus], fs = c ? focusScale(c.def) : 1.18, grow = t.h * (fs - 1) / 2;
+    if (!capEl) return;
+    if (st.zone !== 'strip' || st.sheet || !text) { capEl.className = 'wh-cap'; return; }
+    capEl.textContent = text;
+    capEl.style.left = (STRIP_X + t.x - st.off + t.w / 2) + 'px';
+    if (t.y + t.h <= C) { capEl.style.top = (STRIP_Y - grow - 52) + 'px'; capEl.className = 'wh-cap is-on is-above'; }
+    else { capEl.style.top = (STRIP_Y + t.y + t.h + grow + 14) + 'px'; capEl.className = 'wh-cap is-on'; }
   }
   function ensureVisible(t) {
     if (t.x + t.w > st.off + VIS) st.off = Math.min(MAXOFF, t.x + t.w - VIS + PEEK);
     if (t.x < st.off) st.off = Math.max(0, t.x - PEEK);
     if (t.x + t.w <= VIS) st.off = 0;
   }
+  /* Dock: square iPadOS icons on a dark translucent platter; only the focused icon lifts (tvOS x1.224) with its name below. */
+  function dockWidth() { var n = (CFG.dock || []).length; return n * DOCK_W + (n - 1) * DOCK_GAP + 2 * DOCK_PAD; }
+  function dockLeft(i) { return DOCK_PAD + i * (DOCK_W + DOCK_GAP); }
   function renderDock() {
     if (!dockItems.length) return;
-    var n = dockItems.length, f = st.zone === 'dock' && !st.sheet ? st.dock : -1, scales = [], extra = [], sum = 0, base = n * DOCK_SIZE + (n - 1) * DOCK_GAP + 2 * DOCK_PAD, i;
-    for (i = 0; i < n; i++) {
-      var d = f < 0 ? 99 : Math.abs(i - f);
-      scales[i] = d === 0 ? 1.36 : d === 1 ? 1.16 : d === 2 ? 1.05 : 1;
-      extra[i] = DOCK_SIZE * (scales[i] - 1); sum += extra[i];
-    }
-    var width = base + sum, left = -width / 2, x = left + DOCK_PAD;
-    dockBg.style.left = left + 'px'; dockBg.style.width = width + 'px';
+    var f = st.zone === 'dock' && !st.sheet ? st.dock : -1, width = dockWidth();
+    dockBg.style.left = (-width / 2) + 'px'; dockBg.style.width = width + 'px';
     dockItems.forEach(function (item, j) {
-      var info = appInfo(item.key), grown = extra[j], pos = x + grown / 2;
-      item.el.style.left = (-base / 2 + DOCK_PAD + j * (DOCK_SIZE + DOCK_GAP)) + 'px';
-      item.el.style.transform = 'translate3d(' + (pos - (-base / 2 + DOCK_PAD + j * (DOCK_SIZE + DOCK_GAP))) + 'px,' + (j === f ? -10 : 0) + 'px,0) scale(' + scales[j] + ')';
-      item.el.className = 'wd' + (j === f ? ' is-focus' : '');
-      item.tile.className = 'wd-tile b-' + item.key;
+      var info = appInfo(item.key), on = j === f, was = item.el.className.indexOf(' is-focus') >= 0;
+      item.el.style.transform = on ? 'scale(' + DOCK_FS + ')' : 'scale(1)';
+      var keep = on ? (item.el.className.match(/ lean-\w+| is-press| bump-\w+/g) || []).join('') : '';
+      item.el.className = 'wd' + (on ? ' is-focus' : '') + keep;
+      if (on && !was && st.dockLean) restart(item.el, 'lean-' + st.dockLean);
+      item.tile.className = 'wd-tile b-' + item.key + (appleIcon(item.key) ? ' has-art' : '');
       item.el.setAttribute('aria-label', info.name);
       var inner = tileInner(info, false);
       if (item.tile._html !== inner) { item.tile._html = inner; item.tile.innerHTML = inner; }
-      if (j === f) { dockLabel.textContent = info.name; dockLabel.style.left = (x + (DOCK_SIZE + grown) / 2) + 'px'; }
-      x += DOCK_SIZE + grown + DOCK_GAP;
+      if (on) { dockLabel.textContent = info.name; dockLabel.style.left = (dockLeft(j) - width / 2 + DOCK_W / 2) + 'px'; }
     });
+    st.dockLean = '';
     dockLabel.className = 'wh-dock-label' + (f >= 0 ? ' is-on' : '');
   }
   function move(dir) {
@@ -358,8 +404,8 @@
     });
     return best;
   }
-  function screenX(t) { return 129 + t.x - st.off + t.w / 2; }
-  function dockScreenX(i) { var n = dockItems.length, base = n * DOCK_SIZE + (n - 1) * DOCK_GAP + 2 * DOCK_PAD; return 960 - base / 2 + DOCK_PAD + i * (DOCK_SIZE + DOCK_GAP) + DOCK_SIZE / 2; }
+  function screenX(t) { return STRIP_X + t.x - st.off + t.w / 2; }
+  function dockScreenX(i) { return 960 - dockWidth() / 2 + dockLeft(i) + DOCK_W / 2; }
   function toDock() {
     if (!dockItems.length) return;
     var x = screenX(target(st.focus)), best = 0, dist = 1e9;
@@ -378,6 +424,54 @@
     st.zone = 'strip';
     if (best) st.focus = best.id;
   }
+
+  /* ---------- Sounds (WebAudio, synthesised: a soft focus tick, a select click and an edge bump) ---------- */
+  var actx = null, noise = null;
+  function sound(kind) {
+    if (!prefs.sound) return;
+    try {
+      if (!actx) {
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return;
+        actx = new AC();
+        noise = actx.createBuffer(1, Math.round(actx.sampleRate * 0.03), actx.sampleRate);
+        var ch = noise.getChannelData(0);
+        for (var i = 0; i < ch.length; i++) ch[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / ch.length, 3);
+      }
+      if (actx.state === 'suspended') actx.resume();
+      var t = actx.currentTime, g = actx.createGain(), src, f;
+      g.connect(actx.destination);
+      if (kind === 'bump') {
+        src = actx.createOscillator(); src.type = 'sine';
+        src.frequency.setValueAtTime(150, t); src.frequency.exponentialRampToValueAtTime(90, t + 0.08);
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.22, t + 0.006); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.1);
+        src.connect(g); src.start(t); src.stop(t + 0.11);
+        return;
+      }
+      src = actx.createBufferSource(); src.buffer = noise;
+      f = actx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = kind === 'select' ? 1800 : 3200; f.Q.value = 1.4;
+      g.gain.setValueAtTime(kind === 'select' ? 0.55 : 0.32, t); g.gain.exponentialRampToValueAtTime(0.0001, t + (kind === 'select' ? 0.05 : 0.03));
+      src.connect(f); f.connect(g); src.start(t);
+      if (kind === 'select') {
+        var o = actx.createOscillator(), og = actx.createGain();
+        o.frequency.setValueAtTime(1100, t); o.frequency.exponentialRampToValueAtTime(700, t + 0.05);
+        og.gain.setValueAtTime(0.09, t); og.gain.exponentialRampToValueAtTime(0.0001, t + 0.07);
+        o.connect(og); og.connect(actx.destination); o.start(t); o.stop(t + 0.08);
+      }
+    } catch (e) { /* sound is optional */ }
+  }
+  function focusedEl() {
+    if (st.zone === 'dock') return dockItems[st.dock] && dockItems[st.dock].el;
+    return target(st.focus).el;
+  }
+  function flash(el, cls, ms) {
+    if (!el) return;
+    restart(el, cls);
+    clearTimeout(el._flash);
+    el._flash = setTimeout(function () { el.className = el.className.replace(' ' + cls, ''); }, ms);
+  }
+  function press() { flash(focusedEl(), 'is-press', 300); sound('select'); }
+  function bump(dir) { flash(focusedEl(), 'bump-' + dir, 360); sound('bump'); }
 
   /* ---------- Actions ---------- */
   function toast(text) {
@@ -439,7 +533,7 @@
   function sheetRows() {
     return [
       { kind: 'swatch', items: [0, 1, 2, 3] }, { kind: 'swatch', items: [4, 5, 6, 7] },
-      { kind: 'theme', items: ['light', 'dark'] }, { kind: 'link', items: ['cleanframe'] }, { kind: 'link', items: ['tv'] }
+      { kind: 'theme', items: ['light', 'dark'] }, { kind: 'sound', items: ['on', 'off'] }, { kind: 'link', items: ['cleanframe'] }, { kind: 'link', items: ['tv'] }
     ];
   }
   function openSheet() { st.sheet = { row: 0, col: Math.max(0, gradientIndex(prefs.bg) % 4), preview: null }; st.sheet.row = gradientIndex(prefs.bg) >= 4 ? 1 : 0; previewSwatch(); }
@@ -461,6 +555,7 @@
       var value = row.items[sh.col];
       if (row.kind === 'swatch') { prefs.bg = GRADIENTS[value][0]; savePrefs(); toast('Fundo ' + GRADIENTS[value][1] + ' aplicado'); }
       else if (row.kind === 'theme') { prefs.dark = value === 'dark'; savePrefs(); }
+      else if (row.kind === 'sound') { prefs.sound = value === 'on'; savePrefs(); sound('select'); }
       else if (value === 'cleanframe') { closeSheet(); deps.openSettings(); return; }
       else { closeSheet(); deps.tvSettings(); return; }
     }
@@ -482,8 +577,11 @@
     html += '</div></div><div class="wsh-section" style="top:500px"><div class="wsh-cap">Cartões</div><div class="wsh-row">' +
       '<span class="wsh-opt' + focused(2, 0) + (!prefs.dark ? ' is-on' : '') + '" data-sheet="2,0">Claros</span>' +
       '<span class="wsh-opt' + focused(2, 1) + (prefs.dark ? ' is-on' : '') + '" data-sheet="2,1">Escuros</span></div></div>' +
-      '<div class="wsh-section" style="top:640px"><div class="wsh-link' + focused(3, 0) + '" data-sheet="3,0">Mais opções do CleanFrame</div>' +
-      '<div class="wsh-link' + focused(4, 0) + '" data-sheet="4,0">Ajustes da TV</div></div>';
+      '<div class="wsh-section" style="top:630px"><div class="wsh-cap">Sons</div><div class="wsh-row">' +
+      '<span class="wsh-opt' + focused(3, 0) + (prefs.sound ? ' is-on' : '') + '" data-sheet="3,0">Ligados</span>' +
+      '<span class="wsh-opt' + focused(3, 1) + (!prefs.sound ? ' is-on' : '') + '" data-sheet="3,1">Desligados</span></div></div>' +
+      '<div class="wsh-section" style="top:770px"><div class="wsh-link' + focused(4, 0) + '" data-sheet="4,0">Mais opções do CleanFrame</div>' +
+      '<div class="wsh-link' + focused(5, 0) + '" data-sheet="5,0">Ajustes da TV</div></div>';
     if (sheetEl._html !== html) { sheetEl._html = html; sheetEl.innerHTML = html; }
   }
 
@@ -565,28 +663,31 @@
     tick: tick,
     key: function (k) {
       if (!root) return false;
-      if (st.sheet) { sheetKey(k); renderAll(); return true; }
-      if (st.adjust && st.zone === 'strip' && adjustKey(k)) { renderFocus(); return true; }
+      var dirKey = k === 'left' || k === 'right' || k === 'up' || k === 'down';
+      if (st.sheet) { sound(k === 'ok' ? 'select' : 'tick'); sheetKey(k); renderAll(); return true; }
+      if (st.adjust && st.zone === 'strip' && adjustKey(k)) { sound('tick'); renderFocus(); return true; }
       if (k === 'back') {
-        if (st.zone === 'dock') { fromDock(); renderFocus(); return true; }
-        if (st.focus !== 'youtube' || st.off) { st.focus = 'youtube'; st.off = 0; renderFocus(); return true; }
+        if (st.zone === 'dock') { sound('tick'); fromDock(); st.lean = 'up'; renderFocus(); return true; }
+        if (st.focus !== 'youtube' || st.off) { sound('tick'); st.focus = 'youtube'; st.off = 0; renderFocus(); return true; }
         return false;
       }
       if (st.zone === 'dock') {
-        if (k === 'left' && st.dock > 0) st.dock--;
-        else if (k === 'right' && st.dock < dockItems.length - 1) st.dock++;
-        else if (k === 'up') { fromDock(); ensureVisible(target(st.focus)); }
-        else if (k === 'ok') launch(dockItems[st.dock].key);
+        if (k === 'left' && st.dock > 0) { st.dock--; st.dockLean = 'left'; sound('tick'); }
+        else if (k === 'right' && st.dock < dockItems.length - 1) { st.dock++; st.dockLean = 'right'; sound('tick'); }
+        else if (k === 'up') { fromDock(); ensureVisible(target(st.focus)); st.lean = 'up'; sound('tick'); }
+        else if (k === 'ok') { press(); launch(dockItems[st.dock].key); }
+        else if (dirKey) bump(k);
         renderFocus(); return true;
       }
-      if (k === 'ok') { ok(st.focus); renderAll(); return true; }
+      if (k === 'ok') { press(); ok(st.focus); renderAll(); return true; }
       var next = move(k);
-      if (next) { st.focus = next.id; ensureVisible(next); }
-      else if (k === 'down') toDock();
+      if (next) { st.focus = next.id; ensureVisible(next); st.lean = k; sound('tick'); }
+      else if (k === 'down') { toDock(); st.dockLean = 'down'; sound('tick'); }
+      else if (dirKey) bump(k);
       renderFocus();
       return true;
     },
-    qa: function () { return { zone: st.zone, focus: st.zone === 'dock' ? dockItems[st.dock] && dockItems[st.dock].key : st.focus, offset: st.off, background: prefs.bg, dark: prefs.dark, sheet: st.sheet ? { row: st.sheet.row, col: st.sheet.col } : null, adjust: st.adjust }; },
+    qa: function () { return { zone: st.zone, focus: st.zone === 'dock' ? dockItems[st.dock] && dockItems[st.dock].key : st.focus, offset: st.off, background: prefs.bg, dark: prefs.dark, sound: prefs.sound, apple: !!A, sheet: st.sheet ? { row: st.sheet.row, col: st.sheet.col } : null, adjust: st.adjust }; },
     gradients: GRADIENTS.map(function (g) { return g[0]; })
   };
 }());

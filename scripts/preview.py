@@ -16,7 +16,7 @@ class PreviewServer(ThreadingHTTPServer):
 class Preview(SimpleHTTPRequestHandler):
     def send_head(self):
         route = unquote(urlsplit(self.path).path)
-        optional = ['/home/widgets/secrets.js', '/home/widgets/profile.jpg', '/home/apple/apple.css', '/home/apple/manifest.js']
+        optional = ['/home/widgets/perf.js', '/home/widgets/secrets.js', '/home/widgets/profile.jpg', '/home/apple/apple.css', '/home/apple/manifest.js']
         overlay = font_overlay(include_private=self.server.include_private_fonts)
         if route in optional and route[len('/home/'):] not in overlay:
             return super().send_head()

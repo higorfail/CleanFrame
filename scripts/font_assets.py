@@ -64,6 +64,9 @@ def font_overlay(root=ROOT, include_private=True):
     secrets = (root / '.local/widgets-secrets.js')
     if include_private and secrets.is_file() and not secrets.is_symlink():
         assets['widgets/secrets.js'] = secrets.resolve()
+    perf = (root / '.local/widgets-perf.js')
+    if include_private and perf.is_file() and not perf.is_symlink():
+        assets['widgets/perf.js'] = perf.resolve()
     photo = (root / '.local/widgets-profile.jpg')
     if include_private and photo.is_file() and not photo.is_symlink():
         assets['widgets/profile.jpg'] = photo.resolve()

@@ -60,6 +60,10 @@ def font_overlay(root=ROOT, include_private=True):
                 css.append("@font-face{font-family:'" + font['family'] + "';font-style:normal;"
                            'font-weight:' + str(weight) + ";src:url('private-fonts/" + relative + "') format('truetype');"
                            'font-display:block;' + font['metrics'] + '}')
+    # Personal widget keys stay in .local/ and are injected only into private previews and builds.
+    secrets = (root / '.local/widgets-secrets.js')
+    if include_private and secrets.is_file() and not secrets.is_symlink():
+        assets['widgets/secrets.js'] = secrets.resolve()
     assets['assets/private-fonts.css'] = ('\n'.join(css) + '\n').encode()
     assets['assets/font-catalog.js'] = ('window.CleanFramePrivateFontIDs = '
                                        + json.dumps(private_ids + PUBLIC_FONT_IDS) + ';\n').encode()

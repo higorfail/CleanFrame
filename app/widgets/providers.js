@@ -130,7 +130,7 @@
           (d && d.results || []).slice(0, 6).forEach(function (r) {
             if (!r.backdrop_path) return;
             out.push({ title: r.name || r.title, kind: kind === 'tv' ? 'Série' : 'Filme', year: (r.first_air_date || r.release_date || '').slice(0, 4),
-              image: 'https://image.tmdb.org/t/p/w1280' + r.backdrop_path, popularity: r.popularity || 0 });
+              image: 'https://image.tmdb.org/t/p/w780' + r.backdrop_path, popularity: r.popularity || 0 });
           });
           if (--pending) return;
           out.sort(function (a, b) { return b.popularity - a.popularity; });

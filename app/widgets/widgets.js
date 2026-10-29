@@ -328,11 +328,8 @@
       if (prev) { var fresh = c.body.querySelector('.wc-hero-img'); if (fresh) { void fresh.offsetWidth; fresh.className += ' is-ready'; } }
       c.shownImg = item.image || c.shownImg;
     }
-    if (!item.image || item.image === c.shownImg) { paint(); return; }
-    var pre = new Image(), done = false;
-    pre.onload = pre.onerror = function () { if (done) return; done = true; paint(); };
-    pre.src = item.image;
-    setTimeout(pre.onload, 4000);
+    // Paint right away (never leave the card blank waiting on an image); the <img> fades in as it loads.
+    try { paint(); } catch (e) { setBody('stremio', heroCard('stremio', 'Stremio', 'Continuar assistindo', item && item.title || 'Stremio', item && item.sub || '', '', item && typeof item.progress === 'number' ? item.progress : null)); }
   }
   function renderHbo() {
     var list = data.tmdb, dc = data.discover, c = cards.hbo, slots = [], item;

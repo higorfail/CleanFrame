@@ -347,7 +347,7 @@
       '<div style="position:absolute;left:0;right:0;top:56px;height:72px"><div style="position:absolute;left:0;top:0;width:72px;height:72px;border-radius:16px;background:#3A3A42;overflow:hidden">' +
       (p.logo ? '<img class="wc-img" src="' + esc(p.logo) + '" alt="" style="object-fit:contain">' : '') + '</div>' +
       '<div style="position:absolute;left:90px;right:0;top:10px"><div class="wc-title">' + esc(p.title) + '</div><div class="wc-sub" style="color:rgba(255,255,255,.7)">' + esc(p.channel) + ' · até ' + esc(p.until) + '</div></div></div>' +
-      (many > 1 ? '<div class="wnw-dots" style="left:0;right:auto;top:auto;bottom:16px">' + list.slice(0, 8).map(function (_, i) { return '<i' + (i === st.plutoIndex % many ? ' class="is-on"' : '') + '></i>'; }).join('') + '</div>' : '') +
+      (many > 1 ? '<div class="wnw-dots" style="left:auto;right:0;top:auto;bottom:26px">' + list.slice(0, 8).map(function (_, i) { return '<i' + (i === st.plutoIndex % many ? ' class="is-on"' : '') + '></i>'; }).join('') + '</div>' : '') +
       '<div class="wc-bar" style="position:absolute;left:0;right:0;bottom:0;background:rgba(255,255,255,.18)"><i style="width:' + Math.round(pct * 100) + '%;background:#FFD60A"></i></div></div>');
   }
   function renderPills() {

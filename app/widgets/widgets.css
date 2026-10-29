@@ -216,7 +216,7 @@
 .wt{border-radius:44px}
 .wt-dot{position:absolute;width:84px;height:84px;border-radius:42px;color:#fff;background:rgba(130,130,130,.42);--fs:1.1;--fsp:1.05;transition:transform .18s var(--focus),background-color .15s ease,color .15s ease,box-shadow .2s ease}
 .wt-glyph .wc-ico{position:absolute;left:24px;top:24px}
-.wt-dot.is-art{background:linear-gradient(160deg,#6E5AA6,#3A2C5E)}
+.wt-dot.is-art{background:#0A84FF}
 .wt-dot.is-on{background:#0A84FF}
 .wt-dot.is-focus{transform:scale(1.1);z-index:2;color:#1D1D1F;background:rgba(255,255,255,.94);box-shadow:0 10px 20px rgba(0,0,0,.3)}
 

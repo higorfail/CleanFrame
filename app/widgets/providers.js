@@ -197,8 +197,9 @@
       request({ url: base + 'channels?' + query({ channelIds: '', offset: 0, limit: 300, sort: 'number:asc' }), headers: auth, timeout: 15000 }, function (e, ch) {
         var list = ch && ch.data || [], favs = CFG.pluto && CFG.pluto.favorites || [], pinned = (CFG.pluto && CFG.pluto.channel || ''), picks = [];
         function find(name) { name = String(name).toLowerCase(); for (var i = 0; i < list.length; i++) if (String(list[i].name).toLowerCase().indexOf(name) >= 0) return list[i]; return null; }
-        if (favs.length) favs.forEach(function (n) { var f = find(n); if (f) picks.push(f); });
-        else if (pinned) { var p = find(pinned); if (p) picks.push(p); }
+        function add(c) { if (c && picks.indexOf(c) < 0) picks.push(c); }
+        if (favs.length) favs.forEach(function (n) { add(find(n)); });
+        else if (pinned) add(find(pinned));
         if (!picks.length) picks = list.slice(0, 6);
         picks = picks.slice(0, 8);
         if (e || !picks.length) { done(e || new Error('pluto'), last('pluto')); return; }

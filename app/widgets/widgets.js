@@ -264,7 +264,7 @@
       setBody(key, tileInner(info, true));
     });
     // Shortcuts: Apple artwork when there is one (Alexa icon, tvOS Settings), otherwise a glass tile with an SF Symbol.
-    [['alexa', 'mic', 'Alexa', 'alexa'], ['settings', 'gear', 'Personalizar', 'system-settings-tvsq'], ['browser', 'globe', 'Navegador', ''], ['allapps', 'apps', 'Todos os apps', '']].forEach(function (k) {
+    [['alexa', 'mic', 'Alexa', 'alexa'], ['settings', 'gear', 'Personalizar', ''], ['browser', 'globe', 'Navegador', ''], ['allapps', 'apps', 'Todos os apps', '']].forEach(function (k) {
       var art = k[3] && appleIcon(k[3]);
       cards[k[0]].el.setAttribute('aria-label', k[2]);
       setCls(cards[k[0]].el, 'wc wk ' + (art ? 'has-art' : 'wc-glass'));

@@ -21,7 +21,7 @@ window.FrameWidgetsConfig = {
   // Pluto TV — unofficial guide API. `favorites` is a list of channel names (partial match, any case)
   // the card rotates through; if empty it uses the single `channel`, and if that's empty too it rotates
   // the first live channels. Ex.: favorites: ['MTV', 'Pluto Filmes', 'CNN', 'Comedy Central'].
-  pluto: { favorites: [], channel: '' },
+  pluto: { favorites: ['Nickelodeon Clássicos', 'Nick Clássicos'], channel: '' },
   // g1 headlines (public RSS feed).
   news: { feed: 'https://g1.globo.com/rss/g1/' },
   // SmartThings (optional) — personal access token and the living-room light device ID.

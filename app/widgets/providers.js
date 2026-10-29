@@ -155,13 +155,16 @@
       items = items.filter(function (i) { return i && !i.removed && i.state && i.state.timeOffset > 0 && i.state.duration > 0 && i.state.timeOffset < i.state.duration * 0.95; });
       items.sort(function (a, b) { return String(b.state.lastWatched || '').localeCompare(String(a.state.lastWatched || '')); });
       if (!items.length) { done(null, null); return; }
-      var it = items[0], vid = String(it.state.video_id || '').split(':'), imdb = String(it._id || '').split(':')[0];
-      var data = { title: it.name, type: it.type,
-        episode: vid.length >= 3 ? 'T' + vid[1] + ' · E' + vid[2] : it.type === 'movie' ? 'Filme' : '',
-        left: Math.max(1, Math.round((it.state.duration - it.state.timeOffset) / 60000)),
-        progress: it.state.timeOffset / it.state.duration,
-        image: /^tt\d+$/.test(imdb) ? 'https://images.metahub.space/background/medium/' + imdb + '/img' : it.background || it.poster || '' };
-      save('stremio', data); done(null, data);
+      // Keep the most recent "continue watching" titles; the card rotates through them.
+      var out = items.slice(0, 6).map(function (it) {
+        var vid = String(it.state.video_id || '').split(':'), imdb = String(it._id || '').split(':')[0];
+        return { title: it.name, type: it.type,
+          episode: vid.length >= 3 ? 'T' + vid[1] + ' · E' + vid[2] : it.type === 'movie' ? 'Filme' : '',
+          left: Math.max(1, Math.round((it.state.duration - it.state.timeOffset) / 60000)),
+          progress: it.state.timeOffset / it.state.duration,
+          image: /^tt\d+$/.test(imdb) ? 'https://images.metahub.space/background/medium/' + imdb + '/img' : it.background || it.poster || '' };
+      });
+      save('stremio', out); done(null, out);
     });
   }
 

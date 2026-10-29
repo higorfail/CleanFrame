@@ -98,7 +98,7 @@
   /* ---------- State ---------- */
   var deps = null, root = null, strip = null, dockEl = null, dockBg = null, dockLabel = null, toastEl = null, sheetEl = null, capEl = null;
   var cards = {}, targets = [], dockItems = [], resolved = {};
-  var st = { zone: 'strip', focus: 'youtube', dock: 0, off: 0, adjust: false, newsIndex: 0, active: false, sheet: null, toastTimer: 0, heroIndex: 0, plutoIndex: 0, lean: '', launching: false };
+  var st = { zone: 'strip', focus: 'youtube', dock: 0, off: 0, adjust: false, newsIndex: 0, active: false, sheet: null, toastTimer: 0, heroIndex: 0, plutoIndex: 0, stremioIndex: 0, lean: '', launching: false };
   var data = {}, timers = {}, prefs = loadPrefs();
 
   function loadPrefs() {
@@ -306,10 +306,31 @@
       (progress !== null ? '<div class="wc-bar" style="margin-top:12px"><i style="width:' + Math.round(progress * 100) + '%"></i></div>' : '') + (extra || '') + '</div>';
   }
   function renderStremio() {
-    var s = data.stremio;
+    var s = data.stremio, c = cards.stremio, item, list = null;
     if (s && s.setup && !demo()) { setBody('stremio', heroCard('stremio', 'Stremio', 'Continuar assistindo', 'Conecte o Stremio', 'OK abre o app · veja docs/widgets.md', '', null)); return; }
-    if (!s || s.setup || s.error) s = s === null ? { title: 'Nada em andamento', episode: 'OK abre o Stremio', image: '', progress: null, left: 0, empty: true } : { title: 'Nome da série', episode: 'T2 · E5', left: 24, progress: 0.64, image: '' };
-    setBody('stremio', heroCard('stremio', 'Stremio', 'Continuar assistindo', s.title, s.empty ? s.episode : s.episode + (s.left ? ' · faltam ' + s.left + ' min' : ''), s.image, s.empty ? null : s.progress));
+    if (s && s.length) { list = s; item = s[st.stremioIndex % s.length]; }
+    else if (s === null) item = { title: 'Nada em andamento', episode: 'OK abre o Stremio', image: '', progress: null, empty: true };
+    else item = { title: 'Nome da série', episode: 'T2 · E5', left: 24, progress: 0.64, image: '' };
+    var many = !!(list && list.length > 1), sub = item.empty ? item.episode : item.episode + (item.left ? ' · faltam ' + item.left + ' min' : '');
+    function paint() {
+      var prev = c.shownImg && c.shownImg !== item.image ? '<img class="wc-img is-ready" src="' + esc(c.shownImg) + '" alt="">' : '';
+      var cur = item.image ? '<img class="wc-img wc-hero-img' + (prev ? '' : ' is-ready') + '" src="' + esc(item.image) + '" alt="">' : '';
+      var base = cur || prev ? prev + cur : '<div class="wc-shade-b" style="background:radial-gradient(70% 80% at 70% 30%,#1F4A55 0%,rgba(31,74,85,0) 70%),linear-gradient(160deg,#121A20,#07090C)"></div>';
+      var dots = many ? '<div class="wnw-dots" style="left:auto;right:30px;top:34px;bottom:auto">' + list.slice(0, 6).map(function (_, i) { return '<i' + (i === st.stremioIndex % list.length ? ' class="is-on"' : '') + '></i>'; }).join('') + '</div>' : '';
+      setBody('stremio', base + '<div class="wc-shade-b"></div>' +
+        '<div class="wc-brand">' + brandLogo('stremio', 'Stremio', 'is-mark') + (A && A.brand && A.brand.stremio ? '<span class="wc-logo-word">Stremio</span>' : '') + '</div>' + dots +
+        '<div style="position:absolute;left:30px;right:30px;bottom:30px"><div class="wc-dark-label">Continuar assistindo</div>' +
+        '<div style="font-size:44px;font-weight:800;line-height:1.04;letter-spacing:-1px;margin-top:8px">' + esc(item.title) + '</div>' +
+        '<div style="font-size:18px;font-weight:500;color:rgba(255,255,255,.8);margin-top:8px">' + esc(sub) + '</div>' +
+        (item.empty ? '' : '<div class="wc-bar" style="margin-top:12px"><i style="width:' + Math.round((item.progress || 0) * 100) + '%"></i></div>') + '</div>');
+      if (prev) { var fresh = c.body.querySelector('.wc-hero-img'); if (fresh) { void fresh.offsetWidth; fresh.className += ' is-ready'; } }
+      c.shownImg = item.image || c.shownImg;
+    }
+    if (!item.image || item.image === c.shownImg) { paint(); return; }
+    var pre = new Image(), done = false;
+    pre.onload = pre.onerror = function () { if (done) return; done = true; paint(); };
+    pre.src = item.image;
+    setTimeout(pre.onload, 4000);
   }
   function renderHbo() {
     var list = data.tmdb, item, c = cards.hbo;
@@ -753,6 +774,7 @@
       // The news photos change on the half beat, so the two cards never fade at the same moment.
       setTimeout(function () { var n = val('news'); if (n && n.length > 1 && st.active) { st.newsIndex++; renderNews(); } }, 4000);
       var pl = val('pluto'); if (pl && pl.length > 1 && st.active) { st.plutoIndex++; renderPluto(); }
+      setTimeout(function () { var sv = val('stremio'); if (sv && sv.length > 1 && st.active) { st.stremioIndex++; renderStremio(); } }, 2000);
       rotateHero();
     }, 8000);
   }

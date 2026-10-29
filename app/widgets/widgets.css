@@ -93,8 +93,8 @@
 .wc.is-adjust .wp-level{background:#fff}
 .wc.is-adjust::before{box-shadow:0 0 0 4px #fff,0 14px 26px rgba(0,0,0,.3)}
 .wc-pad{position:absolute;left:24px;top:22px;right:24px;bottom:22px}
-.wc-light .wc-body{background:#fff;color:#1D1D1F}
-.wh.is-dark .wc-light .wc-body{background:#1C1C1E;color:#fff}
+.wc-light .wc-body{background:linear-gradient(180deg,#FFFFFF 0%,#F4F5F7 100%);color:#1D1D1F}
+.wh.is-dark .wc-light .wc-body{background:linear-gradient(180deg,#232325 0%,#161619 100%);color:#fff}
 /* tvOS buttons: translucent grey at rest, white with a dark glyph when focused. */
 .wc-glass .wc-body{background:rgba(130,130,130,.42);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);transition:background-color .15s ease,color .15s ease}
 .wc-glass{color:#fff}
@@ -156,7 +156,7 @@
 .ww.is-night.sky-rain .wc-body{background:linear-gradient(180deg,#2F3B49 0%,#171E27 100%)}
 .ww.is-night.sky-storm .wc-body{background:linear-gradient(180deg,#242A34 0%,#0D1016 100%)}
 .wpl .wc-body{background:linear-gradient(180deg,#26252E 0%,#131318 100%)}
-.wst .wc-body,.whb .wc-body{background:#0B0C12}
+.wst .wc-body,.whb .wc-body{background:linear-gradient(180deg,#121319 0%,#07080C 100%)}
 .ww-temp{font-size:60px;font-weight:300;line-height:66px;letter-spacing:-1.5px}
 .ww-city{font-size:18px;font-weight:600}
 .ww-foot{position:absolute;left:0;bottom:0}

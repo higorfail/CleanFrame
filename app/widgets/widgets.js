@@ -98,7 +98,7 @@
   /* ---------- State ---------- */
   var deps = null, root = null, strip = null, dockEl = null, dockBg = null, dockLabel = null, toastEl = null, sheetEl = null, capEl = null;
   var cards = {}, targets = [], dockItems = [], resolved = {};
-  var st = { zone: 'strip', focus: 'youtube', dock: 0, off: 0, adjust: false, newsIndex: 0, active: false, sheet: null, toastTimer: 0, heroIndex: 0, lean: '', launching: false };
+  var st = { zone: 'strip', focus: 'youtube', dock: 0, off: 0, adjust: false, newsIndex: 0, active: false, sheet: null, toastTimer: 0, heroIndex: 0, plutoIndex: 0, lean: '', launching: false };
   var data = {}, timers = {}, prefs = loadPrefs();
 
   function loadPrefs() {
@@ -336,7 +336,9 @@
     setTimeout(pre.onload, 4000);
   }
   function renderPluto() {
-    var p = val('pluto') || (demo() || !data.plutoTried ? { channel: 'Nome do canal', title: 'Nome do programa', until: '00:30', start: 0, stop: 0, logo: '' } : null), pct = 0.42;
+    var list = val('pluto'), p, pct = 0.42, many = 0;
+    if (list && list.length) { many = list.length; p = list[st.plutoIndex % list.length]; }
+    else p = (demo() || !data.plutoTried ? { channel: 'Nome do canal', title: 'Nome do programa', until: '00:30', start: 0, stop: 0, logo: '' } : null);
     if (!p) { setBody('pluto', '<div class="wc-pad" style="background:none"><div class="wc-dark-label" style="font-size:14px;color:rgba(255,255,255,.72)">Pluto TV</div><div class="wc-title" style="margin-top:40px">TV ao vivo e grátis</div><div class="wc-sub" style="color:rgba(255,255,255,.7)">OK abre o Pluto TV</div></div>'); return; }
     if (p.stop > p.start) pct = Math.max(0, Math.min(1, (Date.now() - p.start) / (p.stop - p.start)));
     setBody('pluto', '<div class="wc-pad"><div style="font-size:14px;font-weight:600;letter-spacing:.7px;color:rgba(255,255,255,.72);height:24px">' + brandLogo('pluto', 'PLUTO TV', 'is-pluto') +
@@ -344,6 +346,7 @@
       '<div style="position:absolute;left:0;right:0;top:56px;height:72px"><div style="position:absolute;left:0;top:0;width:72px;height:72px;border-radius:16px;background:#3A3A42;overflow:hidden">' +
       (p.logo ? '<img class="wc-img" src="' + esc(p.logo) + '" alt="" style="object-fit:contain">' : '') + '</div>' +
       '<div style="position:absolute;left:90px;right:0;top:10px"><div class="wc-title">' + esc(p.title) + '</div><div class="wc-sub" style="color:rgba(255,255,255,.7)">' + esc(p.channel) + ' · até ' + esc(p.until) + '</div></div></div>' +
+      (many > 1 ? '<div class="wnw-dots" style="left:0;right:auto;top:auto;bottom:16px">' + list.slice(0, 8).map(function (_, i) { return '<i' + (i === st.plutoIndex % many ? ' class="is-on"' : '') + '></i>'; }).join('') + '</div>' : '') +
       '<div class="wc-bar" style="position:absolute;left:0;right:0;bottom:0;background:rgba(255,255,255,.18)"><i style="width:' + Math.round(pct * 100) + '%;background:#FFD60A"></i></div></div>');
   }
   function renderPills() {
@@ -748,6 +751,7 @@
       if (data.tmdb && data.tmdb.length > 1) { st.heroIndex++; renderHbo(); }
       // The news photos change on the half beat, so the two cards never fade at the same moment.
       setTimeout(function () { var n = val('news'); if (n && n.length > 1 && st.active) { st.newsIndex++; renderNews(); } }, 4000);
+      var pl = val('pluto'); if (pl && pl.length > 1 && st.active) { st.plutoIndex++; renderPluto(); }
       rotateHero();
     }, 8000);
   }

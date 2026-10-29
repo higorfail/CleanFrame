@@ -171,9 +171,18 @@
     if (!secrets.plutoClient) { secrets.plutoClient = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) { var r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16); }); store(SECRET_KEY, secrets); }
     return secrets.plutoClient;
   }
+  function plutoSlot(pick, cur) {
+    var logo = (pick.images || []).filter(function (im) { return /logo|colorLogo/i.test(im.type || ''); })[0];
+    var start = new Date(cur.start).getTime(), stop = new Date(cur.stop).getTime(), end = new Date(stop);
+    return { channel: pick.name, title: cur.episode && cur.episode.series && cur.episode.series.name || cur.title,
+      until: (end.getHours() < 10 ? '0' : '') + end.getHours() + ':' + (end.getMinutes() < 10 ? '0' : '') + end.getMinutes(),
+      logo: logo && logo.url || '', start: start, stop: stop };
+  }
+  /* A rotating set of channels: the owner's favourites (CFG.pluto.favorites), a single pinned channel
+     (CFG.pluto.channel), or the first live channels. Returns an array of "now playing" slots. */
   function pluto(done) {
     var hit = fresh('pluto', 3 * 60000);
-    if (hit && hit.stop > Date.now()) { done(null, hit); return; }
+    if (hit && hit.length && hit[0].stop > Date.now()) { done(null, hit); return; }
     function withSession(next) {
       if (plutoSession && plutoSession.exp > Date.now()) { next(null, plutoSession.token); return; }
       request({ url: 'https://boot.pluto.tv/v4/start?' + query({ appName: 'web', appVersion: '9.0.0', deviceVersion: '120.0.0', deviceModel: 'web', deviceMake: 'chrome',
@@ -186,20 +195,25 @@
       if (err) { done(err, last('pluto')); return; }
       var auth = { Authorization: 'Bearer ' + token }, base = 'https://service-channels.clusters.pluto.tv/v2/guide/';
       request({ url: base + 'channels?' + query({ channelIds: '', offset: 0, limit: 300, sort: 'number:asc' }), headers: auth, timeout: 15000 }, function (e, ch) {
-        var list = ch && ch.data || [], want = (CFG.pluto && CFG.pluto.channel || '').toLowerCase(), pick = null;
-        list.forEach(function (c) { if (!pick && want && String(c.name).toLowerCase().indexOf(want) >= 0) pick = c; });
-        pick = pick || list[0];
-        if (e || !pick) { done(e || new Error('pluto'), last('pluto')); return; }
-        request({ url: base + 'timelines?' + query({ start: new Date().toISOString(), channelIds: pick.id, duration: 120 }), headers: auth }, function (e2, tl) {
-          var row = tl && tl.data && tl.data[0], now = Date.now(), cur = null;
-          (row && row.timelines || []).forEach(function (p) { if (!cur && new Date(p.start).getTime() <= now && new Date(p.stop).getTime() > now) cur = p; });
-          if (e2 || !cur) { done(e2 || new Error('pluto'), last('pluto')); return; }
-          var logo = (pick.images || []).filter(function (im) { return /logo|colorLogo/i.test(im.type || ''); })[0];
-          var start = new Date(cur.start).getTime(), stop = new Date(cur.stop).getTime(), end = new Date(stop);
-          var data = { channel: pick.name, title: cur.episode && cur.episode.series && cur.episode.series.name || cur.title,
-            until: (end.getHours() < 10 ? '0' : '') + end.getHours() + ':' + (end.getMinutes() < 10 ? '0' : '') + end.getMinutes(),
-            logo: logo && logo.url || '', start: start, stop: stop };
-          save('pluto', data); done(null, data);
+        var list = ch && ch.data || [], favs = CFG.pluto && CFG.pluto.favorites || [], pinned = (CFG.pluto && CFG.pluto.channel || ''), picks = [];
+        function find(name) { name = String(name).toLowerCase(); for (var i = 0; i < list.length; i++) if (String(list[i].name).toLowerCase().indexOf(name) >= 0) return list[i]; return null; }
+        if (favs.length) favs.forEach(function (n) { var f = find(n); if (f) picks.push(f); });
+        else if (pinned) { var p = find(pinned); if (p) picks.push(p); }
+        if (!picks.length) picks = list.slice(0, 6);
+        picks = picks.slice(0, 8);
+        if (e || !picks.length) { done(e || new Error('pluto'), last('pluto')); return; }
+        var ids = picks.map(function (c) { return c.id; }).join(',');
+        request({ url: base + 'timelines?' + query({ start: new Date().toISOString(), channelIds: ids, duration: 120 }), headers: auth, timeout: 15000 }, function (e2, tl) {
+          var rows = tl && tl.data || [], now = Date.now(), out = [];
+          picks.forEach(function (pick) {
+            var row = null;
+            for (var i = 0; i < rows.length; i++) if (rows[i].channelId === pick.id) { row = rows[i]; break; }
+            var cur = null;
+            (row && row.timelines || []).forEach(function (p) { if (!cur && new Date(p.start).getTime() <= now && new Date(p.stop).getTime() > now) cur = p; });
+            if (cur) out.push(plutoSlot(pick, cur));
+          });
+          if (e2 || !out.length) { done(e2 || new Error('pluto'), last('pluto')); return; }
+          save('pluto', out); done(null, out);
         });
       });
     });

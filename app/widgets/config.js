@@ -18,8 +18,10 @@ window.FrameWidgetsConfig = {
   tmdb: { apiKey: '', region: 'BR', language: 'pt-BR', provider: 'HBO Max|Max' },
   // Stremio — unofficial API. Run `npm run stremio:key` once to get the auth key.
   stremio: { authKey: '' },
-  // Pluto TV — unofficial guide API. Optional channel name to follow; empty picks the first live channel.
-  pluto: { channel: '' },
+  // Pluto TV — unofficial guide API. `favorites` is a list of channel names (partial match, any case)
+  // the card rotates through; if empty it uses the single `channel`, and if that's empty too it rotates
+  // the first live channels. Ex.: favorites: ['MTV', 'Pluto Filmes', 'CNN', 'Comedy Central'].
+  pluto: { favorites: [], channel: '' },
   // g1 headlines (public RSS feed).
   news: { feed: 'https://g1.globo.com/rss/g1/' },
   // SmartThings (optional) — personal access token and the living-room light device ID.

@@ -306,23 +306,25 @@
       (progress !== null ? '<div class="wc-bar" style="margin-top:12px"><i style="width:' + Math.round(progress * 100) + '%"></i></div>' : '') + (extra || '') + '</div>';
   }
   function renderStremio() {
-    var s = data.stremio, c = cards.stremio, item, list = null;
+    var s = data.stremio, c = cards.stremio, dc = data.discover, slots = [], item;
     if (s && s.setup && !demo()) { setBody('stremio', heroCard('stremio', 'Stremio', 'Continuar assistindo', 'Conecte o Stremio', 'OK abre o app · veja docs/widgets.md', '', null)); return; }
-    if (s && s.length) { list = s; item = s[st.stremioIndex % s.length]; }
-    else if (s === null) item = { title: 'Nada em andamento', episode: 'OK abre o Stremio', image: '', progress: null, empty: true };
-    else item = { title: 'Nome da série', episode: 'T2 · E5', left: 24, progress: 0.64, image: '' };
-    var many = !!(list && list.length > 1), sub = item.empty ? item.episode : item.episode + (item.left ? ' · faltam ' + item.left + ' min' : '');
+    if (s && s.length) s.forEach(function (x) { slots.push({ label: 'Continuar assistindo', title: x.title, sub: x.episode + (x.left ? ' · faltam ' + x.left + ' min' : ''), image: x.image, progress: x.progress }); });
+    if (dc && dc.newSeasons) dc.newSeasons.forEach(function (x) { slots.push({ label: x.label, title: x.title, sub: x.sub, image: x.image, progress: null }); });
+    if (!slots.length) slots.push(s === null ? { label: 'Continuar assistindo', title: 'Nada em andamento', sub: 'OK abre o Stremio', image: '', progress: null } : { label: 'Continuar assistindo', title: 'Nome da série', sub: 'T2 · E5 · faltam 24 min', image: '', progress: 0.64 });
+    slots = slots.slice(0, 10);
+    item = slots[st.stremioIndex % slots.length];
+    var many = slots.length > 1;
     function paint() {
       var prev = c.shownImg && c.shownImg !== item.image ? '<img class="wc-img is-ready" src="' + esc(c.shownImg) + '" alt="">' : '';
       var cur = item.image ? '<img class="wc-img wc-hero-img' + (prev ? '' : ' is-ready') + '" src="' + esc(item.image) + '" alt="">' : '';
       var base = cur || prev ? prev + cur : '<div class="wc-shade-b" style="background:radial-gradient(70% 80% at 70% 30%,#1F4A55 0%,rgba(31,74,85,0) 70%),linear-gradient(160deg,#121A20,#07090C)"></div>';
-      var dots = many ? '<div class="wnw-dots" style="left:auto;right:30px;top:34px;bottom:auto">' + list.slice(0, 6).map(function (_, i) { return '<i' + (i === st.stremioIndex % list.length ? ' class="is-on"' : '') + '></i>'; }).join('') + '</div>' : '';
+      var dots = many ? '<div class="wnw-dots" style="left:auto;right:30px;top:34px;bottom:auto">' + slots.slice(0, 8).map(function (_, i) { return '<i' + (i === st.stremioIndex % slots.length ? ' class="is-on"' : '') + '></i>'; }).join('') + '</div>' : '';
       setBody('stremio', base + '<div class="wc-shade-b"></div>' +
         '<div class="wc-brand">' + brandLogo('stremio', 'Stremio', 'is-mark') + (A && A.brand && A.brand.stremio ? '<span class="wc-logo-word">Stremio</span>' : '') + '</div>' + dots +
-        '<div style="position:absolute;left:30px;right:30px;bottom:30px"><div class="wc-dark-label">Continuar assistindo</div>' +
+        '<div style="position:absolute;left:30px;right:30px;bottom:30px"><div class="wc-dark-label">' + esc(item.label) + '</div>' +
         '<div style="font-size:44px;font-weight:800;line-height:1.04;letter-spacing:-1px;margin-top:8px">' + esc(item.title) + '</div>' +
-        '<div style="font-size:18px;font-weight:500;color:rgba(255,255,255,.8);margin-top:8px">' + esc(sub) + '</div>' +
-        (item.empty ? '' : '<div class="wc-bar" style="margin-top:12px"><i style="width:' + Math.round((item.progress || 0) * 100) + '%"></i></div>') + '</div>');
+        '<div style="font-size:18px;font-weight:500;color:rgba(255,255,255,.8);margin-top:8px">' + esc(item.sub) + '</div>' +
+        (item.progress !== null && item.progress !== undefined ? '<div class="wc-bar" style="margin-top:12px"><i style="width:' + Math.round(item.progress * 100) + '%"></i></div>' : '') + '</div>');
       if (prev) { var fresh = c.body.querySelector('.wc-hero-img'); if (fresh) { void fresh.offsetWidth; fresh.className += ' is-ready'; } }
       c.shownImg = item.image || c.shownImg;
     }
@@ -333,18 +335,23 @@
     setTimeout(pre.onload, 4000);
   }
   function renderHbo() {
-    var list = data.tmdb, item, c = cards.hbo;
-    if (list && list.setup && !demo()) { list = null; item = { title: 'HBO Max', kind: 'OK abre o app', year: '' }; }
-    else if (!list || !list.length) item = { title: 'Nome do título', kind: 'Série', year: '2026' };
-    else item = list[st.heroIndex % list.length];
+    var list = data.tmdb, dc = data.discover, c = cards.hbo, slots = [], item;
+    if (list && list.setup && !demo()) { slots.push({ label: 'HBO Max', title: 'HBO Max', sub: 'OK abre o app', image: '' }); }
+    else {
+      if (list && list.length) list.forEach(function (x) { slots.push({ label: 'Em alta', title: x.title, sub: x.kind + (x.year ? ' · ' + x.year : ''), image: x.image }); });
+      if (dc && dc.recommended) dc.recommended.forEach(function (x) { slots.push({ label: 'Pra você', title: x.title, sub: x.sub ? 'Série · ' + x.sub : 'Série', image: x.image }); });
+      if (!slots.length) slots.push({ label: 'Em alta', title: 'Nome do título', sub: 'Série · 2026', image: '' });
+    }
+    slots = slots.slice(0, 12);
+    item = slots[st.heroIndex % slots.length];
     function paint() {
       var prev = c.shownImg && c.shownImg !== item.image ? '<img class="wc-img is-ready" src="' + esc(c.shownImg) + '" alt="">' : '';
       var cur = item.image ? '<img class="wc-img wc-hero-img' + (prev ? '' : ' is-ready') + '" src="' + esc(item.image) + '" alt="">' : '';
       setBody('hbo', (cur || prev ? prev + cur : '<div class="wc-shade-l" style="background:radial-gradient(70% 90% at 75% 30%,#2C3A66 0%,rgba(44,58,102,0) 70%),linear-gradient(160deg,#161A2A,#08090F)"></div>') +
         '<div class="wc-shade-l"></div><div class="wc-brand" style="left:26px;top:22px">' + brandLogo('hbomax', 'HBO Max', 'is-hbo') + '</div>' +
-        '<div class="wc-hero-text"><div class="wc-dark-label" style="font-size:13px">Em alta</div>' +
+        '<div class="wc-hero-text"><div class="wc-dark-label" style="font-size:13px">' + esc(item.label) + '</div>' +
         '<div style="font-size:28px;font-weight:800;letter-spacing:-.5px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:330px">' + esc(item.title) + '</div>' +
-        '<div style="font-size:16px;font-weight:500;color:rgba(255,255,255,.78);margin-top:4px">' + esc(item.kind + (item.year ? ' · ' + item.year : '')) + '</div></div>');
+        '<div style="font-size:16px;font-weight:500;color:rgba(255,255,255,.78);margin-top:4px">' + esc(item.sub) + '</div></div>');
       if (prev) {
         var fresh = c.body.querySelector('.wc-hero-img');
         if (fresh) { void fresh.offsetWidth; fresh.className += ' is-ready'; }
@@ -742,14 +749,14 @@
   }
 
   /* ---------- Data refresh ---------- */
-  var REFRESH = { picture: 10 * 60000, weather: 20 * 60000, spotify: 15000, tmdb: 6 * 3600000, stremio: 5 * 60000, pluto: 2 * 60000, news: 15 * 60000, wifi: 60000, volume: 30000 };
+  var REFRESH = { picture: 10 * 60000, weather: 20 * 60000, spotify: 15000, tmdb: 6 * 3600000, stremio: 5 * 60000, discover: 6 * 3600000, pluto: 2 * 60000, news: 15 * 60000, wifi: 60000, volume: 30000 };
   var FETCH = {
     weather: function (done) { D.weather(done); }, spotify: function (done) { D.spotify(done); }, tmdb: function (done) { D.tmdb(done); },
-    stremio: function (done) { D.stremio(done); }, pluto: function (done) { data.plutoTried = true; D.pluto(done); }, news: function (done) { D.news(done); },
+    stremio: function (done) { D.stremio(done); }, discover: function (done) { D.discover(done); }, pluto: function (done) { data.plutoTried = true; D.pluto(done); }, news: function (done) { D.news(done); },
     wifi: function (done) { D.wifi(done); }, volume: function (done) { D.volume(done); },
     picture: function (done) { if (D.pictureMode) D.pictureMode(done); else done({ setup: true }); }
   };
-  var RENDER = { weather: function () { var was = root.className.indexOf(' is-dark') >= 0; renderWeather(); if (was !== isDark()) renderAll(); }, spotify: renderSpotify, tmdb: renderHbo, stremio: renderStremio, pluto: renderPluto, news: renderNews, wifi: renderNet, volume: renderPills, picture: renderPills };
+  var RENDER = { weather: function () { var was = root.className.indexOf(' is-dark') >= 0; renderWeather(); if (was !== isDark()) renderAll(); }, spotify: renderSpotify, tmdb: renderHbo, stremio: renderStremio, discover: function () { renderStremio(); renderHbo(); }, pluto: renderPluto, news: renderNews, wifi: renderNet, volume: renderPills, picture: renderPills };
   function refresh(name, now) {
     clearTimeout(timers[name]);
     if (!st.active || document.hidden) return;
@@ -770,7 +777,8 @@
   function rotateHero() {
     clearTimeout(timers.hero);
     timers.hero = setTimeout(function () {
-      if (data.tmdb && data.tmdb.length > 1) { st.heroIndex++; renderHbo(); }
+      var hbN = (data.tmdb && data.tmdb.length || 0) + (data.discover && data.discover.recommended ? data.discover.recommended.length : 0);
+      if (hbN > 1) { st.heroIndex++; renderHbo(); }
       // The news photos change on the half beat, so the two cards never fade at the same moment.
       setTimeout(function () { var n = val('news'); if (n && n.length > 1 && st.active) { st.newsIndex++; renderNews(); } }, 4000);
       var pl = val('pluto'); if (pl && pl.length > 1 && st.active) { st.plutoIndex++; renderPluto(); }

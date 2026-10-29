@@ -168,6 +168,66 @@
     });
   }
 
+  /* ---------- Discover: new seasons of shows you've watched + recommendations.
+     Reads the Stremio library and enriches it with TMDB. Purely additive: any failure
+     leaves { newSeasons, recommended } empty and the cards fall back to today's content. */
+  function discover(done) {
+    var key = CFG.stremio && CFG.stremio.authKey, tk = CFG.tmdb || {};
+    if (!key || !tk.apiKey) { done(null, null); return; }
+    var hit = fresh('discover', 6 * 3600000);
+    if (hit) { done(null, hit); return; }
+    request({ method: 'POST', url: 'https://api.strem.io/api/datastoreGet', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ authKey: key, collection: 'libraryItem', ids: [], all: true }) }, function (err, j) {
+      var items = j && (j.result || j) || [];
+      if (err || !items.filter) { done(null, last('discover')); return; }
+      function imdb(i) { return String(i._id || '').split(':')[0]; }
+      var titles = {};
+      items.forEach(function (i) { if (i && i.name) titles[String(i.name).toLowerCase()] = 1; });
+      var series = items.filter(function (i) { return i && !i.removed && i.type === 'series' && /^tt\d+$/.test(imdb(i)); });
+      series.sort(function (a, b) { return String((b.state || {}).lastWatched || '').localeCompare(String((a.state || {}).lastWatched || '')); });
+      var top = series.slice(0, 10);
+      if (!top.length) { var e0 = { newSeasons: [], recommended: [] }; save('discover', e0); done(null, e0); return; }
+      var newSeasons = [], recById = {}, pending = top.length, now = Date.now(), back = now - 150 * 86400000, soon = now + 150 * 86400000;
+      top.forEach(function (it, idx) {
+        var im = imdb(it), lastSeason = parseInt(String((it.state || {}).video_id || '').split(':')[1], 10) || 0;
+        tmdbGet('/find/' + im, { external_source: 'imdb_id' }, function (e, f) {
+          var tv = f && f.tv_results && f.tv_results[0];
+          if (!tv) { step(); return; }
+          tmdbGet('/tv/' + tv.id, { language: tk.language }, function (e2, d) {
+            if (d && d.seasons) {
+              d.seasons.forEach(function (se) {
+                if (se.season_number > lastSeason && se.air_date) {
+                  var t = new Date(se.air_date).getTime();
+                  if (t >= back && t <= soon) newSeasons.push({ title: d.name, label: t > now ? 'Nova temporada em breve' : 'Nova temporada',
+                    sub: 'Temporada ' + se.season_number, image: d.backdrop_path ? 'https://image.tmdb.org/t/p/w500' + d.backdrop_path : '', when: t });
+                }
+              });
+            }
+            if (idx < 5 && d) {
+              tmdbGet('/tv/' + tv.id + '/recommendations', { language: tk.language }, function (e3, rec) {
+                (rec && rec.results || []).forEach(function (r) {
+                  if (!r.backdrop_path || !r.name || titles[String(r.name).toLowerCase()]) return;
+                  if (recById[r.id]) { recById[r.id].score++; return; }
+                  recById[r.id] = { title: r.name, sub: (r.first_air_date || '').slice(0, 4), image: 'https://image.tmdb.org/t/p/w500' + r.backdrop_path, score: 1, pop: r.popularity || 0 };
+                });
+                step();
+              });
+            } else step();
+          });
+        });
+      });
+      function step() { if (--pending <= 0) finish(); }
+      function finish() {
+        var seen = {}, ns = [];
+        newSeasons.sort(function (a, b) { return a.when - b.when; }).forEach(function (x) { if (!seen[x.title]) { seen[x.title] = 1; ns.push(x); } });
+        var recs = [], k; for (k in recById) if (recById.hasOwnProperty(k)) recs.push(recById[k]);
+        recs.sort(function (a, b) { return b.score - a.score || b.pop - a.pop; });
+        var out = { newSeasons: ns.slice(0, 6), recommended: recs.slice(0, 8) };
+        save('discover', out); done(null, out);
+      }
+    });
+  }
+
   /* ---------- Pluto TV now playing (unofficial guide API) ---------- */
   var plutoSession = null;
   function uuid() {
@@ -349,7 +409,7 @@
   }
 
   window.FrameWidgetsData = {
-    onTV: onTV, weather: weather, spotify: spotify, spotifyControl: spotifyControl, tmdb: tmdb, stremio: stremio, pluto: pluto,
+    onTV: onTV, weather: weather, spotify: spotify, spotifyControl: spotifyControl, tmdb: tmdb, stremio: stremio, discover: discover, pluto: pluto,
     news: news, light: light, setLight: setLight, volume: volume, changeVolume: changeVolume, setVolume: setVolume, pictureMode: pictureMode, nextPictureMode: nextPictureMode, tvConfigured: tvConfigured, wifi: wifi, openUrl: openUrl,
     last: last
   };

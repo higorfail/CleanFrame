@@ -1040,7 +1040,7 @@
   }
   function widgetDeps() {
     return {
-      launch: function (appId, name) { perform(name, function (done) { FrameDevice.launchApp(appId, done); }); },
+      launch: function (appId, name, deep) { perform(name, function (done) { FrameDevice.launchApp(appId, done, deep); }); },
       art: function () { perform('Art Mode', FrameDevice.art); },
       tvSettings: function () { perform('TV settings', FrameDevice.settings); },
       openSettings: function () { openSettings(); after(); },

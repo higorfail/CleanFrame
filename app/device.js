@@ -37,11 +37,23 @@
     function finish(err, value) { if (finished) return; finished = true; clearTimeout(timer); done(err, value); }
     return finish;
   }
-  function launchApp(id, done) {
+  function launchApp(id, done, deep) {
     if (!api()) { unavailable(done); return; }
     var finish = bounded(done);
-    try { api().launch(id, function () { finish(null); }, function (err) { finish(failure(err)); }); }
-    catch (err) { finish(failure(err)); }
+    function plain() {
+      try { api().launch(id, function () { finish(null); }, function (err) { finish(failure(err)); }); }
+      catch (err) { finish(failure(err)); }
+    }
+    // Optional deep link: try to open the app straight at a screen (e.g. Globoplay's
+    // live channel). If the app doesn't handle the URI, fall back to a normal launch.
+    if (deep) {
+      try {
+        var control = new tizen.ApplicationControl('http://tizen.org/appcontrol/operation/view', deep, null, null, null);
+        api().launchAppControl(control, id, function () { finish(null); }, function () { plain(); });
+        return;
+      } catch (err) { /* fall through to a normal launch */ }
+    }
+    plain();
   }
   function launch(brand, done) {
     if (!IDS[brand]) { done({message: 'This app has no launch target.'}); return; }

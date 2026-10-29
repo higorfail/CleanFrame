@@ -240,7 +240,8 @@
     var info = appInfo(key);
     if (!info.appId) { toast(info.name + ' não foi encontrado na TV.'); return; }
     st.launching = true; root.className += ' is-launch';
-    setTimeout(function () { deps.launch(info.appId, info.name); }, 300);
+    var conf = CFG.apps && CFG.apps[key] || {}, deep = conf.live || '';
+    setTimeout(function () { deps.launch(info.appId, info.name, deep); }, 300);
     setTimeout(function () { st.launching = false; root.className = root.className.replace(/ is-launch/g, ''); }, 1600);
   }
 

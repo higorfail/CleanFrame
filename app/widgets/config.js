@@ -34,7 +34,10 @@ window.FrameWidgetsConfig = {
     spotify: { name: 'Spotify', ids: ['rJeHak5zRg.Spotify'], match: 'spotify', brand: 'spotify' },
     hbomax: { name: 'HBO Max', ids: ['5b8c3eb16b.BeamCTVDev', 'cj37Ni3qXM.HBONow'], match: '^(hbo ?)?max$|hbo max', brand: 'hbomax' },
     pluto: { name: 'Pluto TV', ids: ['X1pKpFCiUu.PlutoTV'], match: 'pluto' },
-    globoplay: { name: 'Globoplay', ids: ['LnLzvqrcEY.globo', 'org.tizen.globoplayaria'], match: 'globoplay' },
+    // `live` is an experimental deep link that tries to open Globoplay straight on the
+    // live Globo channel; if the app doesn't handle it, launch falls back to opening the
+    // app normally. Adjust the URI if the live channel lands elsewhere.
+    globoplay: { name: 'Globoplay', ids: ['LnLzvqrcEY.globo', 'org.tizen.globoplayaria'], match: 'globoplay', live: 'https://globoplay.globo.com/agora/' },
     netflix: { name: 'Netflix', ids: ['org.tizen.netflix-app'], match: 'netflix', brand: 'netflix' },
     mercadoplay: { name: 'Mercado Play', ids: ['nbCEREFaoy.mercadoplay'], match: 'mercado ?play' },
     alexa: { name: 'Alexa', ids: ['AQKO41xyKP.AmazonAlexa'], match: 'alexa' },

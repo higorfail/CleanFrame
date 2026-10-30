@@ -380,7 +380,7 @@
 .wf-panel{width:1120px;max-width:86%;background:rgba(24,24,28,.98);border-radius:48px;box-shadow:0 40px 90px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.1);padding:56px 64px 28px;transform:scale(.96);transition:transform .3s var(--ease);text-align:left}
 .wh-folder.is-open .wf-panel{transform:scale(1)}
 .wf-panel h2{margin:0 0 36px;font-size:46px;font-weight:700;letter-spacing:-.4px;color:#fff}
-.wf-app{display:inline-block;width:196px;margin:0 20px 32px 0;text-align:center;vertical-align:top;transition:transform .22s var(--spring)}
+.wf-app{display:inline-block;width:172px;margin:0 56px 52px 0;text-align:center;vertical-align:top;transition:transform .22s var(--spring)}
 .wf-ic{width:150px;height:150px;margin:0 auto;border-radius:34px;overflow:hidden;background:rgba(255,255,255,.06);box-shadow:0 10px 24px rgba(0,0,0,.35);-webkit-mask-image:-webkit-radial-gradient(#fff,#000)}
 .wf-ic img{width:100%;height:100%;object-fit:cover}
 .wf-ic span{display:block;line-height:150px;font-size:60px;font-weight:700;color:#fff}

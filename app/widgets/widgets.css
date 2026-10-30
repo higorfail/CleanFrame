@@ -173,11 +173,7 @@
 .wh.is-dark .ws-artist{color:#30D158}
 .ws-controls{position:absolute;left:234px;right:22px;top:98px;text-align:center}
 .ws-controls .wc-ico{display:inline-block;vertical-align:middle}
-.ws-ctl{display:inline-block;vertical-align:middle;margin:0 14px;padding:9px;border-radius:50%;transition:background-color .15s ease}
-.ws-ctl.ws-play{margin:0 10px}
-.ws-ctl.is-sel{background:rgba(120,120,128,.3)}
-.wh.is-dark .ws-ctl.is-sel{background:rgba(255,255,255,.2)}
-.ws-ctl .wc-ico{display:inline-block;vertical-align:middle}
+.ws-controls .ws-play{display:inline-block;vertical-align:middle;margin:0 32px}
 .ws-bar{position:absolute;left:234px;right:22px;bottom:46px;height:6px;border-radius:3px;background:rgba(120,120,128,.3);overflow:hidden}
 .wh.is-dark .ws-bar{background:rgba(255,255,255,.18)}
 .ws-bar i{display:block;height:6px;border-radius:3px;background:#1DB954}

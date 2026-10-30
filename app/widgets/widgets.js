@@ -98,7 +98,7 @@
   /* ---------- State ---------- */
   var deps = null, root = null, strip = null, dockEl = null, dockBg = null, dockLabel = null, toastEl = null, sheetEl = null, capEl = null;
   var cards = {}, targets = [], dockItems = [], resolved = {};
-  var st = { zone: 'strip', focus: 'youtube', dock: 0, off: 0, adjust: false, newsIndex: 0, active: false, sheet: null, toastTimer: 0, heroIndex: 0, plutoIndex: 0, stremioIndex: 0, lean: '', launching: false };
+  var st = { zone: 'strip', focus: 'youtube', dock: 0, off: 0, adjust: false, newsIndex: 0, active: false, sheet: null, toastTimer: 0, heroIndex: 0, plutoIndex: 0, stremioIndex: 0, spot: -1, lean: '', launching: false };
   var data = {}, timers = {}, prefs = loadPrefs();
 
   function loadPrefs() {
@@ -304,17 +304,31 @@
     }
     timers.spot = setTimeout(tickSpotify, 1000);
   }
+  // Act on the Spotify control row: 0 previous, 1 play/pause, 2 next. Controls the active Spotify device.
+  function spotAction(i) {
+    if (!data.spotify || data.spotify.setup || data.spotify.error) { launch('spotify'); return; }
+    var toggle = i !== 0 && i !== 2, act = i === 0 ? 'previous' : i === 2 ? 'next' : (data.spotify.playing ? 'pause' : 'play');
+    if (toggle) { data.spotify.playing = !data.spotify.playing; data.spotify.at = Date.now(); renderSpotify(); }
+    D.spotifyControl(act, function (err) {
+      if (err) { if (toggle) { data.spotify.playing = !data.spotify.playing; renderSpotify(); } launch('spotify'); return; }
+      setTimeout(refreshSpotify, 900);
+    });
+  }
   function renderSpotify() {
     var s = data.spotify, ink = isDark() ? '#fff' : '#1D1D1F';
     if (s && s.setup && !demo()) { setBody('spotify', '<div class="ws-art"></div><div class="ws-note">' + spotifyMark() + '</div><div class="ws-head"><div class="wc-label">Spotify</div><div class="wc-title">Conecte sua conta</div><div class="ws-artist" style="color:inherit;opacity:.6">OK abre o Spotify</div></div>'); return; }
     if (!s || s.setup || s.error) s = s && !s.setup && !s.error ? s : { label: 'TOCADO RECENTEMENTE', title: 'Nome da faixa', artist: 'Artista', playing: false, art: '', progress: 78000, duration: 212000 };
     var art = s.art ? '<img class="wc-img" src="' + esc(s.art) + '" alt="">' : '';
+    var sel = st.focus === 'spotify' && st.spot >= 0 ? st.spot : -1;
     var prog = spotifyProgress(s);
     var bar = s.duration > 0 ? '<div class="ws-bar"><i style="width:' + Math.round(Math.max(0, Math.min(1, prog / s.duration)) * 100) + '%"></i></div>' +
       '<div class="ws-times"><span>' + clock(prog) + '</span><span>-' + clock(s.duration - prog) + '</span></div>' : '<div class="ws-foot">' + esc(s.label) + '</div>';
     setBody('spotify', '<div class="ws-art">' + art + '</div><div class="ws-note">' + spotifyMark() + '</div>' +
       '<div class="ws-head"><div class="wc-title">' + esc(s.title) + '</div><div class="ws-artist">' + esc(s.artist) + '</div></div>' +
-      '<div class="ws-controls">' + solid('prev', 24, ink) + '<span class="ws-play">' + solid(s.playing ? 'pause' : 'play', 30, ink) + '</span>' + solid('next', 24, ink) + '</div>' + bar);
+      '<div class="ws-controls">' +
+      '<span class="ws-ctl' + (sel === 0 ? ' is-sel' : '') + '">' + solid('prev', 24, ink) + '</span>' +
+      '<span class="ws-ctl ws-play' + (sel === 1 ? ' is-sel' : '') + '">' + solid(s.playing ? 'pause' : 'play', 30, ink) + '</span>' +
+      '<span class="ws-ctl' + (sel === 2 ? ' is-sel' : '') + '">' + solid('next', 24, ink) + '</span></div>' + bar);
   }
   function spotifyMark() { return A && A.brand && A.brand.spotify ? '<img class="ws-logo" src="' + esc(A.brand.spotify) + '" alt="Spotify">' : ico('note', 30, '#1DB954', 2); }
   function heroCard(id, brand, label, title, sub, image, progress, extra) {
@@ -406,7 +420,8 @@
       '<div class="wc-bar" style="position:absolute;left:0;right:0;bottom:0;background:rgba(255,255,255,.18)"><i style="width:' + Math.round(pct * 100) + '%;background:#FFD60A"></i></div></div>');
   }
   function renderPills() {
-    var v = data.volume, known = v && typeof v.level === 'number' && !isNaN(v.level), level = known ? Math.max(0, Math.min(100, v.level)) : demo() ? 58 : 0, muted = v && v.muted;
+    var v = data.volume, known = v && typeof v.level === 'number' && !isNaN(v.level), level = known ? Math.max(0, Math.min(100, v.level)) : demo() ? 58 : 0;
+    var muted = !!(v && (v.muted || (known && level === 0)));
     // TV volumes live low (5-30); the bar shows them on a 0-50 scale so small steps are visible.
     var fill = muted ? 0 : Math.min(100, Math.round(level * 2));
     setBody('volume', '<div class="wp-level" style="height:' + fill + '%"></div><div class="wp-value">' + (muted ? '0' : known || demo() ? level : '–') + '</div><div class="wp-icon">' + ico(muted ? 'mute' : 'speaker', 40, fill > 30 && !muted ? '#1D1D1F' : '#fff', 1.9) + '</div>');
@@ -648,12 +663,8 @@
       case 'hbo': launch('hbomax'); return;
       case 'pluto': launch('pluto'); return;
       case 'spotify':
-        if (data.spotify && !data.spotify.setup && !data.spotify.error) {
-          D.spotifyControl(data.spotify.playing ? 'pause' : 'play', function (err) {
-            if (err) { launch('spotify'); return; }
-            data.spotify.playing = !data.spotify.playing; renderSpotify(); setTimeout(refreshSpotify, 900);
-          });
-        } else launch('spotify');
+        if (data.spotify && !data.spotify.setup && !data.spotify.error) { if (st.spot < 0) st.spot = 1; spotAction(1); }
+        else launch('spotify');
         return;
       case 'weather': toast('Atualizando a previsão…'); refresh('weather', true); return;
       case 'volume':
@@ -868,6 +879,14 @@
       if (!root) return false;
       var dirKey = k === 'left' || k === 'right' || k === 'up' || k === 'down';
       if (st.sheet) { sound(k === 'ok' ? 'select' : 'tick'); sheetKey(k); renderAll(); return true; }
+      // Spotify control row: once entered (OK), left/right pick prev/play/next and OK triggers; back/up/down leave it.
+      if (st.focus === 'spotify' && st.zone !== 'dock' && st.spot >= 0 && data.spotify && !data.spotify.setup && !data.spotify.error) {
+        if (k === 'left') { if (st.spot > 0) { st.spot--; sound('tick'); } else bump('left'); renderSpotify(); return true; }
+        if (k === 'right') { if (st.spot < 2) { st.spot++; sound('tick'); } else bump('right'); renderSpotify(); return true; }
+        if (k === 'ok') { press(); spotAction(st.spot); return true; }
+        if (k === 'back') { sound('tick'); st.spot = -1; renderSpotify(); return true; }
+        if (k === 'up' || k === 'down') { st.spot = -1; renderSpotify(); }
+      }
       if (k === 'back') {
         if (st.zone === 'dock') { sound('tick'); fromDock(); st.lean = 'up'; renderFocus(); return true; }
         if (st.focus !== 'youtube' || st.off) { sound('tick'); st.focus = 'youtube'; st.off = 0; renderFocus(); return true; }
@@ -884,7 +903,7 @@
       if (k === 'ok') { press(); ok(st.focus); renderAll(); return true; }
       if (st.focus === 'volume' && (k === 'up' || k === 'down') && onTV()) { sound('tick'); nudgeVolume(k === 'up' ? 1 : -1); return true; }
       var next = move(k);
-      if (next) { st.focus = next.id; ensureVisible(next); st.lean = k; sound('tick'); }
+      if (next) { st.spot = -1; st.focus = next.id; ensureVisible(next); st.lean = k; sound('tick'); }
       else if (k === 'down') { toDock(); st.dockLean = 'down'; sound('tick'); }
       else if (dirKey) bump(k);
       renderFocus();

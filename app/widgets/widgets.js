@@ -151,11 +151,10 @@
     { id: 'mercadoplay', at: cell(8, 0), cls: 'wc-app', app: 'mercadoplay', ring: 60, fs: 1.08 },
     { id: 'tv', at: cell(8, 1), cls: 'wc-dim wt', ring: 60, group: true },
     { id: 'news', at: cell(9, 0, 2, 2), cls: 'wc-light wnw', ring: 44 },
-    { fs: 1.08, id: 'alexa', at: cell(11, 0), cls: 'wc-glass wk', ring: 60 },
+    { id: 'folder', at: cell(11, 0), cls: 'wc-folder', ring: 44, fs: 1.05 },
     { fs: 1.08, id: 'settings', at: cell(12, 0), cls: 'wc-glass wk', ring: 60 },
     { fs: 1.08, id: 'browser', at: cell(11, 1), cls: 'wc-glass wk', ring: 60 },
-    { fs: 1.08, id: 'allapps', at: cell(12, 1), cls: 'wc-glass wk', ring: 60 },
-    { id: 'folder', at: cell(13, 0), cls: 'wc-folder', ring: 44, fs: 1.05 }
+    { fs: 1.08, id: 'allapps', at: cell(12, 1), cls: 'wc-glass wk', ring: 60 }
   ];
   function focusScale(c) { return c.fs || Math.max(1.03, Math.min(1.08, (c.at.w + 24) / c.at.w)); }
   var TV_DOTS = [['tv-art', 'art', 24, 24, 'is-art', 'Modo Arte'], ['tv-audio', 'audio', 124, 24, 'is-on', 'Saída de áudio'],
@@ -269,7 +268,7 @@
       setBody(key, tileInner(info, true));
     });
     // Shortcuts: Apple artwork when there is one (Alexa icon, tvOS Settings), otherwise a glass tile with an SF Symbol.
-    [['alexa', 'mic', 'Alexa', 'alexa'], ['settings', 'gear', 'Personalizar', ''], ['browser', 'globe', 'Navegador', ''], ['allapps', 'apps', 'Todos os apps', '']].forEach(function (k) {
+    [['settings', 'gear', 'Personalizar', ''], ['browser', 'globe', 'Navegador', ''], ['allapps', 'apps', 'Todos os apps', '']].forEach(function (k) {
       var art = k[3] && appleIcon(k[3]);
       cards[k[0]].el.setAttribute('aria-label', k[2]);
       setCls(cards[k[0]].el, 'wc wk ' + (art ? 'has-art' : 'wc-glass'));
@@ -734,10 +733,10 @@
     if (!cards.folder) return;
     var apps = (CFG.folder && CFG.folder.apps || []).slice(0, 4);
     var mini = apps.map(function (k) { var ic = appleIcon(k); return '<span class="wf-mini">' + (ic ? '<img src="' + esc(ic) + '" alt="">' : '') + '</span>'; }).join('');
-    setBody('folder', '<div class="wf-cover">' + mini + '</div><div class="wf-title">' + esc(CFG.folder && CFG.folder.name || 'Apps') + '</div>');
+    setBody('folder', '<div class="wf-cover">' + mini + '</div>');
   }
-  function openFolder() { if (!(CFG.folder && CFG.folder.apps && CFG.folder.apps.length)) return; st.folder = { i: 0 }; renderFolderSheet(); renderBackground(); }
-  function closeFolder() { st.folder = null; renderFolderSheet(); renderBackground(); }
+  function openFolder() { if (!(CFG.folder && CFG.folder.apps && CFG.folder.apps.length)) return; st.folder = { i: 0 }; renderAll(); }
+  function closeFolder() { st.folder = null; renderAll(); }
   function renderFolderSheet() {
     if (!folderEl) return;
     folderEl.className = 'wh-folder' + (st.folder ? ' is-open' : '');

@@ -96,11 +96,13 @@
 .wc-light .wc-body{background:linear-gradient(180deg,#FFFFFF 0%,#F4F5F7 100%);color:#1D1D1F}
 .wh.is-dark .wc-light .wc-body{background:linear-gradient(180deg,#232325 0%,#161619 100%);color:#fff}
 /* tvOS buttons: translucent grey at rest, white with a dark glyph when focused. */
-.wc-glass .wc-body{background:rgba(130,130,130,.42);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);transition:background-color .15s ease,color .15s ease}
+.wc-glass .wc-body{background:linear-gradient(180deg,rgba(70,70,78,.5),rgba(34,34,40,.55));box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);transition:background-color .15s ease,color .15s ease}
+.wh.is-dark .wc-glass .wc-body{background:linear-gradient(180deg,rgba(48,48,54,.55),rgba(20,20,24,.6))}
 .wc-glass{color:#fff}
 .wc-glass.is-focus{color:#1D1D1F}
-.wc-glass.is-focus .wc-body{background:rgba(255,255,255,.94)}
-.wc-dim .wc-body{background:rgba(30,30,30,.5);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+.wc-glass.is-focus .wc-body,.wh.is-dark .wc-glass.is-focus .wc-body{background:rgba(255,255,255,.94)}
+.wc-dim .wc-body{background:linear-gradient(180deg,rgba(70,70,78,.5),rgba(34,34,40,.55));box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.wh.is-dark .wc-dim .wc-body{background:linear-gradient(180deg,rgba(48,48,54,.55),rgba(20,20,24,.6))}
 .wc-label{font-size:14px;font-weight:600;letter-spacing:.7px;text-transform:uppercase;color:#6E6E73}
 .wh.is-dark .wc-light .wc-label,.wh.is-dark .wc-light .wc-sub{color:rgba(255,255,255,.6)}
 .wc-dark-label{font-size:14px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:rgba(255,255,255,.85)}
@@ -214,7 +216,7 @@
 
 /* TV central */
 .wt{border-radius:44px}
-.wt-dot{position:absolute;width:84px;height:84px;border-radius:42px;color:#fff;background:rgba(130,130,130,.42);--fs:1.1;--fsp:1.05;transition:transform .18s var(--focus),background-color .15s ease,color .15s ease,box-shadow .2s ease}
+.wt-dot{position:absolute;width:84px;height:84px;border-radius:42px;color:#fff;background:linear-gradient(180deg,rgba(74,74,82,.55),rgba(38,38,44,.6));box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);--fs:1.1;--fsp:1.05;transition:transform .18s var(--focus),background-color .15s ease,color .15s ease,box-shadow .2s ease}
 .wt-glyph .wc-ico{position:absolute;left:24px;top:24px}
 .wt-dot.is-art{background:#0A84FF}
 .wt-dot.is-on{background:#0A84FF}
@@ -370,22 +372,21 @@
 /* Apps folder: a tile with a 2x2 cover that opens an app grid. */
 .wc-folder .wc-body{background:linear-gradient(180deg,rgba(70,70,78,.5),rgba(34,34,40,.55));box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
 .wh.is-dark .wc-folder .wc-body{background:linear-gradient(180deg,rgba(48,48,54,.55),rgba(20,20,24,.6))}
-.wf-cover{position:absolute;left:50%;top:30px;width:156px;height:156px;margin-left:-78px}
-.wf-mini{display:inline-block;width:70px;height:70px;margin:0 8px 8px 0;border-radius:17px;overflow:hidden;background:rgba(255,255,255,.08);vertical-align:top;-webkit-mask-image:-webkit-radial-gradient(#fff,#000)}
+.wf-cover{position:absolute;left:50%;top:50%;width:182px;height:182px;margin:-91px 0 0 -91px}
+.wf-mini{display:inline-block;width:79px;height:79px;margin:0 16px 16px 0;border-radius:19px;overflow:hidden;background:rgba(255,255,255,.08);vertical-align:top;-webkit-mask-image:-webkit-radial-gradient(#fff,#000)}
 .wf-mini:nth-child(2n){margin-right:0}
 .wf-mini img{width:100%;height:100%;object-fit:cover}
-.wf-title{position:absolute;left:0;right:0;bottom:24px;text-align:center;font-size:24px;font-weight:600}
 .wh-folder{position:absolute;z-index:12;left:0;top:0;width:1920px;height:1080px;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s ease;pointer-events:none;background:rgba(0,0,0,.5)}
 .wh-folder.is-open{opacity:1}
 .wf-panel{width:1120px;max-width:86%;background:rgba(24,24,28,.98);border-radius:48px;box-shadow:0 40px 90px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.1);padding:56px 64px 28px;transform:scale(.96);transition:transform .3s var(--ease);text-align:left}
 .wh-folder.is-open .wf-panel{transform:scale(1)}
 .wf-panel h2{margin:0 0 36px;font-size:46px;font-weight:700;letter-spacing:-.4px;color:#fff}
-.wf-app{display:inline-block;width:172px;margin:0 56px 52px 0;text-align:center;vertical-align:top;transition:transform .22s var(--spring)}
+.wf-app{display:inline-block;width:172px;margin:0 56px 52px 0;text-align:center;vertical-align:top;transition:transform .16s var(--focus)}
 .wf-ic{width:150px;height:150px;margin:0 auto;border-radius:34px;overflow:hidden;background:rgba(255,255,255,.06);box-shadow:0 10px 24px rgba(0,0,0,.35);-webkit-mask-image:-webkit-radial-gradient(#fff,#000)}
 .wf-ic img{width:100%;height:100%;object-fit:cover}
 .wf-ic span{display:block;line-height:150px;font-size:60px;font-weight:700;color:#fff}
 .wf-label{margin-top:14px;font-size:23px;font-weight:600;color:rgba(255,255,255,.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.wf-app.is-sel{transform:scale(1.08)}
-.wf-app.is-sel .wf-ic{box-shadow:0 0 0 5px #fff,0 10px 24px rgba(0,0,0,.4)}
+.wf-app.is-sel{transform:scale(1.12)}
+.wf-app.is-sel .wf-ic{box-shadow:0 0 0 4px #fff,0 16px 30px rgba(0,0,0,.45)}
 .wf-app.is-sel .wf-label{color:#fff}
 .wh.has-folder .wh-top,.wh.has-folder .wh-strip,.wh.has-folder .wh-dock{opacity:.3}

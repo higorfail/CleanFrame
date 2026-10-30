@@ -51,5 +51,5 @@ window.FrameWidgetsConfig = {
   },
   dock: ['youtube', 'stremio', 'spotify', 'hbomax', 'pluto', 'globoplay', 'netflix', 'mercadoplay'],
   // A folder tile (iOS-style) at the end of the grid that opens into an app grid.
-  folder: { name: 'Apps', apps: ['disneyplus', 'primevideo', 'appletv', 'twitch', 'sbt'] }
+  folder: { name: 'Apps', apps: ['disneyplus', 'primevideo', 'appletv', 'twitch', 'sbt', 'alexa'] }
 };

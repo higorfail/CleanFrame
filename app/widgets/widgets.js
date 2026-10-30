@@ -96,9 +96,9 @@
   function two(n) { return (n < 10 ? '0' : '') + n; }
 
   /* ---------- State ---------- */
-  var deps = null, root = null, strip = null, dockEl = null, dockBg = null, dockLabel = null, toastEl = null, sheetEl = null, capEl = null;
+  var deps = null, root = null, strip = null, dockEl = null, dockBg = null, dockLabel = null, toastEl = null, sheetEl = null, folderEl = null, capEl = null;
   var cards = {}, targets = [], dockItems = [], resolved = {};
-  var st = { zone: 'strip', focus: 'youtube', dock: 0, off: 0, adjust: false, newsIndex: 0, active: false, sheet: null, toastTimer: 0, heroIndex: 0, plutoIndex: 0, stremioIndex: 0, lean: '', launching: false };
+  var st = { zone: 'strip', focus: 'youtube', dock: 0, off: 0, adjust: false, newsIndex: 0, active: false, sheet: null, folder: null, toastTimer: 0, heroIndex: 0, plutoIndex: 0, stremioIndex: 0, lean: '', launching: false };
   var data = {}, timers = {}, prefs = loadPrefs();
 
   function loadPrefs() {
@@ -154,7 +154,8 @@
     { fs: 1.08, id: 'alexa', at: cell(11, 0), cls: 'wc-glass wk', ring: 60 },
     { fs: 1.08, id: 'settings', at: cell(12, 0), cls: 'wc-glass wk', ring: 60 },
     { fs: 1.08, id: 'browser', at: cell(11, 1), cls: 'wc-glass wk', ring: 60 },
-    { fs: 1.08, id: 'allapps', at: cell(12, 1), cls: 'wc-glass wk', ring: 60 }
+    { fs: 1.08, id: 'allapps', at: cell(12, 1), cls: 'wc-glass wk', ring: 60 },
+    { id: 'folder', at: cell(13, 0), cls: 'wc-folder', ring: 44, fs: 1.05 }
   ];
   function focusScale(c) { return c.fs || Math.max(1.03, Math.min(1.08, (c.at.w + 24) / c.at.w)); }
   var TV_DOTS = [['tv-art', 'art', 24, 24, 'is-art', 'Modo Arte'], ['tv-audio', 'audio', 124, 24, 'is-on', 'Saída de áudio'],
@@ -166,9 +167,10 @@
       '<div class="wh-greet"><span class="wh-small" id="whHello"></span><span class="wh-big" id="whTime"></span></div><div class="wh-avatar" id="whAvatar"></div></div>' +
       '<div class="wh-strip" id="whStrip"></div><div class="wh-dock" id="whDock"><div class="wh-dock-bg" id="whDockBg"></div><div class="wh-dock-label" id="whDockLabel"></div></div>' +
       '<div class="wh-cap" id="whCap"></div><div class="wh-toast" id="whToast"><span></span></div><div class="wh-sheet" id="whSheet" role="dialog" aria-label="Personalizar"></div>' +
+      '<div class="wh-folder" id="whFolder" role="dialog" aria-label="Apps"></div>' +
       '<div class="wh-veil"></div>';
     root.innerHTML = html;
-    strip = byId('whStrip'); dockEl = byId('whDock'); dockBg = byId('whDockBg'); dockLabel = byId('whDockLabel'); toastEl = byId('whToast'); sheetEl = byId('whSheet'); capEl = byId('whCap');
+    strip = byId('whStrip'); dockEl = byId('whDock'); dockBg = byId('whDockBg'); dockLabel = byId('whDockLabel'); toastEl = byId('whToast'); sheetEl = byId('whSheet'); folderEl = byId('whFolder'); capEl = byId('whCap');
     if (A && A.fonts) root.setAttribute('data-sf', '1');
     CARDS.forEach(function (c) {
       var el = document.createElement('div');
@@ -476,10 +478,10 @@
     el.style.backgroundImage = src ? 'url("' + src + '")' : col ? 'linear-gradient(180deg,' + shade(col[2], 0.1) + ' 0%,' + col[2] + ' 55%,' + shade(col[2], -0.35) + ' 100%)' : '';
   }
   function renderAll() {
-    renderTop(); renderBackground(); renderApps(); renderWeather(); renderSpotify(); renderStremio(); renderHbo(); renderPluto(); renderPills(); renderNet(); renderNews(); renderDock();
+    renderTop(); renderBackground(); renderApps(); renderWeather(); renderSpotify(); renderStremio(); renderHbo(); renderPluto(); renderPills(); renderNet(); renderNews(); renderFolder(); renderDock();
     var bg = st.sheet && st.sheet.preview || prefs.bg, bgPhoto = !!(photo(bg) || bg === 'own');
-    root.className = 'wh' + (isDark() ? ' is-dark' : '') + (bgPhoto ? ' on-photo' : '') + (!bgPhoto && lightBg(bg) ? ' on-light' : '') + (st.sheet ? ' has-sheet' : '') + (st.launching ? ' is-launch' : '');
-    renderFocus(); renderSheet();
+    root.className = 'wh' + (isDark() ? ' is-dark' : '') + (bgPhoto ? ' on-photo' : '') + (!bgPhoto && lightBg(bg) ? ' on-light' : '') + (st.sheet ? ' has-sheet' : '') + (st.folder ? ' has-folder' : '') + (st.launching ? ' is-launch' : '');
+    renderFocus(); renderSheet(); renderFolderSheet();
   }
 
   /* ---------- Focus, scrolling and dock magnification ---------- */
@@ -683,6 +685,7 @@
         return;
       case 'settings': openSheet(); return;
       case 'allapps': deps.openApps(); return;
+      case 'folder': openFolder(); return;
     }
   }
   /* Volume pill: ▲ ▼ change it straight away (no OK first). The bar moves at once; the TV gets the
@@ -726,6 +729,27 @@
     st.sheet.preview = row.kind !== 'theme' && row.kind !== 'sound' && row.kind !== 'link' ? row.items[st.sheet.col].id : null;
   }
   function closeSheet() { st.sheet = null; }
+  /* iOS-style folder: a tile with a 2x2 icon cover that opens into an app grid. */
+  function renderFolder() {
+    if (!cards.folder) return;
+    var apps = (CFG.folder && CFG.folder.apps || []).slice(0, 4);
+    var mini = apps.map(function (k) { var ic = appleIcon(k); return '<span class="wf-mini">' + (ic ? '<img src="' + esc(ic) + '" alt="">' : '') + '</span>'; }).join('');
+    setBody('folder', '<div class="wf-cover">' + mini + '</div><div class="wf-title">' + esc(CFG.folder && CFG.folder.name || 'Apps') + '</div>');
+  }
+  function openFolder() { if (!(CFG.folder && CFG.folder.apps && CFG.folder.apps.length)) return; st.folder = { i: 0 }; renderFolderSheet(); renderBackground(); }
+  function closeFolder() { st.folder = null; renderFolderSheet(); renderBackground(); }
+  function renderFolderSheet() {
+    if (!folderEl) return;
+    folderEl.className = 'wh-folder' + (st.folder ? ' is-open' : '');
+    if (!st.folder) return;
+    var f = CFG.folder, apps = f.apps || [], sel = st.folder.i;
+    var cells = apps.map(function (k, i) {
+      var info = appInfo(k), ic = appleIcon(k);
+      return '<div class="wf-app' + (i === sel ? ' is-sel' : '') + '" data-folder="' + i + '"><div class="wf-ic">' + (ic ? '<img src="' + esc(ic) + '" alt="">' : '<span>' + esc((info.name || '?').charAt(0)) + '</span>') + '</div><div class="wf-label">' + esc(info.name) + '</div></div>';
+    }).join('');
+    var html = '<div class="wf-panel"><h2>' + esc(f.name || 'Apps') + '</h2><div class="wf-grid">' + cells + '</div></div>';
+    if (folderEl._html !== html) { folderEl._html = html; folderEl.innerHTML = html; }
+  }
   function sheetKey(k) {
     var rows = sheetRows(), sh = st.sheet, row = rows[sh.row];
     if (k === 'back') { closeSheet(); return; }
@@ -837,6 +861,7 @@
     while (el && el !== root) {
       if (el.getAttribute) {
         if ((rc = el.getAttribute('data-sheet'))) { rc = rc.split(','); st.sheet.row = +rc[0]; st.sheet.col = +rc[1]; previewSwatch(); sheetKey('ok'); renderAll(); return; }
+        if ((rc = el.getAttribute('data-folder')) !== null && rc !== '') { var fk = (CFG.folder && CFG.folder.apps || [])[+rc]; closeFolder(); if (fk) launch(fk); return; }
         if ((id = el.getAttribute('data-target') || el.getAttribute('data-card'))) {
           if (id === 'tv') return;
           st.zone = 'strip'; st.focus = id; ensureVisible(target(id)); renderFocus(); ok(id); renderAll(); return;
@@ -876,6 +901,17 @@
       if (!root) return false;
       var dirKey = k === 'left' || k === 'right' || k === 'up' || k === 'down';
       if (st.sheet) { sound(k === 'ok' ? 'select' : 'tick'); sheetKey(k); renderAll(); return true; }
+      if (st.folder) {
+        var fapps = CFG.folder && CFG.folder.apps || [], fn = fapps.length, per = 4, fi = st.folder.i, ni = fi;
+        if (k === 'back') { sound('tick'); closeFolder(); return true; }
+        if (k === 'ok') { press(); var fkey = fapps[fi]; closeFolder(); launch(fkey); return true; }
+        if (k === 'left' && fi % per > 0) ni = fi - 1;
+        else if (k === 'right' && fi % per < per - 1 && fi + 1 < fn) ni = fi + 1;
+        else if (k === 'up' && fi - per >= 0) ni = fi - per;
+        else if (k === 'down' && fi + per < fn) ni = fi + per;
+        if (ni !== fi) { st.folder.i = ni; sound('tick'); renderFolderSheet(); }
+        return true;
+      }
       if (k === 'back') {
         if (st.zone === 'dock') { sound('tick'); fromDock(); st.lean = 'up'; renderFocus(); return true; }
         if (st.focus !== 'youtube' || st.off) { sound('tick'); st.focus = 'youtube'; st.off = 0; renderFocus(); return true; }

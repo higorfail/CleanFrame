@@ -41,7 +41,15 @@ window.FrameWidgetsConfig = {
     netflix: { name: 'Netflix', ids: ['org.tizen.netflix-app'], match: 'netflix', brand: 'netflix' },
     mercadoplay: { name: 'Mercado Play', ids: ['nbCEREFaoy.mercadoplay'], match: 'mercado ?play' },
     alexa: { name: 'Alexa', ids: ['AQKO41xyKP.AmazonAlexa'], match: 'alexa' },
-    browser: { name: 'Navegador', ids: ['org.tizen.browser', 'com.samsung.tv.knox-browser'], match: 'internet|browser|navegador' }
+    browser: { name: 'Navegador', ids: ['org.tizen.browser', 'com.samsung.tv.knox-browser'], match: 'internet|browser|navegador' },
+    // Apps grouped inside the "Apps" folder at the end of the grid.
+    disneyplus: { name: 'Disney+', ids: ['MCmYXNxgcu.DisneyPlus'], match: 'disney' },
+    primevideo: { name: 'Prime Video', ids: ['org.tizen.primevideo'], match: 'prime ?video' },
+    appletv: { name: 'Apple TV', ids: ['com.samsung.tv.aria-video'], match: 'apple ?tv' },
+    twitch: { name: 'Twitch', ids: ['Jz7aUrV2Q4.Twitch'], match: 'twitch' },
+    sbt: { name: 'SBT+', ids: ['pZAXcloxTr.Sbt'], match: 'sbt' }
   },
-  dock: ['youtube', 'stremio', 'spotify', 'hbomax', 'pluto', 'globoplay', 'netflix', 'mercadoplay']
+  dock: ['youtube', 'stremio', 'spotify', 'hbomax', 'pluto', 'globoplay', 'netflix', 'mercadoplay'],
+  // A folder tile (iOS-style) at the end of the grid that opens into an app grid.
+  folder: { name: 'Apps', apps: ['disneyplus', 'primevideo', 'appletv', 'twitch', 'sbt'] }
 };

@@ -328,8 +328,16 @@
       if (prev) { var fresh = c.body.querySelector('.wc-hero-img'); if (fresh) { void fresh.offsetWidth; fresh.className += ' is-ready'; } }
       c.shownImg = item.image || c.shownImg;
     }
-    // Paint right away (never leave the card blank waiting on an image); the <img> fades in as it loads.
-    try { paint(); } catch (e) { setBody('stremio', heroCard('stremio', 'Stremio', 'Continuar assistindo', item && item.title || 'Stremio', item && item.sub || '', '', item && typeof item.progress === 'number' ? item.progress : null)); }
+    function safePaint() { try { paint(); } catch (e) { setBody('stremio', heroCard('stremio', 'Stremio', 'Continuar assistindo', item && item.title || 'Stremio', item && item.sub || '', '', item && typeof item.progress === 'number' ? item.progress : null)); } }
+    // First time (or no image / same image): paint now so the card is never blank. For a later swap,
+    // decode the new backdrop off the animation path first, then paint — the old image stays until it's ready.
+    if (!c.shownImg || !item.image || item.image === c.shownImg) { safePaint(); return; }
+    var pre = new Image(), done = false;
+    function fin() { if (done) return; done = true; safePaint(); }
+    pre.onerror = fin;
+    pre.onload = function () { if (pre.decode) pre.decode().then(fin, fin); else fin(); };
+    pre.src = item.image;
+    setTimeout(fin, 4000);
   }
   function renderHbo() {
     var list = data.tmdb, dc = data.discover, c = cards.hbo, slots = [], item;
@@ -357,9 +365,11 @@
     }
     if (!item.image || item.image === c.shownImg) { paint(); return; }
     var pre = new Image(), done = false;
-    pre.onload = pre.onerror = function () { if (done) return; done = true; paint(); };
+    function fin() { if (done) return; done = true; paint(); }
+    pre.onerror = fin;
+    pre.onload = function () { if (pre.decode) pre.decode().then(fin, fin); else fin(); }; // decode off the animation path, then swap
     pre.src = item.image;
-    setTimeout(pre.onload, 4000);
+    setTimeout(fin, 4000);
   }
   function renderPluto() {
     var list = val('pluto'), p, pct = 0.42, many = 0;
@@ -410,9 +420,11 @@
     }
     if (!lead.image || lead.image === c.shownImg) { paint(); return; }
     var pre = new Image(), done = false;
-    pre.onload = pre.onerror = function () { if (done) return; done = true; paint(); };
+    function fin() { if (done) return; done = true; paint(); }
+    pre.onerror = fin;
+    pre.onload = function () { if (pre.decode) pre.decode().then(fin, fin); else fin(); }; // decode off the animation path, then swap
     pre.src = lead.image;
-    setTimeout(pre.onload, 4000);
+    setTimeout(fin, 4000);
   }
   function renderTop() {
     var d = new Date(), h = d.getHours(), hello = h < 5 ? 'Boa noite' : h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';

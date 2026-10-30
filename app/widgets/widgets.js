@@ -285,13 +285,33 @@
       '<div class="ww-foot">' + ico(w.icon, 26, '#fff') + '<div class="ww-cond">' + esc(w.text) + '</div><div class="ww-range">Máx ' + w.max + '° Mín ' + w.min + '°</div></div></div>');
   }
   function clock(ms) { if (ms === undefined || ms === null || isNaN(ms)) return '-:--'; var s = Math.max(0, Math.round(ms / 1000)); return Math.floor(s / 60) + ':' + two(s % 60); }
+  // Live playback position: advance the polled progress by the time elapsed since it was fetched, so the
+  // bar moves in real time between the 15s polls instead of jumping.
+  function spotifyProgress(s) {
+    if (!s || !s.duration) return 0;
+    var p = s.progress || 0;
+    if (s.playing && s.at) p += Date.now() - s.at;
+    return Math.max(0, Math.min(s.duration, p));
+  }
+  function tickSpotify() {
+    clearTimeout(timers.spot);
+    var s = data.spotify, c = cards.spotify;
+    if (st.active && s && s.playing && s.duration > 0 && c && c.body) {
+      var prog = spotifyProgress(s), bar = c.body.querySelector('.ws-bar i');
+      if (bar) bar.style.width = Math.round(prog / s.duration * 100) + '%';
+      var t = c.body.querySelectorAll('.ws-times span');
+      if (t && t.length === 2) { t[0].textContent = clock(prog); t[1].textContent = '-' + clock(s.duration - prog); }
+    }
+    timers.spot = setTimeout(tickSpotify, 1000);
+  }
   function renderSpotify() {
     var s = data.spotify, ink = isDark() ? '#fff' : '#1D1D1F';
     if (s && s.setup && !demo()) { setBody('spotify', '<div class="ws-art"></div><div class="ws-note">' + spotifyMark() + '</div><div class="ws-head"><div class="wc-label">Spotify</div><div class="wc-title">Conecte sua conta</div><div class="ws-artist" style="color:inherit;opacity:.6">OK abre o Spotify</div></div>'); return; }
     if (!s || s.setup || s.error) s = s && !s.setup && !s.error ? s : { label: 'TOCADO RECENTEMENTE', title: 'Nome da faixa', artist: 'Artista', playing: false, art: '', progress: 78000, duration: 212000 };
     var art = s.art ? '<img class="wc-img" src="' + esc(s.art) + '" alt="">' : '';
-    var bar = s.duration > 0 ? '<div class="ws-bar"><i style="width:' + Math.round(Math.max(0, Math.min(1, s.progress / s.duration)) * 100) + '%"></i></div>' +
-      '<div class="ws-times"><span>' + clock(s.progress) + '</span><span>-' + clock(s.duration - s.progress) + '</span></div>' : '<div class="ws-foot">' + esc(s.label) + '</div>';
+    var prog = spotifyProgress(s);
+    var bar = s.duration > 0 ? '<div class="ws-bar"><i style="width:' + Math.round(Math.max(0, Math.min(1, prog / s.duration)) * 100) + '%"></i></div>' +
+      '<div class="ws-times"><span>' + clock(prog) + '</span><span>-' + clock(s.duration - prog) + '</span></div>' : '<div class="ws-foot">' + esc(s.label) + '</div>';
     setBody('spotify', '<div class="ws-art">' + art + '</div><div class="ws-note">' + spotifyMark() + '</div>' +
       '<div class="ws-head"><div class="wc-title">' + esc(s.title) + '</div><div class="ws-artist">' + esc(s.artist) + '</div></div>' +
       '<div class="ws-controls">' + solid('prev', 24, ink) + '<span class="ws-play">' + solid(s.playing ? 'pause' : 'play', 30, ink) + '</span>' + solid('next', 24, ink) + '</div>' + bar);
@@ -781,7 +801,7 @@
     }, now ? 0 : REFRESH[name]);
   }
   function refreshSpotify() { refresh('spotify', true); }
-  function startData() { Object.keys(FETCH).forEach(function (name) { refresh(name, true); }); rotateHero(); }
+  function startData() { Object.keys(FETCH).forEach(function (name) { refresh(name, true); }); rotateHero(); tickSpotify(); }
   function stopData() { Object.keys(timers).forEach(function (name) { clearTimeout(timers[name]); }); }
   function rotateHero() {
     clearTimeout(timers.hero);

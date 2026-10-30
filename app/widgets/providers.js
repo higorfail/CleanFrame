@@ -92,7 +92,7 @@
   function trackData(item, playing, progress) {
     var images = item && item.album && item.album.images || item && item.images || [];
     return { title: item.name, artist: (item.artists || []).map(function (a) { return a.name; }).join(', ') || item.show && item.show.name || '',
-      art: images.length ? images[Math.min(1, images.length - 1)].url : '', playing: !!playing, progress: progress || 0, duration: item.duration_ms || 0 };
+      art: images.length ? images[Math.min(1, images.length - 1)].url : '', playing: !!playing, progress: progress || 0, duration: item.duration_ms || 0, at: Date.now() };
   }
   function spotify(done) {
     if (!spotifyConfigured()) { done({ setup: true }); return; }

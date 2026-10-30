@@ -789,7 +789,7 @@
   }
 
   /* ---------- Data refresh ---------- */
-  var REFRESH = { picture: 10 * 60000, weather: 20 * 60000, spotify: 15000, tmdb: 6 * 3600000, stremio: 5 * 60000, discover: 6 * 3600000, pluto: 2 * 60000, news: 15 * 60000, wifi: 60000, volume: 30000 };
+  var REFRESH = { picture: 10 * 60000, weather: 20 * 60000, spotify: 15000, tmdb: 6 * 3600000, stremio: 5 * 60000, discover: 6 * 3600000, pluto: 2 * 60000, news: 15 * 60000, wifi: 60000, volume: 15000 };
   var FETCH = {
     weather: function (done) { D.weather(done); }, spotify: function (done) { D.spotify(done); }, tmdb: function (done) { D.tmdb(done); },
     stremio: function (done) { D.stremio(done); }, discover: function (done) { D.discover(done); }, pluto: function (done) { data.plutoTried = true; D.pluto(done); }, news: function (done) { D.news(done); },

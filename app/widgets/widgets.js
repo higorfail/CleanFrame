@@ -412,8 +412,11 @@
     var v = data.volume, known = v && typeof v.level === 'number' && !isNaN(v.level), level = known ? Math.max(0, Math.min(100, v.level)) : demo() ? 58 : 0;
     var muted = !!(v && (v.muted || (known && level === 0)));
     // TV volumes live low (5-30); the bar shows them on a 0-50 scale so small steps are visible.
-    var fill = muted ? 0 : Math.min(100, Math.round(level * 2));
-    setBody('volume', '<div class="wp-level" style="height:' + fill + '%"></div><div class="wp-value">' + (muted ? '0' : known || demo() ? level : '–') + '</div><div class="wp-icon">' + ico(muted ? 'mute' : 'speaker', 40, fill > 30 && !muted ? '#1D1D1F' : '#fff', 1.9) + '</div>');
+    var fill = muted ? 0 : Math.min(100, Math.round(level * 2)), dark = isDark(), onFill = fill > 30 && !muted;
+    // The icon sits over the fill (one tone) or the empty track (the other); the fill is light in dark mode
+    // and dark in light mode, so the icon colour flips with the theme to stay legible.
+    var vIcon = dark ? (onFill ? '#1D1D1F' : '#fff') : (onFill ? '#fff' : '#1D1D1F');
+    setBody('volume', '<div class="wp-level" style="height:' + fill + '%"></div><div class="wp-value">' + (muted ? '0' : known || demo() ? level : '–') + '</div><div class="wp-icon">' + ico(muted ? 'mute' : 'speaker', 40, vIcon, 1.9) + '</div>');
     var pm = data.picture, modes = pm && pm.modes || [], idx = pm ? modes.indexOf(pm.mode) : -1, h = idx < 0 ? 40 : Math.round(35 + 50 * idx / Math.max(1, modes.length - 1));
     setBody('bright', '<div class="wp-level" style="height:' + h + '%"></div><div class="wp-icon">' + sunIcon(44) + '</div>');
   }

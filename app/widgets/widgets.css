@@ -90,19 +90,20 @@
 .is-focus.bump-up>.wc-tilt{animation:wbump-y .2s ease reverse}
 @keyframes wbump-x{0%,100%{transform:translate3d(0,0,0)}40%{transform:translate3d(8px,0,0)}}
 @keyframes wbump-y{0%,100%{transform:translate3d(0,0,0)}40%{transform:translate3d(0,8px,0)}}
-.wc.is-adjust .wp-level{background:#fff}
+.wc.is-adjust .wp-level{background:#48484E}
+.wh.is-dark .wc.is-adjust .wp-level{background:#fff}
 .wc.is-adjust::before{box-shadow:0 0 0 4px #fff,0 14px 26px rgba(0,0,0,.3)}
 .wc-pad{position:absolute;left:24px;top:22px;right:24px;bottom:22px}
 .wc-light .wc-body{background:linear-gradient(180deg,#FFFFFF 0%,#F4F5F7 100%);color:#1D1D1F}
 .wh.is-dark .wc-light .wc-body{background:linear-gradient(180deg,#232325 0%,#161619 100%);color:#fff}
 /* tvOS buttons: translucent grey at rest, white with a dark glyph when focused. */
-.wc-glass .wc-body{background:linear-gradient(180deg,rgba(70,70,78,.5),rgba(34,34,40,.55));box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);transition:background-color .15s ease,color .15s ease}
-.wh.is-dark .wc-glass .wc-body{background:linear-gradient(180deg,rgba(48,48,54,.55),rgba(20,20,24,.6))}
-.wc-glass{color:#fff}
+/* Liquid glass follows the theme: light frosted in light mode (dark glyphs), dark frosted in dark mode
+   (light glyphs). The is-dark overrides live further down so they win over the wallpaper-based on-light. */
+.wc-glass .wc-body{background:linear-gradient(180deg,rgba(255,255,255,.6),rgba(236,238,243,.5));box-shadow:inset 0 0 0 1px rgba(0,0,0,.05);transition:background-color .15s ease,color .15s ease}
+.wc-glass{color:#1D1D1F}
 .wc-glass.is-focus{color:#1D1D1F}
 .wc-glass.is-focus .wc-body,.wh.is-dark .wc-glass.is-focus .wc-body{background:rgba(255,255,255,.94)}
-.wc-dim .wc-body{background:linear-gradient(180deg,rgba(70,70,78,.5),rgba(34,34,40,.55));box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
-.wh.is-dark .wc-dim .wc-body{background:linear-gradient(180deg,rgba(48,48,54,.55),rgba(20,20,24,.6))}
+.wc-dim .wc-body{background:linear-gradient(180deg,rgba(255,255,255,.6),rgba(236,238,243,.5));box-shadow:inset 0 0 0 1px rgba(0,0,0,.05)}
 .wc-label{font-size:14px;font-weight:600;letter-spacing:.7px;text-transform:uppercase;color:#6E6E73}
 .wh.is-dark .wc-light .wc-label,.wh.is-dark .wc-light .wc-sub{color:rgba(255,255,255,.6)}
 .wc-dark-label{font-size:14px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:rgba(255,255,255,.85)}
@@ -187,11 +188,14 @@
 
 /* Pills: volume and brightness */
 .wp{border-radius:49px}
-.wp-level{position:absolute;left:0;right:0;bottom:0;background:rgba(255,255,255,.92);transition:height .25s var(--ease)}
-.wp-bright .wp-level{background:rgba(250,250,240,.95)}
+.wp-level{position:absolute;left:0;right:0;bottom:0;background:rgba(70,70,78,.9);transition:height .25s var(--ease)}
+.wh.is-dark .wp-level{background:rgba(255,255,255,.92)}
+.wp-bright .wp-level{background:rgba(70,70,78,.9)}
+.wh.is-dark .wp-bright .wp-level{background:rgba(250,250,240,.95)}
 .wp-icon{position:absolute;left:0;right:0;bottom:24px;text-align:center}
 .wp-icon .wc-ico{display:inline-block}
-.wp-value{position:absolute;left:0;right:0;top:20px;text-align:center;font-size:18px;font-weight:600;opacity:0;transition:opacity .2s}
+.wp-value{position:absolute;left:0;right:0;top:20px;text-align:center;font-size:18px;font-weight:600;color:#1D1D1F;opacity:0;transition:opacity .2s}
+.wh.is-dark .wp-value{color:#fff}
 .wc.is-adjust .wp-value{opacity:1}
 
 /* Network pill, theme and light buttons */
@@ -216,11 +220,13 @@
 
 /* TV central */
 .wt{border-radius:44px}
-.wt-dot{position:absolute;width:84px;height:84px;border-radius:42px;color:#fff;background:linear-gradient(180deg,rgba(74,74,82,.55),rgba(38,38,44,.6));box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);--fs:1.1;--fsp:1.05;transition:transform .18s var(--focus),background-color .15s ease,color .15s ease,box-shadow .2s ease}
+.wt-dot{position:absolute;width:84px;height:84px;border-radius:42px;color:#1D1D1F;background:linear-gradient(180deg,rgba(255,255,255,.6),rgba(236,238,243,.5));box-shadow:inset 0 0 0 1px rgba(0,0,0,.05);--fs:1.1;--fsp:1.05;transition:transform .18s var(--focus),background-color .15s ease,color .15s ease,box-shadow .2s ease}
+.wh.is-dark .wt-dot{color:#fff;background:linear-gradient(180deg,rgba(74,74,82,.55),rgba(30,30,36,.6));box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.wt-dot.is-art,.wt-dot.is-on,.wh.is-dark .wt-dot.is-art,.wh.is-dark .wt-dot.is-on{color:#fff}
 .wt-glyph .wc-ico{position:absolute;left:24px;top:24px}
-.wt-dot.is-art{background:#0A84FF}
-.wt-dot.is-on{background:#0A84FF}
-.wt-dot.is-focus{transform:scale(1.1);z-index:2;color:#1D1D1F;background:rgba(255,255,255,.94);box-shadow:0 10px 20px rgba(0,0,0,.3)}
+.wt-dot.is-art,.wh.is-dark .wt-dot.is-art{background:#0A84FF}
+.wt-dot.is-on,.wh.is-dark .wt-dot.is-on{background:#0A84FF}
+.wt-dot.is-focus,.wh.is-dark .wt-dot.is-focus{transform:scale(1.1);z-index:2;color:#1D1D1F;background:rgba(255,255,255,.94);box-shadow:0 10px 20px rgba(0,0,0,.3)}
 
 /* News */
 .wnw-item{padding:12px 0;border-bottom:1px solid #E5E5EA}
@@ -239,8 +245,8 @@
 .wh-dock{position:absolute;left:960px;top:874px;height:132px}
 /* A dark smoky glass that lets the wallpaper through, like iOS Control Center (no live blur on the TV). */
 .wh-dock-bg{position:absolute;left:0;top:0;height:132px;border-radius:44px;
-  background:linear-gradient(rgba(70,70,78,.34),rgba(44,44,50,.38));
-  box-shadow:0 14px 34px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.22),inset 0 0 0 1px rgba(255,255,255,.1)}
+  background:linear-gradient(rgba(255,255,255,.5),rgba(245,246,249,.42));
+  box-shadow:0 14px 34px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.7),inset 0 0 0 1px rgba(0,0,0,.05)}
 .wh.is-dark .wh-dock-bg{background:linear-gradient(rgba(44,44,50,.42),rgba(20,20,24,.46));box-shadow:0 16px 38px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.14),inset 0 0 0 1px rgba(255,255,255,.07)}
 .wd{position:absolute;top:18px;width:96px;height:96px;border-radius:22px;--fs:1.12;--fsp:1.07;transition:transform .18s var(--focus)}
 .wd::before{content:'';position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;box-shadow:0 0 0 3px rgba(255,255,255,.8),0 12px 22px rgba(0,0,0,.3);opacity:0;transition:opacity .15s ease}
@@ -330,9 +336,11 @@
 .wh.on-light .wh-dock-bg{background:linear-gradient(rgba(255,255,255,.44),rgba(255,255,255,.32));box-shadow:0 14px 34px rgba(0,0,0,.14),inset 0 1px 0 rgba(255,255,255,.7),inset 0 0 0 1px rgba(0,0,0,.05)}
 
 /* Dark appearance (iOS-style): dark cards and glass, dark app icons (personal builds), darker background. */
-.wh.is-dark .wc-glass .wc-body{background:rgba(44,44,48,.62);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),inset 0 0 0 1px rgba(255,255,255,.07)}
+.wh.is-dark .wc-glass{color:#fff}
+.wh.is-dark .wc-glass .wc-body{background:linear-gradient(180deg,rgba(74,74,82,.55),rgba(30,30,36,.6));box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.wh.is-dark .wc-glass.is-focus{color:#1D1D1F}
 .wh.is-dark .wc-glass.is-focus .wc-body{background:rgba(255,255,255,.94)}
-.wh.is-dark .wc-dim .wc-body{background:rgba(20,20,22,.62)}
+.wh.is-dark .wc-dim .wc-body{background:linear-gradient(180deg,rgba(74,74,82,.55),rgba(30,30,36,.6));box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
 .wh.is-dark .ww .wc-body{background:linear-gradient(180deg,#1B4F7A 0%,#0F2E4D 100%)}
 .wh.is-dark .wnw .wc-body{background:#1C1C1E}
 .wh.is-dark .wd-tile{background:#1C1C1E;color:#F5F5F7}
@@ -370,23 +378,27 @@
 .wnw-dots i.is-on{background:#fff}
 
 /* Apps folder: a tile with a 2x2 cover that opens an app grid. */
-.wc-folder .wc-body{background:linear-gradient(180deg,rgba(70,70,78,.5),rgba(34,34,40,.55));box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
-.wh.is-dark .wc-folder .wc-body{background:linear-gradient(180deg,rgba(48,48,54,.55),rgba(20,20,24,.6))}
+.wc-folder .wc-body{background:linear-gradient(180deg,rgba(255,255,255,.6),rgba(236,238,243,.5));box-shadow:inset 0 0 0 1px rgba(0,0,0,.05)}
+.wh.is-dark .wc-folder .wc-body{background:linear-gradient(180deg,rgba(74,74,82,.55),rgba(30,30,36,.6));box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
 .wf-cover{position:absolute;left:50%;top:50%;width:182px;height:182px;margin:-91px 0 0 -91px}
 .wf-mini{display:inline-block;width:79px;height:79px;margin:0 16px 16px 0;border-radius:19px;overflow:hidden;background:rgba(255,255,255,.08);vertical-align:top;-webkit-mask-image:-webkit-radial-gradient(#fff,#000)}
 .wf-mini:nth-child(2n){margin-right:0}
 .wf-mini img{width:100%;height:100%;object-fit:cover}
 .wh-folder{position:absolute;z-index:12;left:0;top:0;width:1920px;height:1080px;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s ease;pointer-events:none;background:rgba(0,0,0,.5)}
 .wh-folder.is-open{opacity:1}
-.wf-panel{width:1120px;max-width:86%;background:rgba(24,24,28,.98);border-radius:48px;box-shadow:0 40px 90px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.1);padding:56px 64px 28px;transform:scale(.96);transition:transform .3s var(--ease);text-align:left}
+.wf-panel{width:1120px;max-width:86%;background:rgba(248,248,250,.98);border-radius:48px;box-shadow:0 40px 90px rgba(0,0,0,.4),inset 0 0 0 1px rgba(0,0,0,.05);padding:56px 64px 28px;transform:scale(.96);transition:transform .3s var(--ease);text-align:left}
+.wh.is-dark .wf-panel{background:rgba(24,24,28,.98);box-shadow:0 40px 90px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.1)}
 .wh-folder.is-open .wf-panel{transform:scale(1)}
-.wf-panel h2{margin:0 0 36px;font-size:46px;font-weight:700;letter-spacing:-.4px;color:#fff}
+.wf-panel h2{margin:0 0 36px;font-size:46px;font-weight:700;letter-spacing:-.4px;color:#1D1D1F}
+.wh.is-dark .wf-panel h2{color:#fff}
 .wf-app{display:inline-block;width:172px;margin:0 56px 52px 0;text-align:center;vertical-align:top;transition:transform .16s var(--focus)}
 .wf-ic{width:150px;height:150px;margin:0 auto;border-radius:34px;overflow:hidden;background:rgba(255,255,255,.06);box-shadow:0 10px 24px rgba(0,0,0,.35);-webkit-mask-image:-webkit-radial-gradient(#fff,#000)}
 .wf-ic img{width:100%;height:100%;object-fit:cover}
 .wf-ic span{display:block;line-height:150px;font-size:60px;font-weight:700;color:#fff}
-.wf-label{margin-top:14px;font-size:23px;font-weight:600;color:rgba(255,255,255,.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wf-label{margin-top:14px;font-size:23px;font-weight:600;color:rgba(0,0,0,.7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wh.is-dark .wf-label{color:rgba(255,255,255,.85)}
 .wf-app.is-sel{transform:scale(1.12)}
 .wf-app.is-sel .wf-ic{box-shadow:0 0 0 4px #fff,0 16px 30px rgba(0,0,0,.45)}
-.wf-app.is-sel .wf-label{color:#fff}
+.wf-app.is-sel .wf-label{color:#000}
+.wh.is-dark .wf-app.is-sel .wf-label{color:#fff}
 .wh.has-folder .wh-top,.wh.has-folder .wh-strip,.wh.has-folder .wh-dock{opacity:.3}

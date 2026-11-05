@@ -111,8 +111,34 @@
     if (p.theme !== 'light' && p.theme !== 'dark' && p.theme !== 'auto') p.theme = 'auto';
     delete p.dark;
     p.sound = p.sound !== false;
+    if (['off', 'low', 'mid', 'high', 'auto'].indexOf(p.dim) < 0) p.dim = 'off';
     return p;
   }
+  /* Room dimming: a dark overlay over CleanFrame's own screens (not the apps).
+     Auto follows the TV's ambient-light sensor when the firmware exposes it to the web app;
+     otherwise it falls back to time of day (medium at night). */
+  var ambientLux = null;
+  function startAmbient() {
+    try {
+      if (window.AmbientLightSensor) {
+        var s = new window.AmbientLightSensor({ frequency: 0.5 });
+        s.addEventListener('reading', function () { ambientLux = s.illuminance; if ((prefs.dim || 'off') === 'auto') applyDim(); });
+        s.addEventListener('error', function () { ambientLux = null; });
+        s.start();
+        return;
+      }
+    } catch (e) { ambientLux = null; }
+    try { window.addEventListener('devicelight', function (e) { ambientLux = e.value; if ((prefs.dim || 'off') === 'auto') applyDim(); }); } catch (e2) { }
+  }
+  function dimOpacity() {
+    var d = prefs.dim || 'off';
+    if (d === 'auto') {
+      if (ambientLux !== null) return ambientLux >= 200 ? 0 : ambientLux >= 60 ? 0.22 : 0.42; // bright room → none, dim room → medium
+      var h = new Date().getHours(); return h >= 22 || h < 7 ? 0.42 : 0;
+    }
+    return { off: 0, low: 0.22, mid: 0.42, high: 0.62 }[d] || 0;
+  }
+  function applyDim() { var el = byId('whDusk'); if (el) el.style.opacity = dimOpacity(); }
   /* Bundled CleanFrame photographs (assets/wallpapers/catalog.js) as backgrounds too. */
   function photos() { return window.CleanFrameWallpapers || []; }
   function photo(id) { var list = photos(), key = String(id || '').replace(/^photo:/, ''); if (String(id || '').indexOf('photo:') !== 0) return null; for (var i = 0; i < list.length; i++) if (list[i].id === key) return list[i]; return null; }
@@ -166,7 +192,7 @@
       '<div class="wh-top"><div class="wh-date"><span class="wh-small" id="whDay"></span><span class="wh-big" id="whDate"></span></div>' +
       '<div class="wh-greet"><span class="wh-small" id="whHello"></span><span class="wh-big" id="whTime"></span></div><div class="wh-avatar" id="whAvatar"></div></div>' +
       '<div class="wh-strip" id="whStrip"></div><div class="wh-dock" id="whDock"><div class="wh-dock-bg" id="whDockBg"></div><div class="wh-dock-label" id="whDockLabel"></div></div>' +
-      '<div class="wh-cap" id="whCap"></div><div class="wh-toast" id="whToast"><span></span></div><div class="wh-sheet" id="whSheet" role="dialog" aria-label="Personalizar"></div>' +
+      '<div class="wh-dusk" id="whDusk"></div><div class="wh-cap" id="whCap"></div><div class="wh-toast" id="whToast"><span></span></div><div class="wh-sheet" id="whSheet" role="dialog" aria-label="Personalizar"></div>' +
       '<div class="wh-folder" id="whFolder" role="dialog" aria-label="Apps"></div>' +
       '<div class="wh-veil"></div>';
     root.innerHTML = html;
@@ -481,7 +507,7 @@
     renderTop(); renderBackground(); renderApps(); renderWeather(); renderSpotify(); renderStremio(); renderHbo(); renderPluto(); renderPills(); renderNet(); renderNews(); renderFolder(); renderDock();
     var bg = st.sheet && st.sheet.preview || prefs.bg, bgPhoto = !!(photo(bg) || bg === 'own');
     root.className = 'wh' + (isDark() ? ' is-dark' : '') + (bgPhoto ? ' on-photo' : '') + (!bgPhoto && lightBg(bg) ? ' on-light' : '') + (st.sheet ? ' has-sheet' : '') + (st.folder ? ' has-folder' : '') + (st.launching ? ' is-launch' : '');
-    renderFocus(); renderSheet(); renderFolderSheet();
+    renderFocus(); renderSheet(); renderFolderSheet(); applyDim();
   }
 
   /* ---------- Focus, scrolling and dock magnification ---------- */
@@ -715,7 +741,7 @@
   function sheetRows() {
     return [
       { kind: 'color', items: bgChoices('color') }, { kind: 'grad', items: bgChoices('grad') }, { kind: 'photo', items: bgChoices('photo') },
-      { kind: 'theme', items: ['auto', 'light', 'dark'] }, { kind: 'sound', items: ['on', 'off'] },
+      { kind: 'theme', items: ['auto', 'light', 'dark'] }, { kind: 'dim', items: ['off', 'low', 'mid', 'high', 'auto'] }, { kind: 'sound', items: ['on', 'off'] },
       { kind: 'link', items: ['cleanframe'] }
     ];
   }
@@ -755,19 +781,22 @@
     var rows = sheetRows(), sh = st.sheet, row = rows[sh.row];
     if (k === 'back') { closeSheet(); return; }
     if (k === 'up' || k === 'down') {
-      var wasScroll = row.kind !== 'theme' && row.kind !== 'sound' && row.kind !== 'link';
+      var isBgKind = function (kd) { return kd === 'color' || kd === 'grad' || kd === 'photo'; };
+      var wasScroll = isBgKind(row.kind);
       sh.row = Math.max(0, Math.min(rows.length - 1, sh.row + (k === 'up' ? -1 : 1)));
-      var next = rows[sh.row], isScroll = next.kind !== 'theme' && next.kind !== 'sound' && next.kind !== 'link', c;
+      var next = rows[sh.row], isScroll = isBgKind(next.kind), c;
       if (next === row) return;
       sh.col = wasScroll === isScroll ? Math.min(sh.col, next.items.length - 1) : 0;
       if (isScroll) for (c = 0; c < next.items.length; c++) if (next.items[c].id === prefs.bg) sh.col = c;
       if (next.kind === 'theme') sh.col = Math.max(0, ['auto', 'light', 'dark'].indexOf(prefs.theme));
+      if (next.kind === 'dim') sh.col = Math.max(0, ['off', 'low', 'mid', 'high', 'auto'].indexOf(prefs.dim || 'off'));
     } else if (k === 'left' || k === 'right') {
       sh.col = Math.max(0, Math.min(row.items.length - 1, sh.col + (k === 'left' ? -1 : 1)));
     } else if (k === 'ok') {
       var value = row.items[sh.col];
-      if (row.kind !== 'theme' && row.kind !== 'sound' && row.kind !== 'link') { prefs.bg = value.id; savePrefs(); toast('Fundo ' + value.name + ' aplicado'); }
+      if (row.kind === 'color' || row.kind === 'grad' || row.kind === 'photo') { prefs.bg = value.id; savePrefs(); toast('Fundo ' + value.name + ' aplicado'); }
       else if (row.kind === 'theme') { prefs.theme = value; savePrefs(); }
+      else if (row.kind === 'dim') { prefs.dim = value; savePrefs(); applyDim(); toast('Escurecer: ' + { off: 'Off', low: 'Baixo', mid: 'Médio', high: 'Alto', auto: 'Auto' }[value]); }
       else if (row.kind === 'sound') { prefs.sound = value === 'on'; savePrefs(); sound('select'); }
       else if (value === 'cleanframe') { closeSheet(); deps.openSettings(); return; }
       else { closeSheet(); deps.tvSettings(); return; }
@@ -799,7 +828,7 @@
   }
   function renderSheet() {
     if (!sheetEl) return;
-    var sh = st.sheet, html, rows = sheetRows(), INNER = 528;
+    var sh = st.sheet, html, rows = sheetRows();
     sheetEl.className = 'wh-sheet' + (sh ? ' is-open' : '');
     if (!sh) return;
     function focused(r, c) { return sh.row === r && sh.col === c ? ' is-focus' : ''; }
@@ -818,16 +847,19 @@
       pics += '<div class="wsh-ph' + focused(2, c) + (prefs.bg === w.id ? ' is-on' : '') + '" data-sheet="2,' + c + '"><b><img src="' + esc(w.thumb) + '" alt="" decoding="async"></b><span>' + esc(w.name) + '</span></div>';
     });
     var themes = [['auto', 'Pôr do sol'], ['light', 'Clara'], ['dark', 'Escura']];
+    var dims = [['off', 'Off'], ['low', 'Baixo'], ['mid', 'Médio'], ['high', 'Alto'], ['auto', 'Auto']];
     html = '<h2>Personalizar</h2>' +
       '<div class="wsh-section" style="top:112px"><div class="wsh-cap">Cores</div>' + scroller(0, 112, cols) + '</div>' +
       '<div class="wsh-section" style="top:294px"><div class="wsh-cap">Degradês</div>' + scroller(1, 112, grads) + '</div>' +
       '<div class="wsh-section" style="top:476px"><div class="wsh-cap">Fotos</div>' + scroller(2, 176, pics) + '</div>' +
-      '<div class="wsh-section" style="top:660px"><div class="wsh-cap">Aparência</div><div class="wsh-row">' +
+      '<div class="wsh-section" style="top:646px"><div class="wsh-cap">Aparência</div><div class="wsh-row">' +
       themes.map(function (t, c) { return '<span class="wsh-opt' + focused(3, c) + (prefs.theme === t[0] ? ' is-on' : '') + '" data-sheet="3,' + c + '">' + t[1] + '</span>'; }).join('') + '</div></div>' +
-      '<div class="wsh-section" style="top:778px"><div class="wsh-cap">Sons</div><div class="wsh-row">' +
-      '<span class="wsh-opt' + focused(4, 0) + (prefs.sound ? ' is-on' : '') + '" data-sheet="4,0">Ligados</span>' +
-      '<span class="wsh-opt' + focused(4, 1) + (!prefs.sound ? ' is-on' : '') + '" data-sheet="4,1">Desligados</span></div></div>' +
-      '<div class="wsh-section" style="top:896px"><div class="wsh-link' + focused(5, 0) + '" data-sheet="5,0">Mais opções do CleanFrame</div></div>';
+      '<div class="wsh-section" style="top:742px"><div class="wsh-cap">Escurecer</div><div class="wsh-row">' +
+      dims.map(function (d, c) { return '<span class="wsh-opt wsh-opt-sm' + focused(4, c) + ((prefs.dim || 'off') === d[0] ? ' is-on' : '') + '" data-sheet="4,' + c + '">' + d[1] + '</span>'; }).join('') + '</div></div>' +
+      '<div class="wsh-section" style="top:838px"><div class="wsh-cap">Sons</div><div class="wsh-row">' +
+      '<span class="wsh-opt' + focused(5, 0) + (prefs.sound ? ' is-on' : '') + '" data-sheet="5,0">Ligados</span>' +
+      '<span class="wsh-opt' + focused(5, 1) + (!prefs.sound ? ' is-on' : '') + '" data-sheet="5,1">Desligados</span></div></div>' +
+      '<div class="wsh-section" style="top:928px"><div class="wsh-link' + focused(6, 0) + '" data-sheet="6,0">Mais opções do CleanFrame</div></div>';
     if (sheetEl._html !== html) { sheetEl._html = html; sheetEl.innerHTML = html; }
   }
 
@@ -872,7 +904,7 @@
   function tick() {
     clearTimeout(timers.clock);
     if (!root) return;
-    renderTop();
+    renderTop(); applyDim();
     if ((root.className.indexOf(' is-dark') >= 0) !== isDark()) renderAll();
     timers.clock = setTimeout(tick, 60000 - Date.now() % 60000 + 50);
   }
@@ -911,6 +943,7 @@
       deps = dependencies; root = container;
       build(); renderAll(); tick(); resolveApps();
       void root.offsetHeight; // flush the first layout now, so the first remote keypress isn't the one that pays for it
+      startAmbient();
       intro();
       document.addEventListener('visibilitychange', function () { if (document.hidden) stopData(); else if (st.active) { startData(); tick(); } });
     },

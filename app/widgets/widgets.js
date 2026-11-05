@@ -60,6 +60,7 @@
     timer: '<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/>',
     mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
     gear: '<circle cx="12" cy="12" r="3.2"/><path d="m9 3-.6 2.4-2 1.2L4 6l-2 3.5L3.8 11v2L2 14.5 4 18l2.4-.6 2 1.2L9 21h6l.6-2.4 2-1.2 2.4.6 2-3.5-1.8-1.5v-2L22 9.5 20 6l-2.4.6-2-1.2L15 3Z"/>',
+    tune: '<path d="M4 8h9M17 8h3M4 16h3M11 16h9"/><circle cx="15" cy="8" r="2.4"/><circle cx="9" cy="16" r="2.4"/>',
     globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
     apps: '<rect x="4" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6"/>'
   };
@@ -158,7 +159,7 @@
   ];
   function focusScale(c) { return c.fs || Math.max(1.03, Math.min(1.08, (c.at.w + 24) / c.at.w)); }
   var TV_DOTS = [['tv-art', 'art', 24, 24, 'is-art', 'Modo Arte'], ['tv-audio', 'audio', 124, 24, 'is-on', 'Saída de áudio'],
-    ['tv-picture', 'picture', 24, 124, '', 'Modo de imagem'], ['tv-timer', 'timer', 124, 124, '', 'Timer']];
+    ['tv-picture', 'picture', 24, 124, '', 'Modo de imagem'], ['tv-timer', 'tune', 124, 124, '', 'Ajustes']];
 
   function build() {
     var html = '<div class="wh-bg" id="whBgA"></div><div class="wh-bg is-off" id="whBgB"></div><div class="wh-dim"></div>' +
@@ -508,7 +509,7 @@
   /* tvOS captions: the name of the focused item in SF Pro Medium, under it (above it on the top row,
      where the next row sits right below). Content widgets carry their own titles and get none. */
   var CAPTIONS = { alexa: 'Alexa', settings: 'Personalizar', browser: 'Navegador', allapps: 'Todos os apps', volume: 'Volume',
-    wifi: '', 'tv-art': 'Modo Arte', 'tv-audio': 'Saída de áudio', 'tv-picture': 'Modo de imagem', 'tv-timer': 'Timer' };
+    wifi: '', 'tv-art': 'Modo Arte', 'tv-audio': 'Saída de áudio', 'tv-picture': 'Modo de imagem', 'tv-timer': 'Ajustes' };
   function captionFor(id) {
     if (id === 'theme') return isDark() ? 'Modo claro' : 'Modo escuro';
     if (id === 'bright') { var pm = data.picture; return pm && pm.mode ? 'Imagem: ' + pm.mode : 'Modo de imagem'; }
@@ -679,7 +680,7 @@
         if (!D.tvConfigured || !D.tvConfigured()) { toast('Conecte o SmartThings para trocar o modo de imagem.'); return; }
         D.nextPictureMode(function (err, pm) { if (err) { toast('A TV não respondeu. Tente de novo.'); return; } data.picture = pm; renderPills(); renderCaption(); toast('Modo de imagem: ' + pm.mode); });
         return;
-      case 'tv-timer': toast('Abrindo o menu da TV'); deps.launch('org.tizen.menu', 'Menu'); return;
+      case 'tv-timer': toast('Abrindo os ajustes da TV'); deps.launch('org.tizen.menu', 'Ajustes'); return;
       case 'news':
         D.openUrl('https://g1.globo.com', function (err) { if (err) deviceOnly('Abre o g1 no navegador da TV.'); });
         return;

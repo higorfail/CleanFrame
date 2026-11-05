@@ -421,5 +421,35 @@ window.CleanFrameWallpapers = [
     "listColumn": 0,
     "dockQuiet": true,
     "clockMist": false
+  },
+  {
+    "id": "nevewave",
+    "name": "Neve wave",
+    "src": "assets/wallpapers/nevewave.jpg",
+    "thumb": "assets/wallpapers/nevewave-thumb.jpg",
+    "tone": "light",
+    "ut": {
+      "tr": "mist",
+      "br": "light"
+    },
+    "frostVeil": 0.44,
+    "listColumn": 3,
+    "dockQuiet": false,
+    "clockMist": false
+  },
+  {
+    "id": "pratawave",
+    "name": "Prata wave",
+    "src": "assets/wallpapers/pratawave.jpg",
+    "thumb": "assets/wallpapers/pratawave-thumb.jpg",
+    "tone": "light",
+    "ut": {
+      "tr": "mist",
+      "br": "light"
+    },
+    "frostVeil": 0.44,
+    "listColumn": 3,
+    "dockQuiet": false,
+    "clockMist": false
   }
 ];

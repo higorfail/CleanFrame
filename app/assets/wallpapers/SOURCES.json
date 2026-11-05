@@ -278,5 +278,25 @@
     "tone": "dark",
     "credit": "CleanFrame (generated)",
     "source": ""
+  },
+  {
+    "id": "nevewave",
+    "name": "Neve wave",
+    "src": "assets/wallpapers/nevewave.jpg",
+    "thumb": "assets/wallpapers/nevewave-thumb.jpg",
+    "pos": "50% 50%",
+    "tone": "light",
+    "credit": "MagicPattern (recolor)",
+    "source": "https://unsplash.com/photos/87PP9Zd7MNo"
+  },
+  {
+    "id": "pratawave",
+    "name": "Prata wave",
+    "src": "assets/wallpapers/pratawave.jpg",
+    "thumb": "assets/wallpapers/pratawave-thumb.jpg",
+    "pos": "50% 50%",
+    "tone": "light",
+    "credit": "MagicPattern (recolor)",
+    "source": "https://unsplash.com/photos/87PP9Zd7MNo"
   }
 ]

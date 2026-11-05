@@ -537,7 +537,8 @@
   function renderDock() {
     if (!dockItems.length) return;
     var f = st.zone === 'dock' && !st.sheet ? st.dock : -1, width = dockWidth();
-    dockBg.style.left = (-width / 2) + 'px'; dockBg.style.width = width + 'px';
+    // The platter width is constant after build; write it once to avoid a style/layout hit on every keypress.
+    if (dockBg._w !== width) { dockBg._w = width; dockBg.style.left = (-width / 2) + 'px'; dockBg.style.width = width + 'px'; }
     dockItems.forEach(function (item, j) {
       var info = appInfo(item.key), on = j === f;
       var scale = on ? 'scale(' + DOCK_FS + ')' : 'scale(1)';
@@ -886,7 +887,9 @@
     init: function (container, dependencies) {
       if (root || !container) return;
       deps = dependencies; root = container;
-      build(); renderAll(); tick(); resolveApps(); intro();
+      build(); renderAll(); tick(); resolveApps();
+      void root.offsetHeight; // flush the first layout now, so the first remote keypress isn't the one that pays for it
+      intro();
       document.addEventListener('visibilitychange', function () { if (document.hidden) stopData(); else if (st.active) { startData(); tick(); } });
     },
     setActive: function (on) {

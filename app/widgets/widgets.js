@@ -774,6 +774,29 @@
     }
     previewSwatch();
   }
+  /* Horizontal offset of a scroller row's track, so the focused swatch stays in view. */
+  function sheetTrackOffset(r) {
+    var rows = sheetRows(), sh = st.sheet, n = rows[r].items.length, pitch = r === 2 ? 176 : 112;
+    var full = n * pitch - 16, col = sh.row === r ? sh.col : 0, c;
+    for (c = 0; c < n; c++) if (rows[r].items[c].id === prefs.bg && sh.row !== r) col = c;
+    return Math.max(0, Math.min(full - 528, col * pitch - (528 - pitch) / 2));
+  }
+  /* Cheap update for sheet navigation: move the focus ring and scroll the focused row,
+     without rebuilding the sheet DOM (which would re-create every wallpaper thumbnail). */
+  function updateSheetFocus() {
+    if (!sheetEl || !st.sheet) return;
+    var sh = st.sheet, sws = sheetEl.querySelectorAll('[data-sheet]'), i, ds, on, has;
+    for (i = 0; i < sws.length; i++) {
+      ds = sws[i].getAttribute('data-sheet').split(',');
+      on = +ds[0] === sh.row && +ds[1] === sh.col; has = sws[i].className.indexOf(' is-focus') >= 0;
+      if (on && !has) sws[i].className += ' is-focus';
+      else if (!on && has) sws[i].className = sws[i].className.replace(' is-focus', '');
+    }
+    if (sh.row <= 2) {
+      var tr = sheetEl.querySelectorAll('.wsh-track')[sh.row];
+      if (tr) { var shift = 'translate3d(' + (-Math.round(sheetTrackOffset(sh.row))) + 'px,0,0)'; if (tr._shift !== shift) { tr._shift = shift; tr.style.transform = shift; } }
+    }
+  }
   function renderSheet() {
     if (!sheetEl) return;
     var sh = st.sheet, html, rows = sheetRows(), INNER = 528;
@@ -781,9 +804,7 @@
     if (!sh) return;
     function focused(r, c) { return sh.row === r && sh.col === c ? ' is-focus' : ''; }
     function scroller(r, pitch, inner) {
-      var n = rows[r].items.length, full = n * pitch - 16, col = sh.row === r ? sh.col : 0;
-      for (var c = 0; c < n; c++) if (rows[r].items[c].id === prefs.bg && sh.row !== r) col = c;
-      var off = Math.max(0, Math.min(full - INNER, col * pitch - (INNER - pitch) / 2));
+      var n = rows[r].items.length, full = n * pitch - 16, off = sheetTrackOffset(r);
       return '<div class="wsh-scroll"><div class="wsh-track" style="width:' + full + 'px;transform:translate3d(' + (-Math.round(off)) + 'px,0,0)">' + inner + '</div></div>';
     }
     var cols = '', grads = '', pics = '';
@@ -794,7 +815,7 @@
       grads += '<div class="wsh-sw' + focused(1, c) + (prefs.bg === g.id ? ' is-on' : '') + '" data-sheet="1,' + c + '"><b class="g-' + g.id + '"></b><span>' + esc(g.name) + '</span></div>';
     });
     rows[2].items.forEach(function (w, c) {
-      pics += '<div class="wsh-ph' + focused(2, c) + (prefs.bg === w.id ? ' is-on' : '') + '" data-sheet="2,' + c + '"><b><img src="' + esc(w.thumb) + '" alt=""></b><span>' + esc(w.name) + '</span></div>';
+      pics += '<div class="wsh-ph' + focused(2, c) + (prefs.bg === w.id ? ' is-on' : '') + '" data-sheet="2,' + c + '"><b><img src="' + esc(w.thumb) + '" alt="" decoding="async"></b><span>' + esc(w.name) + '</span></div>';
     });
     var themes = [['auto', 'Pôr do sol'], ['light', 'Clara'], ['dark', 'Escura']];
     html = '<h2>Personalizar</h2>' +
@@ -903,7 +924,14 @@
     key: function (k) {
       if (!root) return false;
       var dirKey = k === 'left' || k === 'right' || k === 'up' || k === 'down';
-      if (st.sheet) { sound(k === 'ok' ? 'select' : 'tick'); sheetKey(k); renderAll(); return true; }
+      if (st.sheet) {
+        sound(k === 'ok' ? 'select' : 'tick'); sheetKey(k);
+        // Navigation only moves the focus/preview — update those in place instead of rebuilding
+        // the whole sheet (and its 30 wallpaper thumbnails) on every keypress.
+        if (st.sheet && dirKey) { renderBackground(); updateSheetFocus(); }
+        else renderAll();
+        return true;
+      }
       if (st.folder) {
         var fapps = CFG.folder && CFG.folder.apps || [], fn = fapps.length, per = 4, fi = st.folder.i, ni = fi;
         if (k === 'back') { sound('tick'); closeFolder(); return true; }

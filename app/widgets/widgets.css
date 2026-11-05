@@ -48,12 +48,20 @@
 .g-esmeralda{background:linear-gradient(160deg,#0E5A43 0%,#08241C 100%)}
 .g-cobre{background:linear-gradient(160deg,#7A3B1E 0%,#2A1510 100%)}
 .g-safira{background:linear-gradient(160deg,#153A8A 0%,#0A1636 100%)}
+.g-jade{background:linear-gradient(160deg,#0F6E57 0%,#07302A 100%)}
+.g-turquesa{background:linear-gradient(160deg,#0E6E78 0%,#06282F 100%)}
+.g-indigo{background:linear-gradient(160deg,#2A2A75 0%,#101033 100%)}
+.g-ametista{background:linear-gradient(160deg,#5B2A7A 0%,#231038 100%)}
+.g-ambar{background:linear-gradient(160deg,#8A5A16 0%,#2E1C08 100%)}
 /* Lighter set (dark chrome applied through on-light-bg) */
 .g-neve{background:linear-gradient(160deg,#FBFBFD 0%,#D7DBE2 100%)}
 .g-prata{background:linear-gradient(160deg,#E8EAEE 0%,#B9BFC9 100%)}
 .g-areia{background:linear-gradient(160deg,#EFE6D2 0%,#D3C2A0 100%)}
 .g-perola{background:linear-gradient(160deg,#F4ECEF 0%,#D8C8D2 100%)}
 .g-ceu{background:linear-gradient(160deg,#DCEBFA 0%,#A9C6E8 100%)}
+.g-menta{background:linear-gradient(160deg,#D8F6E6 0%,#A4E3C6 100%)}
+.g-rosa{background:linear-gradient(160deg,#FBDCE6 0%,#F0B3C6 100%)}
+.g-lilas{background:linear-gradient(160deg,#E7DEFA 0%,#C3B2E8 100%)}
 
 /* Top bar */
 .wh-top{position:absolute;left:129px;right:129px;top:80px;height:80px}
@@ -90,8 +98,7 @@
 .is-focus.bump-up>.wc-tilt{animation:wbump-y .2s ease reverse}
 @keyframes wbump-x{0%,100%{transform:translate3d(0,0,0)}40%{transform:translate3d(8px,0,0)}}
 @keyframes wbump-y{0%,100%{transform:translate3d(0,0,0)}40%{transform:translate3d(0,8px,0)}}
-.wc.is-adjust .wp-level{background:#48484E}
-.wh.is-dark .wc.is-adjust .wp-level{background:#fff}
+.wc.is-adjust .wp-level{background:#fff}
 .wc.is-adjust::before{box-shadow:0 0 0 4px #fff,0 14px 26px rgba(0,0,0,.3)}
 .wc-pad{position:absolute;left:24px;top:22px;right:24px;bottom:22px}
 .wc-light .wc-body{background:linear-gradient(180deg,#FFFFFF 0%,#F4F5F7 100%);color:#1D1D1F}
@@ -158,7 +165,8 @@
 .ww.is-night.sky-fog .wc-body{background:linear-gradient(180deg,#474D57 0%,#2A2E37 100%)}
 .ww.is-night.sky-rain .wc-body{background:linear-gradient(180deg,#2F3B49 0%,#171E27 100%)}
 .ww.is-night.sky-storm .wc-body{background:linear-gradient(180deg,#242A34 0%,#0D1016 100%)}
-.wpl .wc-body{background:linear-gradient(180deg,#26252E 0%,#131318 100%)}
+.wpl .wc-body{background:linear-gradient(180deg,#191820 0%,#0A0A0E 100%)}
+.wc-logo.is-pluto{opacity:1}
 .wst .wc-body,.whb .wc-body{background:linear-gradient(180deg,#121319 0%,#07080C 100%)}
 .ww-temp{font-size:60px;font-weight:300;line-height:66px;letter-spacing:-1.5px}
 .ww-city{font-size:18px;font-weight:600}
@@ -186,16 +194,16 @@
 .ws-foot{position:absolute;left:234px;right:22px;bottom:28px;font-size:14px;font-weight:600;letter-spacing:.7px;text-transform:uppercase;color:#6E6E73}
 .wh.is-dark .ws-foot{color:rgba(255,255,255,.55)}
 
-/* Pills: volume and brightness */
+/* Pills: volume and brightness. The pill body stays dark glass in BOTH themes
+   (the old look the owner preferred), so the fill and glyph are always light-on-dark.
+   This overrides the theme-adaptive .wc-dim body, which the TV-group card still uses. */
 .wp{border-radius:49px}
-.wp-level{position:absolute;left:0;right:0;bottom:0;background:rgba(70,70,78,.9);transition:height .25s var(--ease)}
-.wh.is-dark .wp-level{background:rgba(255,255,255,.92)}
-.wp-bright .wp-level{background:rgba(70,70,78,.9)}
-.wh.is-dark .wp-bright .wp-level{background:rgba(250,250,240,.95)}
+.wp .wc-body,.wh.is-dark .wp .wc-body{background:linear-gradient(180deg,rgba(44,44,50,.5),rgba(22,22,26,.62));box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+.wp-level{position:absolute;left:0;right:0;bottom:0;background:rgba(255,255,255,.92);transition:height .25s var(--ease)}
+.wp-bright .wp-level{background:rgba(250,250,240,.95)}
 .wp-icon{position:absolute;left:0;right:0;bottom:24px;text-align:center}
 .wp-icon .wc-ico{display:inline-block}
-.wp-value{position:absolute;left:0;right:0;top:20px;text-align:center;font-size:18px;font-weight:600;color:#1D1D1F;opacity:0;transition:opacity .2s}
-.wh.is-dark .wp-value{color:#fff}
+.wp-value{position:absolute;left:0;right:0;top:20px;text-align:center;font-size:18px;font-weight:600;color:#fff;opacity:0;transition:opacity .2s}
 .wc.is-adjust .wp-value{opacity:1}
 
 /* Network pill, theme and light buttons */

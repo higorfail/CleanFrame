@@ -17,14 +17,17 @@
     ['lavanda', 'Lavanda'], ['floresta', 'Floresta'], ['esmeralda', 'Esmeralda'], ['safira', 'Safira'],
     ['cobre', 'Cobre'], ['grafite', 'Grafite'], ['carvao', 'Carvão'], ['espaco', 'Espaço'],
     ['abissal', 'Abissal'], ['meianoite', 'Meia-noite'], ['onix', 'Ônix'], ['breu', 'Breu'],
-    ['neve', 'Neve', 1], ['prata', 'Prata', 1], ['ceu', 'Céu', 1], ['areia', 'Areia', 1], ['perola', 'Pérola', 1]
+    ['jade', 'Jade'], ['turquesa', 'Turquesa'], ['indigo', 'Índigo'], ['ametista', 'Ametista'], ['ambar', 'Âmbar'],
+    ['neve', 'Neve', 1], ['prata', 'Prata', 1], ['ceu', 'Céu', 1], ['areia', 'Areia', 1], ['perola', 'Pérola', 1],
+    ['menta', 'Menta', 1], ['rosa', 'Rosa', 1], ['lilas', 'Lilás', 1]
   ];
   /* Plain colours for the background (a soft vertical fall-off keeps them from looking flat on a TV). */
   var COLORS = [
     ['branco', 'Branco', '#F4F4F6', 1], ['nuvem', 'Nuvem', '#D4D9E0', 1], ['prata', 'Prata', '#AEB4BE', 1], ['areia', 'Areia', '#D9C7A0', 1],
     ['grafite', 'Grafite', '#1C1C1E'], ['ardosia', 'Ardósia', '#2C3440'], ['preto', 'Preto', '#000000'], ['marinho', 'Marinho', '#0B1F3A'],
     ['azul', 'Azul', '#0A3D91'], ['petroleo', 'Petróleo', '#0D4D4D'], ['verde', 'Verde', '#0F3D2E'], ['oliva', 'Oliva', '#3A3F1E'],
-    ['roxo', 'Roxo', '#3B2A6B'], ['vinho', 'Vinho', '#4A1426'], ['terracota', 'Terracota', '#7A2E1A'], ['cafe', 'Café', '#3B2A20']
+    ['roxo', 'Roxo', '#3B2A6B'], ['vinho', 'Vinho', '#4A1426'], ['terracota', 'Terracota', '#7A2E1A'], ['cafe', 'Café', '#3B2A20'],
+    ['menta', 'Menta', '#A7E6CC', 1], ['gelo', 'Gelo', '#E3ECF2', 1], ['chumbo', 'Chumbo', '#43474E'], ['indigo', 'Índigo', '#1E1B4B']
   ];
   function color(id) { var key = String(id || '').replace(/^color:/, ''); if (String(id || '').indexOf('color:') !== 0) return null; for (var i = 0; i < COLORS.length; i++) if (COLORS[i][0] === key) return COLORS[i]; return null; }
   /* Whether the chosen background is pale (so the date, captions and glass buttons switch to dark ink). */
@@ -412,11 +415,8 @@
     var v = data.volume, known = v && typeof v.level === 'number' && !isNaN(v.level), level = known ? Math.max(0, Math.min(100, v.level)) : demo() ? 58 : 0;
     var muted = !!(v && (v.muted || (known && level === 0)));
     // TV volumes live low (5-30); the bar shows them on a 0-50 scale so small steps are visible.
-    var fill = muted ? 0 : Math.min(100, Math.round(level * 2)), dark = isDark(), onFill = fill > 30 && !muted;
-    // The icon sits over the fill (one tone) or the empty track (the other); the fill is light in dark mode
-    // and dark in light mode, so the icon colour flips with the theme to stay legible.
-    var vIcon = dark ? (onFill ? '#1D1D1F' : '#fff') : (onFill ? '#fff' : '#1D1D1F');
-    setBody('volume', '<div class="wp-level" style="height:' + fill + '%"></div><div class="wp-value">' + (muted ? '0' : known || demo() ? level : '–') + '</div><div class="wp-icon">' + ico(muted ? 'mute' : 'speaker', 40, vIcon, 1.9) + '</div>');
+    var fill = muted ? 0 : Math.min(100, Math.round(level * 2));
+    setBody('volume', '<div class="wp-level" style="height:' + fill + '%"></div><div class="wp-value">' + (muted ? '0' : known || demo() ? level : '–') + '</div><div class="wp-icon">' + ico(muted ? 'mute' : 'speaker', 40, fill > 30 && !muted ? '#1D1D1F' : '#fff', 1.9) + '</div>');
     var pm = data.picture, modes = pm && pm.modes || [], idx = pm ? modes.indexOf(pm.mode) : -1, h = idx < 0 ? 40 : Math.round(35 + 50 * idx / Math.max(1, modes.length - 1));
     setBody('bright', '<div class="wp-level" style="height:' + h + '%"></div><div class="wp-icon">' + sunIcon(44) + '</div>');
   }

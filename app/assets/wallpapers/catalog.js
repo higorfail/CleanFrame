@@ -226,5 +226,200 @@ window.CleanFrameWallpapers = [
     "listColumn": 0,
     "dockQuiet": false,
     "clockMist": false
+  },
+  {
+    "id": "azulwave",
+    "name": "Azul wave",
+    "src": "assets/wallpapers/azulwave.jpg",
+    "thumb": "assets/wallpapers/azulwave-thumb.jpg",
+    "tone": "light",
+    "ut": {
+      "tr": "mist",
+      "br": "light"
+    },
+    "frostVeil": 0.44,
+    "listColumn": 3,
+    "dockQuiet": false,
+    "clockMist": false
+  },
+  {
+    "id": "indigowave",
+    "name": "Índigo wave",
+    "src": "assets/wallpapers/indigowave.jpg",
+    "thumb": "assets/wallpapers/indigowave-thumb.jpg",
+    "tone": "light",
+    "ut": {
+      "tr": "mist",
+      "br": "light"
+    },
+    "frostVeil": 0.44,
+    "listColumn": 3,
+    "dockQuiet": false,
+    "clockMist": false
+  },
+  {
+    "id": "lilaswave",
+    "name": "Lilás wave",
+    "src": "assets/wallpapers/lilaswave.jpg",
+    "thumb": "assets/wallpapers/lilaswave-thumb.jpg",
+    "tone": "light",
+    "ut": {
+      "tr": "mist",
+      "br": "light"
+    },
+    "frostVeil": 0.44,
+    "listColumn": 3,
+    "dockQuiet": false,
+    "clockMist": false
+  },
+  {
+    "id": "rosawave",
+    "name": "Rosa wave",
+    "src": "assets/wallpapers/rosawave.jpg",
+    "thumb": "assets/wallpapers/rosawave-thumb.jpg",
+    "tone": "light",
+    "ut": {
+      "tr": "mist",
+      "br": "light"
+    },
+    "frostVeil": 0.44,
+    "listColumn": 3,
+    "dockQuiet": false,
+    "clockMist": false
+  },
+  {
+    "id": "pessegowave",
+    "name": "Pêssego wave",
+    "src": "assets/wallpapers/pessegowave.jpg",
+    "thumb": "assets/wallpapers/pessegowave-thumb.jpg",
+    "tone": "light",
+    "ut": {
+      "tr": "mist",
+      "br": "light"
+    },
+    "frostVeil": 0.44,
+    "listColumn": 3,
+    "dockQuiet": false,
+    "clockMist": false
+  },
+  {
+    "id": "douradowave",
+    "name": "Dourado wave",
+    "src": "assets/wallpapers/douradowave.jpg",
+    "thumb": "assets/wallpapers/douradowave-thumb.jpg",
+    "tone": "light",
+    "ut": {
+      "tr": "mist",
+      "br": "light"
+    },
+    "frostVeil": 0.44,
+    "listColumn": 3,
+    "dockQuiet": false,
+    "clockMist": false
+  },
+  {
+    "id": "verdewave",
+    "name": "Verde wave",
+    "src": "assets/wallpapers/verdewave.jpg",
+    "thumb": "assets/wallpapers/verdewave-thumb.jpg",
+    "tone": "light",
+    "ut": {
+      "tr": "mist",
+      "br": "light"
+    },
+    "frostVeil": 0.44,
+    "listColumn": 3,
+    "dockQuiet": false,
+    "clockMist": false
+  },
+  {
+    "id": "cinzawave",
+    "name": "Cinza wave",
+    "src": "assets/wallpapers/cinzawave.jpg",
+    "thumb": "assets/wallpapers/cinzawave-thumb.jpg",
+    "tone": "light",
+    "ut": {
+      "tr": "mist",
+      "br": "light"
+    },
+    "frostVeil": 0.44,
+    "listColumn": 3,
+    "dockQuiet": false,
+    "clockMist": false
+  },
+  {
+    "id": "cinema",
+    "name": "Cinema",
+    "src": "assets/wallpapers/cinema.jpg",
+    "thumb": "assets/wallpapers/cinema-thumb.jpg",
+    "tone": "dark",
+    "ut": {
+      "tr": "light",
+      "br": "light"
+    },
+    "frostVeil": 0.3,
+    "listColumn": 0,
+    "dockQuiet": true,
+    "clockMist": false
+  },
+  {
+    "id": "magma",
+    "name": "Magma",
+    "src": "assets/wallpapers/magma.jpg",
+    "thumb": "assets/wallpapers/magma-thumb.jpg",
+    "tone": "dark",
+    "ut": {
+      "tr": "light",
+      "br": "light"
+    },
+    "frostVeil": 0.3,
+    "listColumn": 0,
+    "dockQuiet": true,
+    "clockMist": false
+  },
+  {
+    "id": "nebulosa",
+    "name": "Nebulosa",
+    "src": "assets/wallpapers/nebulosa.jpg",
+    "thumb": "assets/wallpapers/nebulosa-thumb.jpg",
+    "tone": "dark",
+    "ut": {
+      "tr": "light",
+      "br": "light"
+    },
+    "frostVeil": 0.3,
+    "listColumn": 0,
+    "dockQuiet": true,
+    "clockMist": false
+  },
+  {
+    "id": "maresia",
+    "name": "Maresia",
+    "src": "assets/wallpapers/maresia.jpg",
+    "thumb": "assets/wallpapers/maresia-thumb.jpg",
+    "tone": "dark",
+    "ut": {
+      "tr": "light",
+      "br": "light"
+    },
+    "frostVeil": 0.3,
+    "listColumn": 0,
+    "dockQuiet": true,
+    "clockMist": false
+  },
+  {
+    "id": "poente",
+    "name": "Poente",
+    "src": "assets/wallpapers/poente.jpg",
+    "thumb": "assets/wallpapers/poente-thumb.jpg",
+    "tone": "dark",
+    "ut": {
+      "tr": "light",
+      "br": "light"
+    },
+    "frostVeil": 0.3,
+    "listColumn": 0,
+    "dockQuiet": true,
+    "clockMist": false
   }
 ];

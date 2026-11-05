@@ -9,7 +9,7 @@
   var CFG = window.FrameWidgetsConfig || {}, D = window.FrameWidgetsData;
   var PREFS = 'cleanframe.widgets.v1';
   var C = 232, G = 36, S = C + G, PILL = 98, VIS = 1662, PEEK = 183, MAXOFF = 7 * S;
-  var DOCK_W = 96, DOCK_GAP = 28, DOCK_PAD = 20, DOCK_FS = 1.12, STRIP_X = 129, STRIP_Y = 290;
+  var DOCK_W = 72, DOCK_GAP = 21, DOCK_PAD = 15, DOCK_FS = 1.12, STRIP_X = 129, STRIP_Y = 290;
   var A = window.FrameApple || null;
   /* Background gradients. A third item 'light' marks a pale one, so the wallpaper chrome turns dark over it. */
   var GRADIENTS = [
@@ -17,17 +17,14 @@
     ['lavanda', 'Lavanda'], ['floresta', 'Floresta'], ['esmeralda', 'Esmeralda'], ['safira', 'Safira'],
     ['cobre', 'Cobre'], ['grafite', 'Grafite'], ['carvao', 'Carvão'], ['espaco', 'Espaço'],
     ['abissal', 'Abissal'], ['meianoite', 'Meia-noite'], ['onix', 'Ônix'], ['breu', 'Breu'],
-    ['jade', 'Jade'], ['turquesa', 'Turquesa'], ['indigo', 'Índigo'], ['ametista', 'Ametista'], ['ambar', 'Âmbar'],
-    ['neve', 'Neve', 1], ['prata', 'Prata', 1], ['ceu', 'Céu', 1], ['areia', 'Areia', 1], ['perola', 'Pérola', 1],
-    ['menta', 'Menta', 1], ['rosa', 'Rosa', 1], ['lilas', 'Lilás', 1]
+    ['neve', 'Neve', 1], ['prata', 'Prata', 1], ['ceu', 'Céu', 1], ['areia', 'Areia', 1], ['perola', 'Pérola', 1]
   ];
   /* Plain colours for the background (a soft vertical fall-off keeps them from looking flat on a TV). */
   var COLORS = [
     ['branco', 'Branco', '#F4F4F6', 1], ['nuvem', 'Nuvem', '#D4D9E0', 1], ['prata', 'Prata', '#AEB4BE', 1], ['areia', 'Areia', '#D9C7A0', 1],
     ['grafite', 'Grafite', '#1C1C1E'], ['ardosia', 'Ardósia', '#2C3440'], ['preto', 'Preto', '#000000'], ['marinho', 'Marinho', '#0B1F3A'],
     ['azul', 'Azul', '#0A3D91'], ['petroleo', 'Petróleo', '#0D4D4D'], ['verde', 'Verde', '#0F3D2E'], ['oliva', 'Oliva', '#3A3F1E'],
-    ['roxo', 'Roxo', '#3B2A6B'], ['vinho', 'Vinho', '#4A1426'], ['terracota', 'Terracota', '#7A2E1A'], ['cafe', 'Café', '#3B2A20'],
-    ['menta', 'Menta', '#A7E6CC', 1], ['gelo', 'Gelo', '#E3ECF2', 1], ['chumbo', 'Chumbo', '#43474E'], ['indigo', 'Índigo', '#1E1B4B']
+    ['roxo', 'Roxo', '#3B2A6B'], ['vinho', 'Vinho', '#4A1426'], ['terracota', 'Terracota', '#7A2E1A'], ['cafe', 'Café', '#3B2A20']
   ];
   function color(id) { var key = String(id || '').replace(/^color:/, ''); if (String(id || '').indexOf('color:') !== 0) return null; for (var i = 0; i < COLORS.length; i++) if (COLORS[i][0] === key) return COLORS[i]; return null; }
   /* Whether the chosen background is pale (so the date, captions and glass buttons switch to dark ink). */

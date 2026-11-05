@@ -148,5 +148,135 @@
     "tone": "light",
     "credit": "Cristina Gottardi",
     "source": "https://unsplash.com/photos/CSpjU6hYo_0"
+  },
+  {
+    "id": "azulwave",
+    "name": "Azul wave",
+    "src": "assets/wallpapers/azulwave.jpg",
+    "thumb": "assets/wallpapers/azulwave-thumb.jpg",
+    "pos": "50% 50%",
+    "tone": "light",
+    "credit": "MagicPattern (recolor)",
+    "source": "https://unsplash.com/photos/87PP9Zd7MNo"
+  },
+  {
+    "id": "indigowave",
+    "name": "Índigo wave",
+    "src": "assets/wallpapers/indigowave.jpg",
+    "thumb": "assets/wallpapers/indigowave-thumb.jpg",
+    "pos": "50% 50%",
+    "tone": "light",
+    "credit": "MagicPattern (recolor)",
+    "source": "https://unsplash.com/photos/87PP9Zd7MNo"
+  },
+  {
+    "id": "lilaswave",
+    "name": "Lilás wave",
+    "src": "assets/wallpapers/lilaswave.jpg",
+    "thumb": "assets/wallpapers/lilaswave-thumb.jpg",
+    "pos": "50% 50%",
+    "tone": "light",
+    "credit": "MagicPattern (recolor)",
+    "source": "https://unsplash.com/photos/87PP9Zd7MNo"
+  },
+  {
+    "id": "rosawave",
+    "name": "Rosa wave",
+    "src": "assets/wallpapers/rosawave.jpg",
+    "thumb": "assets/wallpapers/rosawave-thumb.jpg",
+    "pos": "50% 50%",
+    "tone": "light",
+    "credit": "MagicPattern (recolor)",
+    "source": "https://unsplash.com/photos/87PP9Zd7MNo"
+  },
+  {
+    "id": "pessegowave",
+    "name": "Pêssego wave",
+    "src": "assets/wallpapers/pessegowave.jpg",
+    "thumb": "assets/wallpapers/pessegowave-thumb.jpg",
+    "pos": "50% 50%",
+    "tone": "light",
+    "credit": "MagicPattern (recolor)",
+    "source": "https://unsplash.com/photos/87PP9Zd7MNo"
+  },
+  {
+    "id": "douradowave",
+    "name": "Dourado wave",
+    "src": "assets/wallpapers/douradowave.jpg",
+    "thumb": "assets/wallpapers/douradowave-thumb.jpg",
+    "pos": "50% 50%",
+    "tone": "light",
+    "credit": "MagicPattern (recolor)",
+    "source": "https://unsplash.com/photos/87PP9Zd7MNo"
+  },
+  {
+    "id": "verdewave",
+    "name": "Verde wave",
+    "src": "assets/wallpapers/verdewave.jpg",
+    "thumb": "assets/wallpapers/verdewave-thumb.jpg",
+    "pos": "50% 50%",
+    "tone": "light",
+    "credit": "MagicPattern (recolor)",
+    "source": "https://unsplash.com/photos/87PP9Zd7MNo"
+  },
+  {
+    "id": "cinzawave",
+    "name": "Cinza wave",
+    "src": "assets/wallpapers/cinzawave.jpg",
+    "thumb": "assets/wallpapers/cinzawave-thumb.jpg",
+    "pos": "50% 50%",
+    "tone": "light",
+    "credit": "MagicPattern (recolor)",
+    "source": "https://unsplash.com/photos/87PP9Zd7MNo"
+  },
+  {
+    "id": "cinema",
+    "name": "Cinema",
+    "src": "assets/wallpapers/cinema.jpg",
+    "thumb": "assets/wallpapers/cinema-thumb.jpg",
+    "pos": "50% 50%",
+    "tone": "dark",
+    "credit": "CleanFrame (generated)",
+    "source": ""
+  },
+  {
+    "id": "magma",
+    "name": "Magma",
+    "src": "assets/wallpapers/magma.jpg",
+    "thumb": "assets/wallpapers/magma-thumb.jpg",
+    "pos": "50% 50%",
+    "tone": "dark",
+    "credit": "CleanFrame (generated)",
+    "source": ""
+  },
+  {
+    "id": "nebulosa",
+    "name": "Nebulosa",
+    "src": "assets/wallpapers/nebulosa.jpg",
+    "thumb": "assets/wallpapers/nebulosa-thumb.jpg",
+    "pos": "50% 50%",
+    "tone": "dark",
+    "credit": "CleanFrame (generated)",
+    "source": ""
+  },
+  {
+    "id": "maresia",
+    "name": "Maresia",
+    "src": "assets/wallpapers/maresia.jpg",
+    "thumb": "assets/wallpapers/maresia-thumb.jpg",
+    "pos": "50% 50%",
+    "tone": "dark",
+    "credit": "CleanFrame (generated)",
+    "source": ""
+  },
+  {
+    "id": "poente",
+    "name": "Poente",
+    "src": "assets/wallpapers/poente.jpg",
+    "thumb": "assets/wallpapers/poente-thumb.jpg",
+    "pos": "50% 50%",
+    "tone": "dark",
+    "credit": "CleanFrame (generated)",
+    "source": ""
   }
 ]
